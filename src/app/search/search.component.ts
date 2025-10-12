@@ -196,7 +196,10 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   }
 
-  onItemRowClick(itemId: string) {
+  onItemRowClick(itemId: string, event?: MouseEvent) {
+    if (event) {
+      event.preventDefault();
+    }
     this.clickedItemId = itemId;
     // Changement de couleur temporaire (par exemple 200ms)
     setTimeout(() => {

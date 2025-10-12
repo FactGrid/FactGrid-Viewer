@@ -282,7 +282,7 @@
                             <div class="divisionTitle">Wikis</div>
                             <hr>
                           </div>
-                          @for (wiki of wikis; track wiki.url) {
+                          @for (wiki of wikis; track wiki.uniqueKey) {
                           <!--          <div>   -->
                           <div class="externalLinksText">
                             <span>{{wiki.site}}: </span><a href="{{wiki.url}}" target="_blank">{{wiki.title}}</a><span>&nbsp;&nbsp;</span>

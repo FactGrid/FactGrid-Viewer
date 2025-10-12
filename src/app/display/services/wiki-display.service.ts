@@ -14,46 +14,76 @@ export class WikiDisplayService {
     if (item[0].sitelinks !== undefined) {
 
     if (item[0].sitelinks.commonswiki !== undefined) {
-      wikis.push(item[0].sitelinks.commonswiki);
+      const obj = Object.assign({}, item[0].sitelinks.commonswiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'commonswiki|' + (obj.url || obj.title || 'commons');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.enwiki !== undefined) {
-      wikis.push(item[0].sitelinks.enwiki);
+      const obj = Object.assign({}, item[0].sitelinks.enwiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'enwiki|' + (obj.url || obj.title || 'en');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.dewiki !== undefined) {
-      wikis.push(item[0].sitelinks.dewiki);
+      const obj = Object.assign({}, item[0].sitelinks.dewiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'dewiki|' + (obj.url || obj.title || 'de');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.frwiki !== undefined) {
-      wikis.push(item[0].sitelinks.frwiki);
+      const obj = Object.assign({}, item[0].sitelinks.frwiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'frwiki|' + (obj.url || obj.title || 'fr');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.itwiki !== undefined) {
-      wikis.push(item[0].sitelinks.itwiki);
+      const obj = Object.assign({}, item[0].sitelinks.itwiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'itwiki|' + (obj.url || obj.title || 'it');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.nlwiki !== undefined) {
-      wikis.push(item[0].sitelinks.nlwiki);
+      const obj = Object.assign({}, item[0].sitelinks.nlwiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'nlwiki|' + (obj.url || obj.title || 'nl');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.eswiki !== undefined) {
-      wikis.push(item[0].sitelinks.eswiki);
+      const obj = Object.assign({}, item[0].sitelinks.eswiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'eswiki|' + (obj.url || obj.title || 'es');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.wikidatawiki !== undefined) {
-      wikis.push(item[0].sitelinks.wikidatawiki);
+      const obj = Object.assign({}, item[0].sitelinks.wikidatawiki);
+      obj.url = obj.url || '';
+      obj.uniqueKey = 'wikidatawiki|' + (obj.url || obj.title || 'wikidata');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.enwikisource !== undefined) {
-      this.url = item[0].sitelinks.enwikisource.title.replace(/ /g, "_")+"_";
+      const obj = Object.assign({}, item[0].sitelinks.enwikisource);
+      this.url = obj.title.replace(/ /g, "_")+"_";
       this.url = "https://en.wikisource.org/wiki/" + this.url;
-      item[0].sitelinks.enwikisource.url=this.url;
-      wikis.push(item[0].sitelinks.enwikisource);
+      obj.url = this.url;
+      obj.uniqueKey = 'enwikisource|' + (obj.url || obj.title || 'enwikisource');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.dewikisource !== undefined) {
-      this.url = item[0].sitelinks.dewikisource.title.replace(/ /g, "_")+"_";
+      const obj = Object.assign({}, item[0].sitelinks.dewikisource);
+      this.url = obj.title.replace(/ /g, "_")+"_";
       this.url = "https://de.wikisource.org/wiki/" + this.url;
-      item[0].sitelinks.dewikisource.url=this.url;
-      wikis.push(item[0].sitelinks.dewikisource);
+      obj.url = this.url;
+      obj.uniqueKey = 'dewikisource|' + (obj.url || obj.title || 'dewikisource');
+      wikis.push(obj);
     }
     if (item[0].sitelinks.frwikisource !== undefined) {
-      this.url = item[0].sitelinks.frwikisource.title.replace(/ /g, "_")+"_";
+      const obj = Object.assign({}, item[0].sitelinks.frwikisource);
+      this.url = obj.title.replace(/ /g, "_")+"_";
       this.url = "https://fr.wikisource.org/wiki/" + this.url;
-      item[0].sitelinks.frwikisource.url=this.url;
-      wikis.push(item[0].sitelinks.frwikisource);
+      obj.url = this.url;
+      obj.uniqueKey = 'frwikisource|' + (obj.url || obj.title || 'frwikisource');
+      wikis.push(obj);
       }
     }
     return wikis

@@ -87,7 +87,9 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 .search-field-col {
   display: flex;
   flex-direction: column;
-  width: 300px; /* même largeur que .search-field */
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
 }
 
 .selected-project-label {

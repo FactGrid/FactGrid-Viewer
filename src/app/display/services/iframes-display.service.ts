@@ -7,57 +7,71 @@ import { Injectable, inject } from '@angular/core';
 export class IframesDisplayService {
  
 setIframesDisplay(item, iframes){
-
-  if (item[0].claims.P309 !==undefined){  //FactGrid table of contents     
-    console.log(item[0].claims.P309[0].mainsnak.datavalue.value);
-    item[1].splice(item[1].indexOf("P309"), 1);
-    if (!item[0].claims.P309.iframe) {
-      item[0].claims.P309.iframe = [];
+  try {
+    // Basic guards
+    if (!item || !Array.isArray(item) || !item[0] || !item[0].claims) {
+      return;
     }
-    for (let i=0; i<item[0].claims.P309.length; i++){
-      item[0].claims.P309[i].mainsnak.datatype=item[0].claims.P309[i].mainsnak.datavalue.value;
-      item[0].claims.P309.iframe[i]= item[0].claims.P309[i].mainsnak.datavalue.value ;}
-      iframes.push(item[0].claims.P309);
-      console.log(iframes);
+
+    const claims = item[0].claims;
+
+    const removeFromIndexList = (prop) => {
+      if (Array.isArray(item[1])) {
+        const idx = item[1].indexOf(prop);
+        if (idx > -1) item[1].splice(idx, 1);
+      }
+    };
+
+    const pushIfNonEmpty = (propArr) => {
+      if (propArr && (Array.isArray(propArr) ? propArr.length > 0 : true)) {
+        iframes.push(propArr);
+      }
+    };
+
+    // Helper to process a claim which is expected to be an array
+    const processClaimArray = (propName) => {
+      const prop: any = claims[propName];
+      if (!Array.isArray(prop) || prop.length === 0) return;
+      removeFromIndexList(propName);
+      // Ensure iframe is an array on the prop wrapper object
+      try {
+        if (!Array.isArray((prop as any).iframe)) {
+          (prop as any).iframe = [];
+        }
+      } catch (e) {
+        // Defensive: if prop is not an object bail out silently
+        return;
+      }
+
+      for (let i = 0; i < prop.length; i++) {
+        const el = prop[i];
+        if (el && el.mainsnak && el.mainsnak.datavalue) {
+          // store datatype for compatibility with older code
+          el.mainsnak.datatype = el.mainsnak.datavalue.value;
+          // push value to the iframe array to avoid assigning to undefined indices
+          try {
+            (prop as any).iframe.push(el.mainsnak.datavalue.value);
+          } catch (e) {
+            // ignore push failures silently
+          }
+        } else {
+          // skip malformed elements silently
+        }
+      }
+      pushIfNonEmpty(prop);
+    };
+
+    // Process known properties
+    processClaimArray('P309');
+    processClaimArray('P320');
+    processClaimArray('P679');
+    processClaimArray('P693');
+    processClaimArray('P720');
+
+  } catch (err) {
+    // fail silently to avoid noisy logs in production
   }
-
-  if (item[0].claims.P320 !==undefined){  //FactGrid list of members     
-    item[1].splice(item[1].indexOf("P320"),1);
-    for (let i=0; i<item[0].claims.P320.length; i++){
-      item[0].claims.P320[i].mainsnak.datatype=item[0].claims.P320[i].mainsnak.datavalue.value;
-      item[0].claims.P320.iframe[i]= item[0].claims.P320[i].mainsnak.datavalue.value ;}
-      iframes.push(item[0].claims.P320);
-    }
-  
-    
-  if (item[0].claims.P679 !== undefined) { //house numbers
-    console.log(item[0].claims.P679);
-    item[1].splice(item[1].indexOf("P679"), 1);
-    if (!item[0].claims.P679.iframe) {
-      item[0].claims.P679.iframe = [];
-    }
-    for (let i=0; i<item[0].claims.P679.length; i++){
-      item[0].claims.P679[i].mainsnak.datatype=item[0].claims.P679[i].mainsnak.datavalue.value;
-      item[0].claims.P679.iframe[i]= item[0].claims.P679[i].mainsnak.datavalue.value ;}
-      iframes.push(item[0].claims.P679);
-    }
-    
-  if (item[0].claims.P693 !==undefined){ //FactGrid map visualisation
-    item[1].splice(item[1].indexOf("P693"),1); 
-    for (let i=0; i<item[0].claims.P693.length; i++){   
-      item[0].claims.P693[i].mainsnak.datatype=item[0].claims.P693[i].mainsnak.datavalue.value;
-      item[0].claims.P693.iframe[i]= item[0].claims.P693[i].mainsnak.datavalue.value ;}
-      iframes.push(item[0].claims.P693);
-    } 
-
-  if (item[0].claims.P720 !==undefined){ //FactGrid list
-    item[1].splice(item[1].indexOf("P720"),1);    
-    for (let i=0; i<item[0].claims.P720.length; i++){
-      item[0].claims.P720[i].mainsnak.datatype=item[0].claims.P720[i].mainsnak.datavalue.value;
-      item[0].claims.P720.iframe[i]= item[0].claims.P720[i].mainsnak.datavalue.value ;}
-      iframes.push(item[0].claims.P720);
-    } 
-    }
+}
 
     setHouseNumbersQuery(res){
       res = res.replace("item%","viewer%");

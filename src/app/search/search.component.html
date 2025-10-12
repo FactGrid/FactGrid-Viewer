@@ -25,7 +25,7 @@
       <mat-label>{{itemsInput}}</mat-label>
       <input matInput
              class="search-input-style"
-             placeholder="ex: Goethe"
+            
              [formControl]="searchInput">
       <button mat-icon-button
               matSuffix
@@ -96,11 +96,11 @@
 
     <ul>
       @for (item of filteredItems$ | async; track item.id) {
-      <li class="item-row"
-          [class.clicked]="clickedItemId === item.id"
-          (click)="onItemRowClick(item.id)"
-          tabindex="0"
-          style="cursor:pointer;">
+    <li class="item-row"
+      [class.clicked]="clickedItemId === item.id"
+      (click)="onItemRowClick(item.id, $event)"
+      tabindex="0"
+      style="cursor:pointer;">
         <div class="item-main">
           <span class="item-label">
             {{ item.label }}

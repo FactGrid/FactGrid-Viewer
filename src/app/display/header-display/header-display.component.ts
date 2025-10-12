@@ -42,18 +42,15 @@ export class HeaderDisplayComponent {
    * Each property object contains id, label, description, and a claims array.
    */
   transformHeaderDetail(rawHeaderDetail: any[]): any[] {
-    return rawHeaderDetail.map((claimsArr: any[]) => {
-      // Find the metadata object (the one with 'id', 'label', etc.)
-      const meta = claimsArr.find(obj => obj.id && typeof obj.label === 'string');
-      // Filter out claim objects (those with mainsnak)
-      const claims = claimsArr.filter(obj => obj.mainsnak);
-
-      // Get label/description from meta or first claim
-      const firstClaim = claims[0];
+    return rawHeaderDetail.map((claimsArr: any) => {
+      // Les propriétés id, label, description sont directement sur l'objet claimsArr
+      // Les claims individuels sont dans le tableau claimsArr lui-même
+      const claims = claimsArr.filter((obj: any) => obj?.mainsnak);
+      
       return {
-        id: meta?.id || firstClaim?.mainsnak?.property || '',
-        label: meta?.label || firstClaim?.mainsnak?.label || '',
-        description: meta?.description || firstClaim?.mainsnak?.description || '',
+        id: claimsArr.id || '',
+        label: claimsArr.label || claimsArr.id || '', // Use the label from the array properties
+        description: claimsArr.description || '',
         claims: Array.isArray(claims) ? claims : []
       };
     });

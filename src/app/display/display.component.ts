@@ -333,7 +333,13 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Iframes
       this.iframes = [];
-      this.iframesDisplay.setIframesDisplay(this.item, this.iframes);
+      console.log('About to call setIframesDisplay', { item: this.item, claims: this.item?.[0]?.claims, itemIndexList: this.item?.[1] });
+      try {
+        this.iframesDisplay.setIframesDisplay(this.item, this.iframes);
+      } catch (e) {
+        console.error('Error calling setIframesDisplay', e, { item: this.item, iframes: this.iframes });
+      }
+      console.log('After setIframesDisplay', { iframes: this.iframes });
       this.isIframes = this.iframes.length > 0;
 
       // Extraction des URLs brutes pour les iframes
