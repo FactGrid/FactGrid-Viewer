@@ -1,3 +1,57 @@
+/* Force la marge et le padding à gauche sur tous les descendants du composant racine display */
+.display * {
+  margin-left: 0 !important;
+  padding-left: 10px !important;
+}
+
+/* Harmonisation de la marge/padding à gauche sur tous les composants enfants principaux */
+.main *,
+.career *,
+.statementStyle *,
+.matCardPadding *,
+.cardBackground *,
+.mat-card-content *,
+.mat-elevation-z12 *,
+.subdivisionTitle *,
+.listTitleStart *,
+.ground-div1 * {
+  margin-left: 0 !important;
+  padding-left: 10px !important;
+}
+
+/* Force la marge et le padding à gauche sur tous les composants enfants, y compris Angular Material */
+.child1 *,
+.child2 *,
+.cardBackground *,
+.mat-card-content,
+mat-card-content,
+mat-card {
+  margin-left: 2px !important;
+  padding-left: 4px !important;
+}
+
+/* Harmonise la marge et le padding à gauche sur tous les composants enfants principaux */
+.child1 *, .child2 *, .cardBackground *, .mat-card-content * {
+  margin-left: 0 !important;
+  padding-left: 4px !important;
+}
+
+/* Réduit la marge et le padding à gauche sur tous les enfants de .child1 */
+.child1 * {
+  margin-left: 0 !important;
+  padding-left: 4px !important;
+}
+
+/* Force le padding à gauche sur tous les mat-card-content */
+mat-card-content, .mat-card-content {
+  padding-left: 4px !important;
+}
+
+/* Réduit le padding à gauche pour le contenu principal de child1 */
+.child1 .cardBackground,
+.child1 mat-card-content {
+  padding-left: 10px !important;
+}
 
 
 body {
@@ -49,17 +103,21 @@ body {
   flex-flow: column;
 } */
 
-.child1 { // determine the size of the first column
-  flex: 2;
-  background-color: lightgrey !important;
-//  width: 75%;
-}
+  .child1 { // determine the size of the first column
+      flex: 2;
+      /* background-color: lightgrey !important; */
+      margin-left: 2px !important;
+      margin-right: 10px;
+      /* width: 75%; supprimé pour éviter la large marge à droite */
+    }
 
 @media (max-width: 813px) { //change the layout of the parent box  and create the layout for the picture for small screen
   .child1 {
     flex-flow: column;
     align-items: stretch;
-    background-color: lightgrey !important;
+    /* background-color: lightgrey !important; */
+    margin-left: 5px;
+    margin-right: 5px;
   }
 }
 
@@ -67,11 +125,11 @@ body {
 @media (min-width: 1280px ) { //change the layout of the parent box  and create the layout for the picture for big screen
   .child1 {
     flex: 3;
-    width: 75%;
-    //   flex-flow: column;
-    //    align-items: stretch;
+    margin-left: 2px;
+    margin-right: 20px; /* marge un peu plus grande à droite en desktop */
+    /* width: 75%; supprimé */
   }
-  }
+}
 
 
 
@@ -94,6 +152,40 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Neutralise les paddings/marges globaux à l'intérieur de la carte Info
+     pour éviter la petite bande blanche à gauche, tout en ré-appliquant
+     un padding standard uniquement au contenu. */
+  /* Nouveau schéma : mat-card-header sans padding, mat-card-content avec padding standard */
+  .info-card-header {
+    background-color: rgb(155, 177, 225);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* marges plus proches des bords, identiques gauche/droite */
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+    margin-top: 8px;
+    margin-bottom: 0;
+    /* léger padding interne pour respirer autour de l'icône */
+    padding: 6px 12px;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  .info-card-header .mat-button, .info-card-header button {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+  .info-card-content {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    box-sizing: border-box;
+  }
+
+  /* Petit espace blanc sous la barre bleue quand le panneau est fermé */
+  .info-card-closed-spacer {
+    height: 8px;
   }
 
   .itemTitle { // styling the big title of the item
@@ -182,11 +274,9 @@ body {
 }
     */
 
-  .icon.mat-mdc-button.mat-small {
-  }
+  /* removed empty rule: .icon.mat-mdc-button.mat-small */
 
-  .details2.percent2 {
-  }
+  /* removed empty rule: .details2.percent2 */
 
   .example-form {
     min-width: 150px;
@@ -281,8 +371,7 @@ body {
     font-weight: 600;
   }
 
-  .mdheadline .subdivision-title {
-  }
+  /* removed empty rule: .mdheadline .subdivision-title */
 
 
 
@@ -294,8 +383,7 @@ body {
     word-break: normal;
   }
 
-  .percent2.white-text {
-  }
+  /* removed empty rule: .percent2.white-text */
 
 
 
@@ -379,8 +467,7 @@ body {
     font-size: 30px !important;
   }
 
-  .icon .white-text {
-  }
+  /* removed empty rule: .icon .white-text */
 
 
 
@@ -401,5 +488,11 @@ body {
     font-size: 0.5em;
   }
 
-  .mat-elevation-z8 .external-links {
+  /* removed empty rule: .mat-elevation-z8 .external-links */
+
+  // Supprime le soulignement des icônes open_in_new sur les liens internes, même avec l'encapsulation Angular
+  ::ng-deep a[mat-icon-button],
+  ::ng-deep a.mat-icon-button {
+    text-decoration: none !important;
   }
+  

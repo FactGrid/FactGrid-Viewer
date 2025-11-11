@@ -18,13 +18,18 @@ export class SociabilityDisplayComponent {
 @Input() sociabilityAndCulture;
 @Input() sociability;
 
- showReferences = false; // état du volet
+openReferences = new Set<string>();
 
- toggleReferences() {
-    this.showReferences = !this.showReferences;
+toggleReferences(key: string) {
+  if (this.openReferences.has(key)) {
+    this.openReferences.delete(key);
+  } else {
+    this.openReferences.add(key);
   }
+}
 
- openImage(image){ //handling click for picture (open in new tab) 
-    window.open(image);}
+openImage(image){ //handling click for picture (open in new tab) 
+  window.open(image);
+}
 
 }

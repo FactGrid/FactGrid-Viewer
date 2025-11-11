@@ -22,11 +22,10 @@
 <div class="search-center2">
   <div class="search-field-col">
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>{{itemsInput}}</mat-label>
       <input matInput
-             class="search-input-style"
-            
-             [formControl]="searchInput">
+        class="search-input-style"
+        [placeholder]="itemsInput"
+        [formControl]="searchInput">
       <button mat-icon-button
               matSuffix
               *ngIf="searchInput.value"
@@ -145,7 +144,7 @@
               @if (selectedItem) {
               <span class="selectedItemText">
                 {{selectedItem.label}}&nbsp;
-                <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]"><mat-icon class="whiteButton" [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]" (click)="$event.stopPropagation()"><mat-icon class="whiteButton" [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               </span>
               }
               <br>

@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SelectedLangService } from '../../selected-lang.service';
 import { ArrayToCsvService } from '../../services/array-to-csv.service';
 
@@ -17,9 +18,13 @@ import { ArrayToCsvService } from '../../services/array-to-csv.service';
   styleUrls: ['sparql1-display.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule]
+  imports: [MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, FormsModule, MatButtonModule, ScrollingModule]
 })
 export class Sparql1DisplayComponent implements OnChanges, OnDestroy {
+  // Méthode trackByFn pour virtual scroll
+  trackByFn(index: number, item: any): any {
+    return item && item.item && item.item.id ? item.item.id + '_' + index : index;
+  }
   private lang = inject(SelectedLangService);
   private csv = inject(ArrayToCsvService);
 
@@ -45,8 +50,18 @@ export class Sparql1DisplayComponent implements OnChanges, OnDestroy {
   listTitle: string = "List";
   query: string;
   listWithoutDuplicate: any[];
+  rowHeight:number = 48;
+  maxViewportHeight:number = 400;
+  getViewportHeightPx(length:number):number {
+    return Math.min(this.maxViewportHeight, Math.max(this.rowHeight, length * this.rowHeight + 4));
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
+
+    // LOG pour debug affichage
+    if (changes.sparqlData && changes.sparqlData.currentValue) {
+      console.log('sparql1-display', changes.sparqlData.currentValue);
+    }
 
     this.query = "";
     this.isWorks = false;

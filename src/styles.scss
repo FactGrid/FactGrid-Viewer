@@ -1017,6 +1017,27 @@ button.mat-icon-button .mat-icon {
   margin-left: 1em; // ou la valeur qui convient, par exemple 8px ou 16px
 }
 
+/* Force le padding et la marge à gauche sur tous les blocs Angular Material */
+mat-card-content, .mat-card-content, mat-card, .mat-card {
+  padding-left: 24px !important;
+  margin-left: 0 !important;
+}
+
+@media (max-width: 813px) {
+  mat-card-content, .mat-card-content, mat-card, .mat-card {
+    padding-left: 8px !important;
+  }
+}
+
+.display mat-card {
+  padding-left: 0 !important;
+}
+@media (max-width: 813px) {
+  .display mat-card {
+    padding-left: 0 !important;
+  }
+}
+
 
 
 

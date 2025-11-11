@@ -17,30 +17,44 @@
       </div>
       }
 
-      @for (L of list; track L) {
-
-      <div class="sparql-div statementStyle">
-
-        @if (L.itemLabel) {
-        <label>
-
-          {{L.itemLabel.value}}
-          <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"><mat-icon color="primary" [inline]="true">open_in_new</mat-icon></mat-icon-button>
-          @if (L.itemDescription) {
-          <span>, {{L.itemDescription.value}}</span>
-          }
-          @if (L.year) {
-          <span>, {{L.year.value}}</span>
-          }
-        </label>
+    @if (list.length >= 10) {
+      <cdk-virtual-scroll-viewport [itemSize]="rowHeight" class="virtual-scroll-viewport" [style.height.px]="getViewportHeightPx(list.length)">
+        @for (L of list; track trackByFn($index, L)) {
+          <div class="sparql-div statementStyle">
+            @if (L.itemLabel) {
+              {{L.itemLabel.value}}
+              <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+                <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+              </mat-icon-button>
+              @if (L.itemDescription) {<span>, {{L.itemDescription.value}}</span>}
+              @if (L.year) {<span>, {{L.year.value}}</span>}
+            }
+            <hr>
+          </div>
+        }
+      </cdk-virtual-scroll-viewport>
+    } @else {
+      <div class="non-virtual-list">
+        @for (L of list; track trackByFn($index, L)) {
+          <div class="sparql-div statementStyle">
+            @if (L.itemLabel) {
+              {{L.itemLabel.value}}
+              <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+                <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+              </mat-icon-button>
+              @if (L.itemDescription) {<span>, {{L.itemDescription.value}}</span>}
+              @if (L.year) {<span>, {{L.year.value}}</span>}
+            }
+            <hr>
+          </div>
         }
       </div>
-      <hr>
-      }
-
-      <button mat-icon-button color="primary" class="internalLink" #content (click)="onClick(this.list)">
-        <mat-icon color="primary" [inline]="true">download</mat-icon>
-      </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    }
+      <span>
+        <button mat-icon-button color="primary" class="internalLink" #content (click)="onClick(this.list)">
+          <mat-icon color="primary" [inline]="true">download</mat-icon>
+        </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span>
     </mat-card-content>
   </mat-card>
  </div>

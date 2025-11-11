@@ -107,6 +107,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   sociabilityAndCulture: any[] = [];
   locationAndSituation: any[] = [];
   technicalities: any[] = [];
+  infoProperties: any[] = [];
   activityDetail: any[] = [];
   eventDetail: any[] = [];
   documentDetail: any[] = [];
@@ -363,12 +364,78 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.trans = "";
       }
 
-      // Info lists
-      if (this.item[0].infoList) {
-        this.instancesList = this.item[0].infoList[0];
-        this.subclassesList = this.item[0].infoList[1];
-        this.classesList = this.item[0].infoList[2];
-        this.natureOfList = this.item[0].infoList[3];
+      // Info lists (préserver l'objet déjà construit par le dispatcher, et fusionner dès que les listes arrivent)
+      const applyInfoList = () => {
+        const raw = this.item?.[0]?.infoList as any[] | undefined;
+        const rawInst = Array.isArray(raw?.[0]) ? raw![0] : [];
+        const rawSub = Array.isArray(raw?.[1]) ? raw![1] : [];
+        const rawCls = Array.isArray(raw?.[2]) ? raw![2] : [];
+        const rawNat = Array.isArray(raw?.[3]) ? raw![3] : [];
+        const rawHasAny = (rawInst.length + rawSub.length + rawCls.length + rawNat.length) > 0;
+
+        // Si un infoList existe déjà (créé par le dispatcher) mais vide, on n'arrête PAS tant que les données brutes ne sont pas arrivées
+        if (this.infoList && this.infoList.instancesList !== undefined) {
+          const curInst = this.infoList.instancesList || [];
+          const curSub = this.infoList.subclassesList || [];
+          const curCls = this.infoList.classesList || [];
+          const curNat = this.infoList.natureOfList || [];
+
+          // Si les données brutes sont arrivées et apportent du contenu, on met à jour en préservant technicalities/infoProperties
+          if (rawHasAny) {
+            const existingTech = this.infoList?.technicalities || this.technicalities || [];
+            const existingInfoProps = this.infoList?.infoProperties || this.infoProperties || [];
+            this.instancesList = rawInst;
+            this.subclassesList = rawSub;
+            this.classesList = rawCls;
+            this.natureOfList = rawNat;
+            this.infoList = {
+              instancesList: this.instancesList,
+              subclassesList: this.subclassesList,
+              classesList: this.classesList,
+              natureOfList: this.natureOfList,
+              technicalities: existingTech,
+              infoProperties: existingInfoProps
+            };
+          } else {
+            // Pas encore de données brutes: conserver l'état actuel (techniques visibles) mais continuer à poller
+            this.instancesList = curInst;
+            this.subclassesList = curSub;
+            this.classesList = curCls;
+            this.natureOfList = curNat;
+            return false; // continuer à vérifier jusqu'à l'arrivée des listes
+          }
+        } else if (rawHasAny) {
+          // Aucun infoList actuel: construire à partir du brut et préserver technicalities/infoProperties si déjà collectés séparément
+          const existingTech = this.infoList?.technicalities || this.technicalities || [];
+          const existingInfoProps = this.infoList?.infoProperties || this.infoProperties || [];
+          this.instancesList = rawInst;
+          this.subclassesList = rawSub;
+          this.classesList = rawCls;
+          this.natureOfList = rawNat;
+          this.infoList = {
+            instancesList: this.instancesList,
+            subclassesList: this.subclassesList,
+            classesList: this.classesList,
+            natureOfList: this.natureOfList,
+            technicalities: existingTech,
+            infoProperties: existingInfoProps
+          };
+        } else {
+          // Rien à appliquer pour le moment => poursuivre le polling
+          return false;
+        }
+
+        // Ne pas ouvrir automatiquement le panneau: laisser le contrôle à l'utilisateur via toggleInfo().
+        return true;
+      };
+
+      if (!applyInfoList()) {
+        // Rafraîchit dès que infoList est disponible (construit de façon asynchrone)
+        const checkInfoList = () => {
+          if (applyInfoList()) return;
+          setTimeout(checkInfoList, 100);
+        };
+        checkInfoList();
       }
 
       // sparql lists

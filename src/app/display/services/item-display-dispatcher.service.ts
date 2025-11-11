@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { BlockDisplayService } from './block-display.service';
 //import { IframesDisplayService } from './iframes-display.service';
-import { TechnicalitiesDisplayService } from './technicalities-display.service';
 import { WikiDisplayService } from './wiki-display.service';
 
 
@@ -29,7 +28,6 @@ export class ItemDisplayDispatcherService {
   private blockDisplay = inject(BlockDisplayService);
   private wikiDisplay = inject(WikiDisplayService);
  // private iframesDisplay = inject(IframesDisplayService);
-  private technicalitiesDisplay = inject(TechnicalitiesDisplayService);
 
   dispatch(item: any, target: any): DisplayFlags {
     const claims = item[0].claims;
@@ -146,8 +144,6 @@ export class ItemDisplayDispatcherService {
 
     // Item info
 
-
-
     // MainList
     target.mainList = [];
     let isMain = false;
@@ -185,7 +181,6 @@ export class ItemDisplayDispatcherService {
     // ... après la construction de target.mainList
 
 
-
     let isFrames = false;
 
     /* iframes
@@ -199,15 +194,16 @@ export class ItemDisplayDispatcherService {
    
     this.blockDisplay.setItemInfoDisplay(item, target);
 
-    let technicalities: any[] = [];
-    this.technicalitiesDisplay.setTechnicalitiesDisplay(item, technicalities);
+  let technicalities: any[] = [];
+  this.blockDisplay.setTechnicalitiesDisplay(item, technicalities);
 
     target.infoList = {
       instancesList: target.instancesList,
       subclassesList: target.subclassesList,
       classesList: target.classesList,
       natureOfList: target.natureOfList,
-      technicalities: technicalities
+      technicalities: technicalities,
+      infoProperties: target.infoProperties // Ajout pour affichage détaillé
     };
 
     // Flag unique pour l'affichage

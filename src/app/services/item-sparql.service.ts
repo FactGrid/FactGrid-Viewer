@@ -11,15 +11,15 @@ export class ItemSparqlService {
   private request = inject(RequestService);
   private lang = inject(SelectedLangService);
 
-  Q12Test: Observable<boolean>;
-  Q37073Test: Observable<boolean>;
-  Q456376Test: Observable<boolean>;
-  Q24499Test: Observable<boolean>;
-  Q77457Test: Observable<boolean>;
+  Q12Test: Observable<boolean>; //Organisation
+  Q37073Test: Observable<boolean>; //Career
+  Q456376Test: Observable<boolean>; //Creator subclass
+  Q24499Test: Observable<boolean>; //Family name
+  Q77457Test: Observable<boolean>; // Class of FactGrid properties
   GOVTest: Observable<boolean>;
-  Q8Test: Observable<boolean>;
-  Q16200Test: Observable<boolean>;
-  Q140759Test: Observable<boolean>;
+  Q8Test: Observable<boolean>; //Lieu
+  Q16200Test: Observable<boolean>; // address
+  Q140759Test: Observable<boolean>; // Health care practitioner
   masterTest: Observable<boolean>;
   listTest: Observable<boolean>;
   setTest: Observable<boolean>;
@@ -76,21 +76,21 @@ export class ItemSparqlService {
   itemSparql(item): Observable<any> {
     return this.batchAskQuery(item.id).pipe(
       switchMap(batch => {
-        this.Q8Test = of(batch.Q8Test);
-        this.Q12Test = of(batch.Q12Test);
-        this.Q37073Test = of(batch.Q37073Test);
-        this.Q24499Test = of(batch.Q24499Test);
-        this.Q16200Test = of(batch.Q16200Test);
-        this.Q77457Test = of(batch.Q77457Test);
+        this.Q8Test = of(batch.Q8Test); //Lieu
+        this.Q12Test = of(batch.Q12Test); //Organisation
+        this.Q37073Test = of(batch.Q37073Test); //Career
+        this.Q24499Test = of(batch.Q24499Test);  //Family name
+        this.Q16200Test = of(batch.Q16200Test);  //Address
+        this.Q77457Test = of(batch.Q77457Test);  //FactGrid class
         this.listTest = of(batch.listTest);
         this.setTest = of(batch.setTest);
         this.superclassTest = of(batch.superclassTest);
         this.superclass1Test = of(batch.superclass1Test);
         this.GOVTest = of(batch.GOVTest);
 
-        this.Q456376Test = this.activitiesTest(item)[0];
-        this.Q140759Test = this.activitiesTest(item)[1];
-        this.masterTest = this.activitiesTest(item)[2];
+        this.Q456376Test = this.activitiesTest(item)[0]; //Creator subclass test
+        this.Q140759Test = this.activitiesTest(item)[1]; //Occupation class test
+        this.masterTest = this.activitiesTest(item)[2]; // Students test
 
         this.sparql0$ = forkJoin([this.superclassTest, this.superclass1Test])
           .pipe(switchMap(([test1, test2]) => this.selectSparql0(test1, test2, item)), startWith([undefined, undefined]));
@@ -112,7 +112,6 @@ export class ItemSparqlService {
       })
     );
   }
-
 
   // Méthodes utilitaires pour générer des requêtes ASK dynamiques
   keywordTest(a, type) {
@@ -323,7 +322,7 @@ export class ItemSparqlService {
     return of(test);
   }
 
-  Q12Sparql(test, res) {
+  Q12Sparql(test, res) {  // Organisation
     if (test === true) {
       let prefix1 = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3FfLabel%20WHERE%20%7B%20%0A%7B%20%3Fitem%20p%3AP165%20%5Bps%3AP165%20%3Factivity%3B%20pq%3AP267%20wd%3A"
       let prefix2 = "%5D%20.%20%7D%20UNION%20%20%20%7B%20%3Fitem%20wdt%3AP91%20wd%3A";
@@ -335,7 +334,7 @@ export class ItemSparqlService {
     }
   }
 
-  Q37073Sparql(test, res) {
+  Q37073Sparql(test, res) { // Career statement
     if (test === true) {
       let prefix1 = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3FfamilyNameLabel%20WHERE%20%7B%20%0A%20%7B%20%3Fitem%20wdt%3AP165%2Fwdt%3AP3%2a%20wd%3A";
       let prefix2 = "%20%7D%20UNION%20%7B%20%3Fitem%20p%3AP165%20%5Bpq%3AP122%20wd%3A";
@@ -347,7 +346,7 @@ export class ItemSparqlService {
     }
   }
 
-  Q456376Sparql(test, res) {
+  Q456376Sparql(test, res) { // Creator subclass
     if (test === true) {
       let prefix1 = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3Fyear%0AWHERE%20%7B%20%3Fitem%20%28wdt%3AP21%20%7C%20wdt%3AP552%29%20wd%3A"
       let prefix2 = "%20.%0A%20%20OPTIONAL%20%7B%3Fitem%20wdt%3AP222%20%3Fdate%20.%20BIND%28YEAR%28%3Fdate%29%20AS%20%3Fyear%29%20.%7D%0A%20";
@@ -356,7 +355,7 @@ export class ItemSparqlService {
     }
   }
 
-  Q140759Sparql(test, res) {
+  Q140759Sparql(test, res) {  // Health care practitioner
     if (test === true) {
       let prefix = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3FfamilyNameLabel%20WHERE%20%7B%20%3Fitem%20wdt%3AP247%20%3FfamilyName%3B%20wdt%3AP512%20wd%3A"
       let u = prefix + res.id + this.langService + "ORDER%20BY%20%3FfamilyNameLabel";
@@ -404,15 +403,16 @@ export class ItemSparqlService {
     }
   }
 
-  Q24499Sparql(res) {
+  Q24499Sparql(res) {  //family name
     let u = "";
     let suffix = "ORDER%20by%20%3FitemLabel";
     let prefix = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%20WHERE%20%7B%20%20%3Fitem%20wdt%3AP247%2Fwdt%3AP3%2a%20wd%3A";
     u = prefix + res.id + this.langService + suffix;
+    console.log(u);
     return this.sparqlQuery(u).pipe(map(res => ["Q24499", this.listFromSparql(res).results.bindings]));
   }
 
-  Q8Sparql(res) {
+  Q8Sparql(res) {  //Lieu
     let u = "";
     let prefix = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%0A%7B%3Fitem%20wdt%3AP2%2Fwdt%3AP3%2a%20wd%3AQ160381%3B%20wdt%3AP83%20%7C%20wdt%3AP47%20wd%3A";
     let suffix = "ORDER%20by%20%3FitemLabel";
@@ -428,14 +428,14 @@ export class ItemSparqlService {
     return this.sparqlQuery(u).pipe(map(res => ["GOV", this.listFromSparql(res).results.bindings]));
   }
 
-  Q16200Sparql(res) {
+  Q16200Sparql(res) {  // Address
     let u = "";
     let prefix = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%0AWHERE%20%0A%7B%0A%20%20%3Fitem%20wdt%3AP208%20wd%3A"
     u = prefix + res.id + this.langService + "ORDER%20BY%20%3FfitemLabel";
     return this.sparqlQuery(u).pipe(map(res => ["Q16200", this.listFromSparql(res).results.bindings]));
   }
 
-  Q77457Sparql(res) {
+  Q77457Sparql(res) {  // Class of FactGrid properties
     let prefix = "https://database.factgrid.de/query/#SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fitem%20wdt%3AP8%20wd%3A"
     let u = prefix + res.id + this.langService + "ORDER%20BY%20%3FitemLabel";
     let v = this.sparqlQuery(u).pipe(map(res => ["Q77457", this.listFromSparql(res).results.bindings]));
@@ -482,10 +482,11 @@ export class ItemSparqlService {
         masterTests.push(this.sparqlAsk(this.masterSubclassTest(item.claims.P165[i].mainsnak.datavalue.value.id)).pipe(startWith(false)));
       }
     } else { Q456376Tests.push(of(b)); Q140759Tests.push(of(b)), masterTests.push(of(b)) };
-    let u0 = forkJoin(Q456376Tests).pipe(switchMap(res => this.testArrayGet(res)));
-    let u1 = forkJoin(Q140759Tests).pipe(switchMap(res => this.testArrayGet(res)));
-    let u2 = forkJoin(masterTests).pipe(switchMap(res => this.testArrayGet(res)));
-    return [u0, u1, u2]
+    return [
+      forkJoin(Q456376Tests).pipe(switchMap(res => this.testArrayGet(res))),
+      forkJoin(Q140759Tests).pipe(switchMap(res => this.testArrayGet(res))),
+      forkJoin(masterTests).pipe(switchMap(res => this.testArrayGet(res)))
+    ];
   }
 
   testArrayGet(res) {
@@ -515,12 +516,16 @@ export class ItemSparqlService {
             "https://database.factgrid.de/entity/", "");
           res.results.bindings[i]["item"].id.startsWith("P") ? res.results.bindings[i]["item"].entity = "property" : res.results.bindings[i]["item"].entity = "item";
         }
-      };
-    }
-    else {
+        // Tri alphabétique "à la française" sur fLabel si présent, sinon itemLabel
+        res.results.bindings.sort((a, b) => {
+          const getLabel = (x) => x.fLabel?.value || x.itemLabel?.value || '';
+          return getLabel(a).localeCompare(getLabel(b), 'fr', { sensitivity: 'base', ignorePunctuation: true });
+        });
+      }
+    } else {
       res = { head: { vars: ['item', 'itemLabel', 'itemDescription', 'fLabel', 'activityLabel'] }, results: { bindings: [] } }
-    };
-    return res
+    }
+    return res;
   }
 
   noResult() {

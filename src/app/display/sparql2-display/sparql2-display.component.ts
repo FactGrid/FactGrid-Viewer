@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SelectedLangService } from '../../selected-lang.service';
 import { ArrayToCsvService } from '../../services/array-to-csv.service';
 
@@ -14,12 +15,16 @@ import { ArrayToCsvService } from '../../services/array-to-csv.service';
 @Component({
   selector: 'app-sparql2-display',
   standalone: true,
-  imports: [MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, FormsModule],
+  imports: [MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, FormsModule, ScrollingModule],
   templateUrl: './sparql2-display.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './sparql2-display.component.scss'
 })
 export class Sparql2DisplayComponent implements OnChanges, OnDestroy {
+  // Méthode trackByFn pour virtual scroll (clé unique même en cas de doublon)
+  trackByFn(index: number, item: any): any {
+    return item && item.item && item.item.id ? item.item.id + '_' + index : index;
+  }
   private lang = inject(SelectedLangService);
   private csv = inject(ArrayToCsvService);
 
@@ -36,8 +41,18 @@ export class Sparql2DisplayComponent implements OnChanges, OnDestroy {
   listTitle: string = "List";
   query: string;
   listWithoutDuplicate: any[];
+  rowHeight:number = 48;
+  maxViewportHeight:number = 400;
+  getViewportHeightPx(length:number):number {
+    return Math.min(this.maxViewportHeight, Math.max(this.rowHeight, length * this.rowHeight + 4));
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
+
+    // LOG pour debug affichage
+    if (changes.sparqlData && changes.sparqlData.currentValue) {
+      console.log('sparql2-display', changes.sparqlData.currentValue);
+    }
 
     this.query = "";
     this.isWorks = false;

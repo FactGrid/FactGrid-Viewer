@@ -20,10 +20,16 @@ export class CareerDisplayComponent {
  @Input() careerAndActivities;
  @Input() career;
 
-  showReferences = false; // état du volet
 
-  toggleReferences() {
-    this.showReferences = !this.showReferences;
+  // Utilise un Set pour suivre les index des statements dont les références sont ouvertes
+  openReferences = new Set<string>();
+
+  toggleReferences(key: string) {
+    if (this.openReferences.has(key)) {
+      this.openReferences.delete(key);
+    } else {
+      this.openReferences.add(key);
+    }
   }
 
  openImage(image){ //handling click for picture (open in new tab) 

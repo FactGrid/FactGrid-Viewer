@@ -3,27 +3,21 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { SelectedLangService } from '../../selected-lang.service';
-
-
-
-
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
     selector: 'app-item-info',
     templateUrl: './item-info.component.html',
     styleUrls: ['./item-info.component.scss'],
     standalone: true,
-    imports: [CommonModule, NgClass, MatCardModule, NgFor, NgIf, RouterLink, MatIconModule]
+  imports: [CommonModule, NgClass, MatCardModule, RouterLink, MatIconModule, ScrollingModule]
 })
 export class ItemInfoComponent implements OnChanges {
   private lang = inject(SelectedLangService);
 
-
   @Input() infoList;
-  
-
   
   selectedLang: string = (localStorage['selectedLang'] === undefined) ? "en" : localStorage['selectedLang'];
   list1:any[] = [];
@@ -31,6 +25,7 @@ export class ItemInfoComponent implements OnChanges {
   list3:any[] = [];
   list4: any[] = [];
   technicalities: any[] = [];
+  infoProperties: any[] = [];
   list1Number;
   list2Number;
   list3Number;
@@ -50,28 +45,46 @@ export class ItemInfoComponent implements OnChanges {
   prefix2:string = "class hierarchy: class with ";
   suffix1: string = "classes:";
 
+  // Virtual scroll
+  readonly virtualThreshold = 20;
+  readonly rowHeight = 36;
+
+  trackListKey = (index: number, L: any) => L?.item?.id ?? L?.itemLabel?.value ?? index;
+
+  getViewportPx(len: number): string {
+    const max = 320; // px
+    const h = Math.min(max, Math.max(this.rowHeight * Math.min(len, 50), this.rowHeight * 6));
+    return `${h}px`;
+  }
+
 
   openImage(image) { //handling click for picture (open in new tab) 
     window.open(image);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Traductions avec fallback si la clé est introuvable
+    const tr = (key: string, fallback: string) => {
+      const v = this.lang.getTranslation(key, this.lang.selectedLang);
+      return (v === undefined || v === null || v === '' || v === key) ? fallback : v;
+    };
 
-    this.instancesListTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.subclassesListTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.classesListTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.natureOfListTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.subInfoTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.prefix1 = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.prefix2 = this.lang.getTranslation('$1', this.lang.selectedLang);
-    this.suffix1 = this.lang.getTranslation('$1', this.lang.selectedLang);
+    this.instancesListTitle = tr('instancesListTitle', 'instances of the Q-item:');
+    this.subclassesListTitle = tr('subclassesListTitle', 'subclasses of the Q-item:');
+    this.classesListTitle = tr('classesListTitle', 'classes of the Q-item:');
+    this.natureOfListTitle = tr('natureOfListTitle', 'instance of');
+    this.subInfoTitle = tr('subInfoTitle', 'Information on the Q-item');
+    this.prefix1 = tr('classesPrefix1', 'class hierarchy: class depending on');
+    this.prefix2 = tr('classesPrefix2', 'class hierarchy: class with');
+    this.suffix1 = tr('classesSuffix', 'classes:');
 
     // Utilisation des listes depuis infoList
     this.list1 = this.infoList?.subclassesList ?? [];
     this.list2 = this.infoList?.instancesList ?? [];
     this.list3 = this.infoList?.classesList ?? [];
     this.list4 = this.infoList?.natureOfList ?? [];
-    this.technicalities = this.infoList?.technicalities ?? [];
+  this.technicalities = this.infoList?.technicalities ?? [];
+  this.infoProperties = this.infoList?.infoProperties ?? [];
 
     this.list1Number = this.list1.length;
     this.list2Number = this.list2.length;

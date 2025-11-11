@@ -19,22 +19,28 @@ export class CreateCompleteItemService {
 
 
   completeItem(res) {
-  
     const itemArray = this.setLanguage.item(res, this.lang.selectedLang);
     const firstItem = itemArray[0];
-   
-    // Subscribe to trigger the asynchronous SPARQL enrichment on the item.
-    // This ensures the 'sparql' property is populated in the background, independently of the main item display.
+
+    // Lancement SPARQL en tâche de fond (pas besoin d'attendre)
     this.itemSparql.itemSparql(firstItem).subscribe({
       error: err => console.error('Error while populating SPARQL data:', err)
     });
 
-
-    let u = this.createItem.createItemToDisplay(firstItem, this.lang.selectedLang);
-
-    this.itemInfo.infoListBuilding(res);
-
-    return u;
+    // Rendu immédiat de l'item d'affichage, récupération des listes en arrière-plan
+    return this.createItem.createItemToDisplay(firstItem, this.lang.selectedLang).pipe(
+      tap(display => {
+        // Déclenche les listes sans bloquer l'émission principale
+        this.itemInfo.infoListBuilding(firstItem).subscribe({
+          next: infoList => {
+            if (firstItem && infoList && !firstItem.infoList) {
+              firstItem.infoList = infoList;
+            }
+          },
+          error: err => console.error('Error while building infoList:', err)
+        });
+      })
+    );
   }
 
 

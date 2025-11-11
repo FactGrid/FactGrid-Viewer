@@ -1,22 +1,29 @@
-.property2 {
-    color:#3F51B5;
-    font-weight:550;
-  }
 
-.hide-division {
-    display: none;
-    }
-  
-.show-division {
-    display: block;
-    }
+// Neutraliser la contrainte globale de largeur sur cardBackground pour ce composant
+.cardBackground {
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
 
-.sparql-div {
-  display: flex;
-  flex-flow: column wrap;
-  .sparql-div> *:not(:last-child) {
-    margin-bottom: 2px;
-   }
-  }
+// Forcer le virtual scroll à occuper toute la largeur
+.virtual-scroll-viewport {
+  height: 400px;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Étendre chaque ligne sur toute la largeur de la carte */
+.cardBackground .statementStyle {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Harmoniser la ligne de séparation */
+.cardBackground .statementStyle hr {
+  border: none;
+  border-bottom: 1px solid #e0e0e0;
+  margin: 4px 0;
+}
 
 

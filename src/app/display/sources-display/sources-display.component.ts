@@ -16,20 +16,24 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 export class SourcesDisplayComponent {
 
-@Input() sourcesList ;
+  @Input() sourcesList ;
   @Input() sources;
+
+  openReferences = new Set<string>();
 
   ngOninit() {
     console.log('Sources List:', this.sourcesList);
   }
 
-  showReferences = false; // état du volet
-
-  toggleReferences() {
-    this.showReferences = !this.showReferences;
+  toggleReferences(key: string) {
+    if (this.openReferences.has(key)) {
+      this.openReferences.delete(key);
+    } else {
+      this.openReferences.add(key);
+    }
   }
 
- openImage(image){ //handling click for picture (open in new tab) 
+  openImage(image){ //handling click for picture (open in new tab) 
     window.open(image);}
 
 }

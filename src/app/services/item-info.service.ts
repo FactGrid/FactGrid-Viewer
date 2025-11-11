@@ -18,25 +18,21 @@ export class ItemInfoService {
 
   langService:string = "%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22"+this.lang.selectedLang+"%22%2C%22en%22.%20%7D%0A%7D%0A";
 
-  infoListBuilding(item) {
-    let id = item.id;
-    let instancesListQuery;
-    let subclassesListQuery:Observable<any> | undefined ;
-    let classesListQuery:Observable<any> | undefined ;
-    let natureOfListQuery:Observable<any> | undefined;
-    let infoList:any[];
+  infoListBuilding(item: { id: string }): Observable<any[]> {
+    const id = item?.id;
+    const instancesListQuery: Observable<any> = this.instancesListBuilding(id);
+    const subclassesListQuery: Observable<any> = this.subclassesListBuilding(id);
+    const classesListQuery: Observable<any> = this.classesListBuilding(id);
+    const natureOfListQuery: Observable<any> = this.natureOfListBuilding(id);
 
-    instancesListQuery = this.instancesListBuilding(id);
-    subclassesListQuery = this.subclassesListBuilding(id)  ;
-    classesListQuery = this.classesListBuilding(id);
-    natureOfListQuery = this.natureOfListBuilding(id);
-  //  result=classesListQuery;
-   forkJoin([instancesListQuery,subclassesListQuery,classesListQuery,natureOfListQuery])
-  .subscribe(res => {infoList = res, item.infoList = infoList}); //ici on pourrait mettre un behaviorSubject pour l'infolist'
-   //item.infolist = result; // I made this change; to be checked .
-    //  return result  // the return does'nt seem to be necessary
-    
-    } 
+    return forkJoin([instancesListQuery, subclassesListQuery, classesListQuery, natureOfListQuery]).pipe(
+      map(res => {
+        // Attache également l'infoList sur l'item pour usage ultérieur
+        (item as any).infoList = res;
+        return res;
+      })
+    );
+  }
 
   instancesListBuilding(id){
     let prefix = "https://database.factgrid.de/query/#SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%0AWHERE%20%7B%20%3Fitem%20wdt%3AP2%20wd%3A";

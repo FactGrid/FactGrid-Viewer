@@ -12,13 +12,38 @@ import {
   HEADER_DISPLAY_PROPERTIES,
   SOURCES_DISPLAY_PROPERTIES,
   EXTERNAL_LINKS_DISPLAY_PROPERTIES,
-  EXCLUDED_DISPLAY_PROPERTIES
+  EXCLUDED_DISPLAY_PROPERTIES,
+  ITEM_INFO_PROPERTIES
 } from '../../config/dispatcher.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BlockDisplayService {
+  /**
+   * Ajoute les propriétés techniques (technicalities) à la liste fournie.
+   */
+  setTechnicalitiesDisplay(item: any, technicalities: any[]): any[] {
+    // P994 - vocabulary PhiloBiblon-terms
+    if (item[0].claims.P994 !== undefined) {
+      item[1].splice(item[1].indexOf("P994"), 1);
+      technicalities.push({
+        propertyId: 'P994',
+        propertyLabel: item[0].claims.P994?.label || 'vocabulary PhiloBiblon-terms',
+        statements: item[0].claims.P994
+      });
+    }
+    // P1132 - FactGrid keyword
+    if (item[0].claims.P1132 !== undefined) {
+      item[1].splice(item[1].indexOf("P1132"), 1);
+      technicalities.push({
+        propertyId: 'P1132',
+        propertyLabel: item[0].claims.P1132?.label || 'FactGrid keyword',
+        statements: item[0].claims.P1132
+      });
+    }
+    return technicalities;
+  }
 
   /**
    * Méthode générique pour peupler un tableau à partir d'une constante de propriétés.
@@ -82,8 +107,6 @@ export class BlockDisplayService {
     return this.populateDisplay(item, sourcesList, SOURCES_DISPLAY_PROPERTIES);
   }
 
- 
-
 
   setItemInfoDisplay(item: any, target: any): void {
     const infoList = item[0]?.infoList || [];
@@ -93,9 +116,26 @@ export class BlockDisplayService {
     target.classesList = Array.isArray(infoList[2]) ? [...infoList[2]] : [];
     target.natureOfList = Array.isArray(infoList[3]) ? [...infoList[3]] : [];
 
+    // Ajout : collecte des propriétés info pour affichage détaillé
+    target.infoProperties = [];
+    if (item[0]?.claims) {
+      for (const { property, comment } of ITEM_INFO_PROPERTIES) {
+        const claim = item[0].claims[property];
+        if (claim !== undefined) {
+          // On prend la première valeur (ou adapter si plusieurs valeurs à afficher)
+          let value = '';
+          if (Array.isArray(claim) && claim[0]?.mainsnak?.datavalue?.value !== undefined) {
+            value = claim[0].mainsnak.datavalue.value;
+          } else if (claim?.mainsnak?.datavalue?.value !== undefined) {
+            value = claim.mainsnak.datavalue.value;
+          } else {
+            value = claim;
+          }
+          target.infoProperties.push({ property, comment, value });
+        }
+      }
+    }
   }
-
-
 
   setExternalLinksDisplay(item: any, externalLinks: any[]): any[] {
     return this.setUrlDisplay(item, externalLinks);

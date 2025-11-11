@@ -4,105 +4,174 @@
     <mat-card-content class="cardBackground">
 
       <div class="subdivisionTitle">{{ subInfoTitle }}</div>
-
-      <!-- Technicalities -->
-      <div *ngIf="technicalitiesNumber > 0">
-        <h4>Technicalities</h4>
+      <!-- Propriétés info détaillées 
+      @if (infoProperties?.length > 0) {
+        <h4>Informations principales</h4>
         <ul>
-          <li *ngFor="let P of technicalities">
-            <span class="propertyStyle">{{ P.label }}:</span>
-            <!-- Affichage détaillé selon la structure de P -->
-            <span *ngIf="P.value">{{ P.value }}</span>
-            <!-- Ajoute ici d'autres champs si besoin -->
-          </li>
+          @for (prop of infoProperties; track prop.property) {
+            <li>
+              <span class="propertyStyle">{{ prop.comment }} :</span>
+              <span>{{ prop.value }}</span>
+            </li>
+          }
         </ul>
         <hr>
-      </div>
+      }-->
 
-      <!-- Nature Of -->
-      <div *ngIf="isList4">
-        <div class="listStyle">
-          <div class="labelTitlePadding">
-            <div class="propertyStyle">{{ natureOfListTitle }} {{ list4Number }} {{ suffix1 }} </div>
+      <!-- Technicalities -->
+      @if (infoList?.technicalities?.length > 0) {
+        <div class="info-section">
+          <div class="section-header">
+            <span class="technicalities-title">Technicalities</span>
+            <span class="count">({{ infoList.technicalities.length }})</span>
           </div>
-          <hr>
-          <div *ngFor="let L of list4">
-            <div class="details">
-              <div>
-                <label *ngIf="L.itemLabel?.value">
+          <hr class="spacer-hr">
+          <ul>
+            @for (tech of infoList.technicalities; track tech.propertyId) {
+              <li>
+                <span class="propertyStyle">{{ tech.propertyLabel || tech.propertyId || '?' }}</span>
+                <ul>
+                  @for (val of tech.statements; track val.mainsnak?.datavalue?.value?.id ?? val.mainsnak?.datavalue?.value ?? val) {
+                    <li class="entry-row">
+                      @if (val.mainsnak?.datavalue?.type === 'wikibase-entityid') {
+                        {{ val.mainsnak?.label || val.mainsnak?.datavalue?.value?.id || val.mainsnak?.datavalue?.value }}
+                        @if (val.mainsnak?.description) {
+                          <span class="description-text">({{ val.mainsnak.description }})</span>
+                        }
+                      } @else {
+                        {{ val.mainsnak?.datavalue?.value }}
+                      }
+                    </li>
+                  }
+                </ul>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (infoList?.natureOfList?.length > 0) {
+        <div class="info-section">
+          <div class="section-header">
+            <span class="propertyStyle">{{ natureOfListTitle }}</span>
+            <span class="count">({{ infoList.natureOfList.length }} {{ suffix1 }})</span>
+          </div>
+          <hr class="spacer-hr">
+          @if (infoList.natureOfList.length > virtualThreshold) {
+            <cdk-virtual-scroll-viewport class="list-viewport" [itemSize]="rowHeight" [style.height]="getViewportPx(infoList.natureOfList.length)">
+              <div *cdkVirtualFor="let L of infoList.natureOfList; trackBy: trackListKey" class="entry-row">
+                @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                  <span *ngIf="L.itemDescription" class="description-text">({{ L.itemDescription.value }})</span>
-                  <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]">
+                  @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> }
+                  <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
                     <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                   </mat-icon-button>
-                </label>
+                } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
+                  {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }}
+                  @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> }
+                } @else { {{ L.mainsnak?.datavalue?.value || L }} }
               </div>
-              <hr>
-            </div>
-          </div>
+            </cdk-virtual-scroll-viewport>
+          } @else {
+            @for (L of infoList.natureOfList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+              <div class="entry-row">
+                @if (L.itemLabel?.value) {
+                  {{ L.itemLabel.value }}
+                  @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> }
+                  <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+                    <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+                  </mat-icon-button>
+                } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
+                  {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }}
+                  @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> }
+                } @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            }
+          }
         </div>
-      </div>
+      }
 
-      <!-- Classes -->
-      <div *ngIf="isList3">
-        <div class="property2">{{ prefix1 }} {{ list3Number }} {{ classesListTitle }}</div>
-        <hr>
-        <div *ngFor="let L of list3">
-          <div class="details">
-            <div>
-              <label *ngIf="L.itemLabel?.value">
-                {{ L.itemLabel.value }}
-                <span *ngIf="L.itemDescription" class="description-text">({{ L.itemDescription.value }})</span>
-                <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]">
-                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                </mat-icon-button>
-              </label>
-            </div>
-            <hr>
+      @if (infoList?.classesList?.length > 0) {
+        <div class="info-section">
+          <div class="section-header">
+            <span class="propertyStyle">{{ classesListTitle }}</span>
+            <span class="count">({{ prefix1 }} {{ infoList.classesList.length }})</span>
           </div>
+          <hr class="spacer-hr">
+          @if (infoList.classesList.length > virtualThreshold) {
+            <cdk-virtual-scroll-viewport class="list-viewport" [itemSize]="rowHeight" [style.height]="getViewportPx(infoList.classesList.length)">
+              <div *cdkVirtualFor="let L of infoList.classesList; trackBy: trackListKey" class="entry-row">
+                @if (L.itemLabel?.value) { {{ L.itemLabel.value }} @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> } }
+                @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') { {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }} @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> } }
+                @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            </cdk-virtual-scroll-viewport>
+          } @else {
+            @for (L of infoList.classesList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+              <div class="entry-row">
+                @if (L.itemLabel?.value) { {{ L.itemLabel.value }} @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> } }
+                @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') { {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }} @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> } }
+                @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            }
+          }
         </div>
-      </div>
+      }
 
-      <!-- Subclasses -->
-      <div *ngIf="isList1">
-        <div class="property2">{{ prefix2 }} {{ list1Number }} {{ subclassesListTitle }}</div>
-        <hr>
-        <div *ngFor="let L of list1">
-          <div class="details">
-            <div>
-              <label *ngIf="L.itemLabel?.value">
-                {{ L.itemLabel.value }}
-                <span *ngIf="L.itemDescription" class="description-text">({{ L.itemDescription.value }})</span>
-                <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]">
-                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                </mat-icon-button>
-              </label>
-            </div>
-            <hr>
+      @if (infoList?.subclassesList?.length > 0) {
+        <div class="info-section">
+          <div class="section-header">
+            <span class="propertyStyle">{{ subclassesListTitle }}</span>
+            <span class="count">({{ prefix2 }} {{ infoList.subclassesList.length }})</span>
           </div>
+          <hr class="spacer-hr">
+          @if (infoList.subclassesList.length > virtualThreshold) {
+            <cdk-virtual-scroll-viewport class="list-viewport" [itemSize]="rowHeight" [style.height]="getViewportPx(infoList.subclassesList.length)">
+              <div *cdkVirtualFor="let L of infoList.subclassesList; trackBy: trackListKey" class="entry-row">
+                @if (L.itemLabel?.value) { {{ L.itemLabel.value }} @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> } }
+                @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') { {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }} @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> } }
+                @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            </cdk-virtual-scroll-viewport>
+          } @else {
+            @for (L of infoList.subclassesList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+              <div class="entry-row">
+                @if (L.itemLabel?.value) { {{ L.itemLabel.value }} @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> } }
+                @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') { {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }} @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> } }
+                @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            }
+          }
         </div>
-      </div>
+      }
 
-      <!-- Instances -->
-      <div *ngIf="isList2">
-        <div class="property2">{{ list2Number }} {{ instancesListTitle }}</div>
-        <hr>
-        <div *ngFor="let L of list2">
-          <div class="details">
-            <div>
-              <label *ngIf="L.itemLabel?.value">
-                {{ L.itemLabel.value }}
-                <span *ngIf="L.itemDescription" class="description-text">({{ L.itemDescription.value }})</span>
-                <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]">
-                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                </mat-icon-button>
-              </label>
-            </div>
-            <hr>
+      @if (infoList?.instancesList?.length > 0) {
+        <div class="info-section">
+          <div class="section-header">
+            <span class="propertyStyle">{{ instancesListTitle }}</span>
+            <span class="count">({{ infoList.instancesList.length }})</span>
           </div>
+          <hr class="spacer-hr">
+          @if (infoList.instancesList.length > virtualThreshold) {
+            <cdk-virtual-scroll-viewport class="list-viewport" [itemSize]="rowHeight" [style.height]="getViewportPx(infoList.instancesList.length)">
+              <div *cdkVirtualFor="let L of infoList.instancesList; trackBy: trackListKey" class="entry-row">
+                @if (L.itemLabel?.value) { {{ L.itemLabel.value }} @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> } <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"><mat-icon color="primary" [inline]="true">open_in_new</mat-icon></mat-icon-button> }
+                @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') { {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }} @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> } }
+                @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            </cdk-virtual-scroll-viewport>
+          } @else {
+            @for (L of infoList.instancesList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+              <div class="entry-row">
+                @if (L.itemLabel?.value) { {{ L.itemLabel.value }} @if (L.itemDescription?.value) { <span class="description-text">({{ L.itemDescription.value }})</span> } <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"><mat-icon color="primary" [inline]="true">open_in_new</mat-icon></mat-icon-button> }
+                @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') { {{ L.mainsnak?.label || L.mainsnak?.datavalue?.value?.id || L.mainsnak?.datavalue?.value }} @if (L.mainsnak?.description) { <span class="description-text">({{ L.mainsnak.description }})</span> } }
+                @else { {{ L.mainsnak?.datavalue?.value || L }} }
+              </div>
+            }
+          }
         </div>
-      </div>
+      }
 
-    </mat-card-content>
-  </mat-card>
+  </mat-card-content>
+</mat-card>
 </div>

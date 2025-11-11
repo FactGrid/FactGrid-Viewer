@@ -19,10 +19,15 @@ export class EducationDisplayComponent {
  @Input() training;
 
 
-  showReferences = false; // état du volet
 
-  toggleReferences() {
-    this.showReferences = !this.showReferences;
+  openReferences = new Set<string>();
+
+  toggleReferences(key: string) {
+    if (this.openReferences.has(key)) {
+      this.openReferences.delete(key);
+    } else {
+      this.openReferences.add(key);
+    }
   }
 
   openImage(image){ //handling click for picture (open in new tab) 

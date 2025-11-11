@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SelectedLangService } from '../../selected-lang.service';
 import { ArrayToCsvService } from '../../services/array-to-csv.service';
 
@@ -14,12 +15,16 @@ import { ArrayToCsvService } from '../../services/array-to-csv.service';
 @Component({
   selector: 'app-sparql4-display',
   standalone: true,
-    imports: [MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, FormsModule],
+  imports: [MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, FormsModule, ScrollingModule],
     templateUrl: './sparql4-display.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrl: './sparql4-display.component.scss'
 })
 export class Sparql4DisplayComponent implements OnChanges, OnDestroy {
+  // Méthode trackByFn pour virtual scroll (clé unique même en cas de doublon)
+  trackByFn(index: number, item: any): any {
+    return item && item.item && item.item.id ? item.item.id + '_' + index : index;
+  }
   private lang = inject(SelectedLangService);
   private csv = inject(ArrayToCsvService);
 
@@ -35,6 +40,11 @@ export class Sparql4DisplayComponent implements OnChanges, OnDestroy {
   buildingTitle: string = "Buildings and monuments:";
   query: string;
   listWithoutDuplicate: any[];
+  rowHeight:number = 48;
+  maxViewportHeight:number = 400;
+  getViewportHeightPx(length:number):number {
+    return Math.min(this.maxViewportHeight, Math.max(this.rowHeight, length * this.rowHeight + 4));
+  }
   listTitle: string = "List";
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -45,7 +55,9 @@ export class Sparql4DisplayComponent implements OnChanges, OnDestroy {
     this.isSearch = false;
 
     if (changes.sparqlData && changes.sparqlData.currentValue) {
-      if (this.sparqlData()[0] !== undefined) { this.isList = true; console.log(this.sparqlData())};
+      // LOG pour debug affichage
+      console.log('sparql4-display', changes.sparqlData.currentValue);
+      if (this.sparqlData()[0] !== undefined) { this.isList = true; };
 
       changes.sparqlData.currentValue.forEach(function (el) {
         if (el.itemDescription === undefined) { el.itemText = el.itemLabel.value }

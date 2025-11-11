@@ -20,6 +20,8 @@ export class HeaderDisplayComponent {
   // Optimized headerDetail for display in the template
   headerDetailOptimized: any[] = [];
 
+  openReferences = new Set<string>();
+
   ngOnChanges() {
     if (this.headerDetail) {
       this.headerDetailOptimized = this.transformHeaderDetail(this.headerDetail);
@@ -31,10 +33,12 @@ export class HeaderDisplayComponent {
     return item.id;
   }
 
-  showReferences = false; // state for references panel
-
-  toggleReferences() {
-    this.showReferences = !this.showReferences;
+  toggleReferences(key: string) {
+    if (this.openReferences.has(key)) {
+      this.openReferences.delete(key);
+    } else {
+      this.openReferences.add(key);
+    }
   }
 
   /**

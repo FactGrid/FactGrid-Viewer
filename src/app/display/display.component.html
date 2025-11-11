@@ -128,11 +128,13 @@
               <!--********************** section Main  *********************** -->
 
 
-              <div class="matCardPadding" [ngClass]="isMain ? 'show-division':'hide-division'">
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-main-display [mainList]="this.mainList" [mainTitle]="this.mainTitle" [list]="this.list"></app-main-display>
-                </mat-card>
-              </div>
+              @if (isMain) {
+                <div class="matCardPadding">
+                  <mat-card appearance="outlined" class=mat-elevation-z12>
+                    <app-main-display [mainList]="this.mainList" [mainTitle]="this.mainTitle" [list]="this.list"></app-main-display>
+                  </mat-card>
+                </div>
+              }
 
 
 
@@ -140,71 +142,79 @@
               @if (this.trans !== "") {   <app-text-display [trans]="this.trans"></app-text-display>   } <!----transcription-->
               <!-- ********************************section Training ******************************-->
 
-              <div class="matCardPadding" [ngClass]="isTraining ? 'show-division':'hide-division'">
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-education-display [education]="this.education" [training]="this.training"></app-education-display>
-                </mat-card>
-              </div>
+              @if (isTraining) {
+                <div class="matCardPadding">
+                  <mat-card appearance="outlined" class=mat-elevation-z12>
+                    <app-education-display [education]="this.education" [training]="this.training"></app-education-display>
+                  </mat-card>
+                </div>
+              }
 
 
               <!--  ******************************* section Career ****************************************  -->
 
-              <div class="matCardPadding" [ngClass]="isCareer ? 'show-division':'hide-division'">
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-career-display [careerAndActivities]="this.careerAndActivities" [career]="this.career"></app-career-display>
-                </mat-card>
-              </div>
+              @if (isCareer) {
+                <div class="matCardPadding">
+                  <mat-card appearance="outlined" class=mat-elevation-z12>
+                    <app-career-display [careerAndActivities]="this.careerAndActivities" [career]="this.career"></app-career-display>
+                  </mat-card>
+                </div>
+              }
 
               <!---************************************ section Sociability **********************************-->
 
-              <div class="matCardPadding" [ngClass]="isSociability ? 'show-division':'hide-division'">
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-sociability-display [sociabilityAndCulture]="this.sociabilityAndCulture" [sociability]="this.sociability"></app-sociability-display>
-                </mat-card>
-              </div>
+              @if (isSociability) {
+                <div class="matCardPadding">
+                  <mat-card appearance="outlined" class=mat-elevation-z12>
+                    <app-sociability-display [sociabilityAndCulture]="this.sociabilityAndCulture" [sociability]="this.sociability"></app-sociability-display>
+                  </mat-card>
+                </div>
+              }
 
               <!-- ******************************* iFrames ****************************************  -->
 
-              <div class="matCardPadding" [ngClass]="isIframes ? 'show-division':'hide-division'">
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display>
-                </mat-card>
-              </div>
+              @if (isIframes) {
+                <div class="matCardPadding">
+                  <mat-card appearance="outlined" class=mat-elevation-z12>
+                    <app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display>
+                  </mat-card>
+                </div>
+              }
 
               <!-- ************************************* sparql0 **************************************** -->
-              <div [ngClass]="isSparql0 ? 'show-division':'hide-division'">
+              @if (isSparql0) {
                 <app-sparql0-display [sparqlData]="this.sparqlData0" [sparqlSubject]="this.sparqlSubject0"></app-sparql0-display>
-              </div>
+              }
 
               <!-- ************************************* sparql3 **************************************** -->
-              <div [ngClass]="isSparql3 ? 'show-division':'hide-division'">
+              @if (isSparql3) {
                 <app-sparql3-display [sparqlData]="this.sparqlData3" [sparqlSubject]="this.sparqlSubject3"></app-sparql3-display>
-              </div>
+              }
 
               <!--      ************************************* sparql1 **************************************** -->
-              <div [ngClass]="isSparql1 ? 'show-division':'hide-division'">
+              @if (isSparql1) {
                 <mat-card appearance="outlined" class=mat-elevation-z12>
                   <app-sparql1-display [sparqlData]="this.sparqlData1" [sparqlSubject]="this.sparqlSubject1"></app-sparql1-display>
                 </mat-card>
-              </div>
+              }
 
               <!-- ************************************* sparql2 **************************************** -->
-              <div [ngClass]="isSparql2 ? 'show-division':'hide-division'">
+              @if (isSparql2) {
                 <app-sparql2-display [sparqlData]="this.sparqlData2" [sparqlSubject]="this.sparqlSubject2"></app-sparql2-display>
-              </div>
+              }
 
               <!-- ************************************* sparql4 **************************************** -->
-              <div [ngClass]="isSparql4 ? 'show-division':'hide-division'">
+              @if (isSparql4) {
                 <app-sparql4-display [sparqlData]="this.sparqlData4" [sparqlSubject]="this.sparqlSubject4"></app-sparql4-display>
-              </div>
+              }
 
               <!-- ******************************* section Sources ****************************************  -->
 
-              <div [ngClass]="isSource ? 'show-division':'hide-division'">
+              @if (isSource) {
                 <mat-card appearance="outlined" class=mat-elevation-z12>
                   <app-sources-display [sourcesList]="this.sourcesList" [sources]="this.sources"></app-sources-display>
                 </mat-card>
-              </div>
+              }
 
               <!--  ************************************* sparql3 ****************************************
   <div class="matCardPadding" [ngClass]="isSparql0 ? 'show-division':'hide-division'">
@@ -213,23 +223,21 @@
     </mat-card>
   </div>-->
               <!-- ******************************* Info ****************************************  -->
-              <mat-card appearance="outlined" class="mat-elevation-z12">
-                <div>
-                  <div class="ground-div2">
-                    <div class="mat-button mat-small">
-                      <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
-                        <mat-icon class="icon whiteButton">
-                          {{ isInfo ? 'expand_less' : 'expand_more' }}
-                        </mat-icon>
-                      </button>
-                    </div>
+              <div class="matCardPadding">
+                <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
+                  <div class="info-card-header">
+                    <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
+                      <mat-icon class="icon whiteButton">
+                        {{ isInfo ? 'expand_less' : 'expand_more' }}
+                      </mat-icon>
+                    </button>
                   </div>
-                  <div class="ground-div2" [ngClass]="isInfo ? 'show-division' : 'hide-division'">
+                  <div class="info-card-closed-spacer" [ngClass]="isInfo ? 'hide-division' : 'show-division'"></div>
+                  <mat-card-content class="info-card-content" [ngClass]="isInfo ? 'show-division' : 'hide-division'">
                     <app-item-info [infoList]="infoList"></app-item-info>
-
-                  </div>
-                </div>
-              </mat-card>
+                  </mat-card-content>
+                </mat-card>
+              </div>
 
             </div>
 
@@ -305,7 +313,7 @@
                                 <div>
                                   <span *ngIf="selectedItem" class="selectedItemText">
                                     {{selectedItem.label}}
-                                    <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]"><mat-icon [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]" (click)="$event.stopPropagation()"><mat-icon [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                   </span>
                                 </div>
                                 <br>

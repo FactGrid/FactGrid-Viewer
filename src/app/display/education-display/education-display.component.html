@@ -1,6 +1,6 @@
 <mat-card-content class="cardBackground">
   <div class="subdivisionTitle">{{training}}</div>
-  @for (P of education; track P) {
+  @for (P of education; track P; let pidx = $index) {
   <div class="listStyle">
     <div class="labelTitlePadding">
       <span class="propertyStyle hover-bg-light"
@@ -9,7 +9,7 @@
         {{P.label}}:
       </span>
     </div>
-    @for (M of P; track M) {
+  @for (M of P; track M; let idx = $index) {
     <div class="statementStyle">
       <div [ngStyle]="{'background-color': (M.rank=='deprecated') ? '#f1f1f1' : '#ffffff'}">
         @if (M.mainsnak.datatype ==='time') {
@@ -17,17 +17,17 @@
         @if (M.mainsnak.datavalue.value.calendarmodel === "http://www.wikidata.org/entity/Q1985727") {
         <span class="calendarStyle">
           greg.
-          <mat-icon-button class="internalLink" [routerLink]="['/item','Q220486']">
+          <a mat-icon-button class="internalLink" [routerLink]="['/item','Q220486']">
             <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-          </mat-icon-button>&nbsp;&nbsp;&nbsp;
+          </a>&nbsp;&nbsp;&nbsp;
         </span>
         }
         @if (M.mainsnak.datavalue.value.calendarmodel === "http://www.wikidata.org/entity/Q1985786") {
         <span class="calendarStyle">
           jul.
-          <mat-icon-button class="internalLink" [routerLink]="['/item','Q505980']">
+          <a mat-icon-button class="internalLink" [routerLink]="['/item','Q505980']">
             <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-          </mat-icon-button>&nbsp;&nbsp;&nbsp;
+          </a>&nbsp;&nbsp;&nbsp;
         </span>
         }
         }
@@ -56,12 +56,10 @@
         @if (M.mainsnak.datatype==='wikibase-item') {
         <span>
           {{M.mainsnak.label}}
-          <mat-icon-button class="internalLink" [routerLink]="['/item', M.mainsnak.datavalue.value.id]">
+          <a mat-icon-button class="internalLink" [routerLink]="['/item', M.mainsnak.datavalue.value.id]" (click)="$event.stopPropagation()">
             <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-          </mat-icon-button>
-        </span>
-        {{M.mainsnak.separator}}
-        <span class="description-text">{{M.mainsnak.description}}&nbsp;</span>
+          </a>
+        </span>{{M.mainsnak.separator}}<span class="description-text">{{M.mainsnak.description}}</span>
         }
         @if (M.rank=='deprecated') {
         <span class="warningDeprecated"> &nbsp;({{M.rank}})</span>
@@ -85,17 +83,17 @@
                 @if (D.calendar === "http://www.wikidata.org/entity/Q1985727") {
                 <span class="calendarStyle">
                   greg.
-                  <mat-icon-button class="internalLink" [routerLink]="['/item','Q220486']">
+                  <a mat-icon-button class="internalLink" [routerLink]="['/item','Q220486']">
                     <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                  </mat-icon-button>&nbsp;&nbsp;&nbsp;
+                  </a>&nbsp;&nbsp;&nbsp;
                 </span>
                 }
                 @if (D.calendar === "http://www.wikidata.org/entity/Q1985786") {
                 <span class="calendarStyle">
                   jul.
-                  <mat-icon-button class="internalLink" [routerLink]="['/item','Q505980']">
+                  <a mat-icon-button class="internalLink" [routerLink]="['/item','Q505980']">
                     <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                  </mat-icon-button>&nbsp;&nbsp;&nbsp;
+                  </a>&nbsp;&nbsp;&nbsp;
                 </span>
                 }
               </span>
@@ -139,9 +137,9 @@
               @if (D.datatype==='wikibase-item') {
               <span>
                 {{D.label}}
-                <mat-icon-button class="internalLink" [routerLink]="['/item', D.id]">
+                <a mat-icon-button class="internalLink" [routerLink]="['/item', D.id]">
                   <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                </mat-icon-button>
+                </a>
                 @if(D.description){
                 {{D.separator}}<span class="description-text">{{D.description}}</span>
                 }
@@ -166,13 +164,13 @@
       </div>
       <!-- References -->
       @if (M['references2'] && M['references2'].length > 0) {
-      <button mat-button
-              class="references-toggle-btn"
-              (click)="toggleReferences()">
-        <span class="triangle-icon" [class.open]="showReferences"></span>
-        Références
-      </button>
-      @if (showReferences && M['references2']) {
+  <button mat-button
+      class="references-toggle-btn"
+      (click)="toggleReferences(pidx + '-' + idx)">
+    <span class="triangle-icon" [class.open]="openReferences.has(pidx + '-' + idx)"></span>
+    Références
+  </button>
+      @if (openReferences.has(pidx + '-' + idx) && M['references2']) {
       @for (Ma of M['references2']; track Ma; let isLast = $last) {
       <div class="referenceStyle">
         @for (N of Ma; track N; let isLast = $last) {
@@ -187,10 +185,9 @@
             @if (N.datatype === 'wikibase-item') {
             <span>
               {{P.label}}
-              <mat-icon-button class="internalLink" [routerLink]="['/item', P.id]">
+              <a mat-icon-button class="internalLink" [routerLink]="['/item', P.id]" (click)="$event.stopPropagation()">
                 <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-              </mat-icon-button>&nbsp;&nbsp;&nbsp;
-              {{P.separator}}<span class="description-text">{{P.description}}</span>
+              </a>{{P.separator}}<span class="description-text">{{P.description}}</span>
             </span>
             @if (!isLast) {
             <span>,&nbsp;</span>

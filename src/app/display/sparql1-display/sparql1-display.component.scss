@@ -1,0 +1,25 @@
+// Neutraliser la contrainte globale de largeur sur cardBackground pour ce composant
+.cardBackground {
+	max-width: none !important; /* override global max-width:900px */
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+}
+
+// Nettoyage: laisser les paddings hérités globaux, ne pas forcer ici
+
+// Forcer le virtual scroll à occuper toute la largeur
+.virtual-scroll-viewport {
+	height: 400px;
+	width: 100% !important;
+	margin: 0 !important;
+}
+
+// Nettoyage: pas besoin de cibler le wrapper interne
+
+/* Override local: ne pas limiter la largeur des lignes à 60vw dans ce composant */
+.cardBackground .statementStyle {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+// Nettoyage: suppression des overrides larges (mat-card, mat-card-content, host, ::ng-deep)
