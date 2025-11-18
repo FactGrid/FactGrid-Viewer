@@ -560,6 +560,26 @@
   box-sizing: border-box !important;
 }
 
+/* Règles supplémentaires: forcer les wrappers Angular directs (.ng-star-inserted)
+   et les `app-thematic-card` enfants à ne pas introduire de décalage.
+   Ceci couvre le cas où l'inspecteur montre un `div.ng-star-inserted` avec left différent. */
+:host ::ng-deep .thematic-cards-grid > .ng-star-inserted {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .thematic-cards-grid > .ng-star-inserted > app-thematic-card {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
 /* Forcer les éléments `.show-division` à remplir la largeur quand présents
    (préventif si la classe est appliquée sur un wrapper intermédiaire). */
 :host ::ng-deep .thematic-cards-grid .show-division {
