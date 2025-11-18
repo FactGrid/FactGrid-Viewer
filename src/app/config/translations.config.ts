@@ -37,14 +37,14 @@ export const TRANSLATIONS = {
     hu: "összetett keresés",
     zh: "高级搜索"
   },
-  authorHeader: {
-    de: "Autor",
-    fr: "Auteur",
-    es: "Autor",
-    hu: "Szerző",
-    it: "Autore",
-    en: "Author",
-    zh: "作者"
+  projectsInput: {
+    de: "Projekt",
+    fr: "Projet",
+    es: "Proyecto",
+    it: "Progetto",
+    hu: "Projekt",
+    en: "Project",
+    zh: "项目"
   },
   biblioHU: {
     de: "Bibliografie Harmonia Universalis",
@@ -228,7 +228,7 @@ export const TRANSLATIONS = {
   },
   itemsInput: {
     de: "Items suchen",
-    fr: "Rechercher les items",
+    fr: "Items",
     es: "Buscar items",
     it: "Cerca gli itemi",
     hu: "Keresés az elemek között",

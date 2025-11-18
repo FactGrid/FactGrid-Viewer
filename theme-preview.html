@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FactGrid Viewer - Prévisualisation des Palettes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Oxygen', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fc;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a2332;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+        
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .palette-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .palette-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .palette-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .palette-desc {
+            color: #5f6c7f;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .color-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .color-box {
+            flex: 1;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 8px;
+            font-size: 0.75rem;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .preview-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e3e8ef;
+        }
+        
+        .preview-button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .preview-link {
+            padding: 4px 0;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-block;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .code-snippet {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            overflow-x: auto;
+        }
+        
+        .instructions {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+        
+        .instructions h2 {
+            color: #283593;
+            margin-bottom: 16px;
+        }
+        
+        .instructions ol {
+            margin-left: 24px;
+            line-height: 1.8;
+        }
+        
+        .instructions code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 FactGrid Viewer - Prévisualisation des Palettes</h1>
+        
+        <div class="instructions">
+            <h2>📝 Instructions</h2>
+            <ol>
+                <li>Choisissez une palette ci-dessous</li>
+                <li>Ouvrez le fichier <code>src/app/display/_theme-variables.scss</code></li>
+                <li>Commentez la palette actuelle (ajoutez <code>//</code> devant chaque ligne)</li>
+                <li>Décommentez la palette choisie (retirez <code>//</code>)</li>
+                <li>Sauvegardez et le navigateur se rechargera automatiquement !</li>
+            </ol>
+        </div>
+        
+        <div class="palette-grid">
+            <!-- Palette Actuelle -->
+            <div class="palette-card">
+                <div class="palette-name" style="color: #283593;">Bleu Indigo / Rose</div>
+                <div class="palette-desc">Interface académique classique et professionnelle</div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #283593;">Primary</div>
+                    <div class="color-box" style="background: #3F51B5;">Light</div>
+                    <div class="color-box" style="background: #1a237e;">Dark</div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #AD1457;">Accent</div>
+                    <div class="color-box" style="background: #c2185b;">Light</div>
+                </div>
+                <div class="preview-section">
+                    <button class="preview-button" style="background: #283593; color: white;">Primaire</button>
+                    <button class="preview-button" style="background: #AD1457; color: white;">Accent</button>
+                    <br>
+                    <a class="preview-link" style="color: #283593; border-bottom-color: #283593;">Lien exemple</a>
+                </div>
+                <div class="code-snippet">
+// Palette actuelle (déjà active)
+$primary-color: #283593;
+$primary-light: #3F51B5;
+$accent-color: #AD1457;
+                </div>
+            </div>
+            
+            <!-- Palette 1 -->
+            <div class="palette-card">
+                <div class="palette-name" style="color: #1e3a8a;">Bleu Académique / Orange</div>
+                <div class="palette-desc">Dynamique et moderne, excellent contraste</div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #1e3a8a;">Primary</div>
+                    <div class="color-box" style="background: #3b82f6;">Light</div>
+                    <div class="color-box" style="background: #1e40af;">Dark</div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #ea580c;">Accent</div>
+                    <div class="color-box" style="background: #f97316;">Light</div>
+                </div>
+                <div class="preview-section">
+                    <button class="preview-button" style="background: #1e3a8a; color: white;">Primaire</button>
+                    <button class="preview-button" style="background: #ea580c; color: white;">Accent</button>
+                    <br>
+                    <a class="preview-link" style="color: #1e3a8a; border-bottom-color: #1e3a8a;">Lien exemple</a>
+                </div>
+                <div class="code-snippet">
+// PALETTE 1 (décommenter)
+$primary-color: #1e3a8a;
+$primary-light: #3b82f6;
+$accent-color: #ea580c;
+                </div>
+            </div>
+            
+            <!-- Palette 2 -->
+            <div class="palette-card">
+                <div class="palette-name" style="color: #065f46;">Vert Forêt / Ambre</div>
+                <div class="palette-desc">Naturel et apaisant, écologique</div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #065f46;">Primary</div>
+                    <div class="color-box" style="background: #059669;">Light</div>
+                    <div class="color-box" style="background: #064e3b;">Dark</div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #d97706;">Accent</div>
+                    <div class="color-box" style="background: #f59e0b;">Light</div>
+                </div>
+                <div class="preview-section">
+                    <button class="preview-button" style="background: #065f46; color: white;">Primaire</button>
+                    <button class="preview-button" style="background: #d97706; color: white;">Accent</button>
+                    <br>
+                    <a class="preview-link" style="color: #065f46; border-bottom-color: #065f46;">Lien exemple</a>
+                </div>
+                <div class="code-snippet">
+// PALETTE 2 (décommenter)
+$primary-color: #065f46;
+$primary-light: #059669;
+$accent-color: #d97706;
+                </div>
+            </div>
+            
+            <!-- Palette 3 -->
+            <div class="palette-card">
+                <div class="palette-name" style="color: #5b21b6;">Violet Profond / Cyan</div>
+                <div class="palette-desc">Créatif et innovant, technologique</div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #5b21b6;">Primary</div>
+                    <div class="color-box" style="background: #7c3aed;">Light</div>
+                    <div class="color-box" style="background: #4c1d95;">Dark</div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #0891b2;">Accent</div>
+                    <div class="color-box" style="background: #06b6d4;">Light</div>
+                </div>
+                <div class="preview-section">
+                    <button class="preview-button" style="background: #5b21b6; color: white;">Primaire</button>
+                    <button class="preview-button" style="background: #0891b2; color: white;">Accent</button>
+                    <br>
+                    <a class="preview-link" style="color: #5b21b6; border-bottom-color: #5b21b6;">Lien exemple</a>
+                </div>
+                <div class="code-snippet">
+// PALETTE 3 (décommenter)
+$primary-color: #5b21b6;
+$primary-light: #7c3aed;
+$accent-color: #0891b2;
+                </div>
+            </div>
+            
+            <!-- Palette 4 -->
+            <div class="palette-card">
+                <div class="palette-name" style="color: #0c4a6e;">Bleu Marine / Corail</div>
+                <div class="palette-desc">Maritime et élégant, fort contraste</div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #0c4a6e;">Primary</div>
+                    <div class="color-box" style="background: #0284c7;">Light</div>
+                    <div class="color-box" style="background: #075985;">Dark</div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #dc2626;">Accent</div>
+                    <div class="color-box" style="background: #ef4444;">Light</div>
+                </div>
+                <div class="preview-section">
+                    <button class="preview-button" style="background: #0c4a6e; color: white;">Primaire</button>
+                    <button class="preview-button" style="background: #dc2626; color: white;">Accent</button>
+                    <br>
+                    <a class="preview-link" style="color: #0c4a6e; border-bottom-color: #0c4a6e;">Lien exemple</a>
+                </div>
+                <div class="code-snippet">
+// PALETTE 4 (décommenter)
+$primary-color: #0c4a6e;
+$primary-light: #0284c7;
+$accent-color: #dc2626;
+                </div>
+            </div>
+            
+            <!-- Palette 5 -->
+            <div class="palette-card">
+                <div class="palette-name" style="color: #7f1d1d;">Bordeaux / Or</div>
+                <div class="palette-desc">Luxueux et traditionnel, institutionnel</div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #7f1d1d;">Primary</div>
+                    <div class="color-box" style="background: #b91c1c;">Light</div>
+                    <div class="color-box" style="background: #991b1b;">Dark</div>
+                </div>
+                <div class="color-row">
+                    <div class="color-box" style="background: #ca8a04;">Accent</div>
+                    <div class="color-box" style="background: #eab308;">Light</div>
+                </div>
+                <div class="preview-section">
+                    <button class="preview-button" style="background: #7f1d1d; color: white;">Primaire</button>
+                    <button class="preview-button" style="background: #ca8a04; color: white;">Accent</button>
+                    <br>
+                    <a class="preview-link" style="color: #7f1d1d; border-bottom-color: #7f1d1d;">Lien exemple</a>
+                </div>
+                <div class="code-snippet">
+// PALETTE 5 (décommenter)
+$primary-color: #7f1d1d;
+$primary-light: #b91c1c;
+$accent-color: #ca8a04;
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

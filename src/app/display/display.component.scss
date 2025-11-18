@@ -1,498 +1,1158 @@
-/* Force la marge et le padding à gauche sur tous les descendants du composant racine display */
-.display * {
-  margin-left: 0 !important;
-  padding-left: 10px !important;
+.selectedItemLink {
+  color: #222;
+  text-decoration: none;
+  font-size: 0.97rem;
+  font-weight: 400;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: text-decoration 0.15s, background 0.15s;
+  cursor: pointer;
+}
+.selectedItemLink:hover, .selectedItemLink:focus {
+  text-decoration: underline;
+  background: rgba(40,53,147,0.06);
+  color: #222;
+}
+/* Harmonisation des propriétés info box avec les cartes thématiques */
+.info-card-content .propertyStyle {
+  color: var(--text-primary, #111) !important;
+}
+/* ========================================
+   CARTE D'INFORMATIONS GÉNÉRALES AVEC FOND TEINTÉ
+   ======================================== */
+
+:host ::ng-deep app-thematic-card.info-themed-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(179, 198, 224, 0.8);
 }
 
-/* Harmonisation de la marge/padding à gauche sur tous les composants enfants principaux */
-.main *,
-.career *,
-.statementStyle *,
-.matCardPadding *,
-.cardBackground *,
-.mat-card-content *,
-.mat-elevation-z12 *,
-.subdivisionTitle *,
-.listTitleStart *,
-.ground-div1 * {
-  margin-left: 0 !important;
-  padding-left: 10px !important;
+:host ::ng-deep app-thematic-card.info-themed-card:hover {
+  background: rgba(255, 255, 255, 0.95);
 }
 
-/* Force la marge et le padding à gauche sur tous les composants enfants, y compris Angular Material */
-.child1 *,
-.child2 *,
-.cardBackground *,
-.mat-card-content,
-mat-card-content,
-mat-card {
-  margin-left: 2px !important;
-  padding-left: 4px !important;
+.info-themed-content {
+  padding: var(--thematic-card-padding);
 }
 
-/* Harmonise la marge et le padding à gauche sur tous les composants enfants principaux */
-.child1 *, .child2 *, .cardBackground *, .mat-card-content * {
-  margin-left: 0 !important;
-  padding-left: 4px !important;
+.info-themed-content .itemTitle {
+  padding-top: 0;
+  margin-bottom: 8px;
+  font-size: 2.2rem; /* Titre plus gros */
+  font-weight: 600;
+  color: #111;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-/* Réduit la marge et le padding à gauche sur tous les enfants de .child1 */
-.child1 * {
-  margin-left: 0 !important;
-  padding-left: 4px !important;
+.info-themed-content .aliases {
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #5f6c7f;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
-/* Force le padding à gauche sur tous les mat-card-content */
-mat-card-content, .mat-card-content {
-  padding-left: 4px !important;
+.info-themed-content .itemDescription {
+  color: #5f6c7f;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  font-style: italic;
 }
 
-/* Réduit le padding à gauche pour le contenu principal de child1 */
-.child1 .cardBackground,
-.child1 mat-card-content {
-  padding-left: 10px !important;
+.header-container {
+  margin-top: 16px;
 }
 
+/* Appliquer le fond teinté seulement sur l'info-box à l'intérieur de l'header-display */
+:host ::ng-deep .header-container app-header-display .info-box,
+:host ::ng-deep .header-container app-header-display .header-info,
+:host ::ng-deep .header-container app-header-display .info-container {
+  background: linear-gradient(135deg, #f8fbff 0%, #f0f6fa 100%) !important;
+  border-radius: 8px;
+  padding: 16px;
+}
+// Import du thème centralisé
 
-body {
-  margin-top:24px;
+/* ========================================
+   CARTES THÉMATIQUES
+   ======================================== */
+
+:host ::ng-deep app-thematic-card {
+  display: block;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px) saturate(1.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  border-radius: var(--thematic-card-radius);
+  box-shadow: 
+    0 4px 16px rgba(40, 53, 147, 0.12),
+    0 2px 4px rgba(40, 53, 147, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  margin: var(--thematic-card-margin);
+  padding: var(--thematic-card-padding);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(179, 198, 224, 0.8);
+  transition: all var(--transition-base, 250ms cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-.header-spacer { //keep in display-component.scss
-  //  padding-top: 5px;
+:host ::ng-deep app-thematic-card:hover {
+  box-shadow: 
+    0 8px 24px rgba(40, 53, 147, 0.12),
+    0 4px 8px rgba(40, 53, 147, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  border-color: rgba(179, 198, 224, 0.9);
+  transform: translateY(-2px);
 }
 
-.drawer-container { // style the mat-drawer-container
+/* ========================================
+   BARRES D'OUTILS ET NAVIGATION
+   ======================================== */
+
+.toolbar-band {
   width: 100%;
-  height: 100%;
-  margin: 0px;
-  border: 1px solid #555;
+  height: 8px;
+  background: var(--color-primary, #6699CC);
 }
 
-.parent { // layout of the parent box of the drawer-container (containing two items)
-  display: flex;
-  padding-bottom: 45px;
+.top-toolbar, .side-toolbar {
+  min-height: 64px !important;
+  height: auto !important;
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  position: relative !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 0 var(--spacing-md) !important;
+  box-sizing: border-box !important;
 }
 
-@media (max-width: 813px) { //change the layout of the parent box  and create the layout for the picture for small screen
-  .parent {
-    display: flex;
-    flex-flow: column;
+@media (max-width: 700px) {
+  .top-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 6px 2vw !important;
+    min-height: 64px !important;
+    height: auto !important;
+    gap: 6px !important;
+  }
+  
+  .top-toolbar .search-field-col,
+  .top-toolbar .compact-search-wrapper,
+  .top-toolbar .search-field,
+  .top-toolbar .main-search-field,
+  .top-toolbar .project-field,
+  .top-toolbar .compact-search-wrapper.compact-project {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    height: 36px !important;
+    flex: none !important;
+  }
+  
+  .top-toolbar .compact-search-input {
+    font-size: 15px !important;
   }
 }
 
+/* Force la bordure avec ::ng-deep */
+
+
+:host ::ng-deep .side-toolbar {
+  border-bottom: 2px solid #e3e8ef !important;
+}
+
+.top-toolbar button,
+.side-toolbar button {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--transition-fast) !important;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+  }
+}
+
+.top-toolbar .mat-icon,
+.side-toolbar .mat-icon,
+.top-toolbar mat-icon,
+.side-toolbar mat-icon {
+  color: var(--color-accent, #cc5500) !important;
+  font-size: 24px !important;
+  font-family: 'Material Icons' !important;
+}
+
+.top-toolbar span,
+.side-toolbar span {
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.top-toolbar .new-search-button {
+  background-color: #1f2937 !important;
+  color: white !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border-radius: 6px !important;
+  min-height: 40px !important;
+  
+  .mat-icon, mat-icon {
+    color: white !important;
+    font-size: 20px !important;
+  }
+  
+  span {
+    color: white !important;
+    font-size: 14px !important;
+  }
+  
+  &:hover {
+    background-color: #374151 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-1px) !important;
+  }
+}
+
+.side-toolbar .toolbar-text {
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+
+.example-spacer {
+  flex: 1 1 auto !important;
+}
+
+/* ========================================
+   CARTE D'INFORMATION
+   ======================================== */
+
+.info-card {
+  width: 50%;
+  min-width: 320px;
+  max-width: 600px;
+  margin-left: 0;
+  margin-right: auto;
+  display: block;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.info-card-header {
+  background: linear-gradient(135deg, var(--background-header-info) 0%, #d1d5db 100%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 0;
+  box-sizing: border-box;
+
+  .mat-button, button {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    color: var(--primary-color);
+    transition: transform var(--transition-fast);
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.info-card-content {
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+  box-sizing: border-box;
+  background-color: var(--background-card);
+}
+
+.info-card-closed-spacer {
+  height: var(--spacing-sm);
+}
+/* ========================================
+   CARTES THÉMATIQUES
+   ======================================== */
+
+.thematic-cards-grid {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Styles pour generic-list-display à l'intérieur des cartes */
+:host ::ng-deep app-generic-list-display {
+  .propertyStyle {
+    font-weight: 600;
+    color: #111;
+    font-size: 0.95rem;
+    display: block;
+    margin-right: 8px;
+    margin-bottom: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .hover-bg-light:hover {
+    background-color: rgba(63, 81, 181, 0.08);
+    cursor: help;
+  }
+  
+  .statementStyle {
+    padding: 1px 0; /* réduit */
+    font-size: 0.94rem;
+    color: #1f2d40;
+    line-height: 1.4; /* densité accrue */
+    margin: 0; /* supprime marge vertical inutile */
+  }
+  
+  .statementStyle > div:first-child {
+    display: inline;
+    padding-left: 16px; /* léger retrait réduit */
+  }
+  
+  .qualifierStyle {
+    margin-left: 32px; /* cohérence avec retrait statements */
+    margin-top: 1px;
+    font-size: 0.85rem;
+    color: #5f6c7f;
+    line-height: 1.4;
+    padding: 1px 0 1px 8px;
+    border-left: 2px solid var(--color-primary, #6699CC);
+  }
+  
+  .qualifierProperty {
+    color: #111;
+    font-size: inherit; /* hérite de 0.85rem défini sur .qualifierStyle */
+    font-style: italic;
+    margin-right: 4px;
+  }
+  
+  .referenceStyle {
+    margin-left: 24px;
+    margin-top: 2px; /* encore réduit */
+    padding: 2px 8px; /* plus compact */
+    font-size: 0.85rem;
+    color: #5f6c7f;
+    background-color: rgba(173, 20, 87, 0.02);
+    border-left: 3px solid var(--color-primary, #6699CC);
+    border-radius: 0 4px 4px 0;
+    line-height: 1.35;
+  }
+  
+  .referenceProperty {
+    color: #AD1457; /* même rouge que le bouton références */
+    font-size: inherit; /* égal à 0.85rem conteneur */
+    font-style: italic; /* italique comme les qualificatifs */
+    margin-right: 4px; /* cohérence avec qualifierProperty */
+    font-weight: 400; /* normal explicite */
+  }
+  
+  .references-toggle-btn {
+    margin: 4px 0 2px 0; /* compaction verticale */
+    padding: 2px 8px; /* moins haut */
+    font-size: 0.85rem; /* aligné sur qualifiers */
+    font-weight: 400; /* normal, pas gras */
+    color: #AD1457 !important;
+    background-color: rgba(173, 20, 87, 0.04);
+    border: 1px solid rgba(173, 20, 87, 0.18);
+    border-radius: 4px;
+    min-height: 0;
+    line-height: 1.3;
+  }
+  
+  .triangle-icon {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #AD1457;
+    margin-right: 8px;
+    transition: transform 150ms ease;
+    vertical-align: middle;
+  }
+  
+  .triangle-icon.open {
+    transform: rotate(180deg);
+  }
+  
+  .listStyle {
+    margin: 0 0 6px 0;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+  }
+  
+  .listStyle:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  
+  .inlineStyle {
+    display: inline;
+    margin: 0;
+  }
+  
+  .description-text {
+    color: #5f6c7f;
+    font-size: 0.875rem;
+    margin-left: 4px;
+    font-style: italic;
+  }
+  
+  .calendarStyle {
+    font-size: 0.8rem;
+    color: #AD1457;
+    margin-left: 6px;
+    font-style: italic;
+  }
+  
+  .warningDeprecated {
+    color: #d32f2f;
+    font-size: 0.85rem;
+    font-style: italic;
+    font-weight: 500;
+  }
+  
+  .internalLink {
+    display: inline-flex;
+    align-items: center;
+    min-width: 14px;
+    min-height: 14px;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    margin: 0 0 0 1px;
+    vertical-align: baseline;
+    position: relative;
+    top: -2px;
+    line-height: 1;
+  }
+  
+  .internalLink mat-icon {
+    font-size: 12px !important;
+    width: 12px !important;
+    height: 12px !important;
+    line-height: 12px !important;
+  }
+  
+  .description-text {
+    color: #5f6c7f;
+    font-size: 0.875rem;
+    margin-left: 2px;
+    margin-right: 0;
+    font-style: italic;
+  }
+  
+  .cover {
+    width: 120px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(40, 53, 147, 0.08);
+    cursor: pointer;
+    transition: all 200ms ease;
+  }
+  
+  .cover:hover {
+    box-shadow: 0 4px 12px rgba(40, 53, 147, 0.12);
+    transform: scale(1.02);
+  }
+}
+
+/* Les styles principaux des cartes sont désormais dans thematic-card.component.scss.
+   On retire l'ancienne variante glass pour éviter les collisions et gardons seulement
+   des ajustements mineurs éventuels ici si nécessaire. */
+
+/* Conteneur global des cartes thématiques pour fournir un fond gris très léger
+   permettant de détacher visuellement chaque carte blanche. */
+.thematic-cards-grid {
+  /* Fond retiré pour ne pas impacter le titre; on garde uniquement le flux des cartes */
+  padding: 0 0 12px 0;
+  margin-top: 8px;
+  position: relative;
+}
+
+/* Variante expérimentale : layout basé sur gap (réversible)
+   Pour tester : ajouter / retirer la classe `gap-layout` sur le conteneur
+   `<div class="thematic-cards-grid gap-layout">`.
+   Avantage : pas d'effondrement de marge et espacement prévisible via `gap`.
+*/
+.thematic-cards-grid.gap-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* espacement vertical entre cartes — ajuster si besoin */
+  padding-left: 12px; /* préserve l'espace à gauche demandé */
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+
+/* Quand on utilise gap-layout, neutraliser les marges individuelles des cartes
+   pour éviter double-espacement (les marges antérieures restent dans le scss
+   mais sont écrasées par cette règle). */
+.thematic-cards-grid.gap-layout > app-thematic-card,
+.thematic-cards-grid.gap-layout > .thematic-card {
+  margin: 0 !important;
+}
+
+/* Normaliser le padding/margin interne des cartes (SPARQL, generic-list, iframes)
+   lorsque le mode gap-layout est activé. Gap règle l'espace entre cartes; ces
+   overrides garantissent que l'espace intérieur des cartes est identique.
+*/
+:host ::ng-deep .thematic-cards-grid.gap-layout app-sparql-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid.gap-layout app-generic-list-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid.gap-layout app-iframes-display .cardBackground {
+  padding: 8px !important; /* uniforme haut/bas/gauche/droite */
+  margin: 0 !important;    /* évite marge-bottom interne doublée */
+  box-sizing: border-box !important;
+}
+
+/* Si certains SPARQL utilisent directement mat-card, on neutralise aussi
+   les marges/paddings du mat-card interne */
+:host ::ng-deep .thematic-cards-grid.gap-layout app-sparql-display mat-card,
+:host ::ng-deep .thematic-cards-grid.gap-layout app-generic-list-display mat-card {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Espacement vertical entre cartes (hors première) */
+.thematic-cards-grid > app-thematic-card + app-thematic-card {
+  margin-top: 6px;
+}
+
+/* Réduction de l'espacement vertical global des cartes à l'intérieur
+   du conteneur thématique : priorité locale pour rapprocher les cartes. */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card {
+  margin: 14px 12px; /* haut/bas augmenté pour aligner avec SPARQL */
+}
+
+/* Forcer l'homogénéité en ciblant la classe interne .thematic-card (cas où
+   la règle de component scss prendrait le dessus). Utiliser !important pour
+   garantir l'application locale aux cartes dans ce conteneur. */
+:host ::ng-deep .thematic-cards-grid > .thematic-card {
+  margin: 14px 12px !important;
+}
+
+/* Augmenter l'espacement des cartes qui contiennent un composant SPARQL
+   : utilise :has() si le navigateur le supporte, et sert de règle prioritaire
+   pour ré-élever l'inter-espacement de ces cartes (opération inverse). */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card:has(app-sparql-display),
+:host ::ng-deep .thematic-cards-grid > .thematic-card:has(app-sparql-display) {
+  margin: 14px 12px !important; /* top/bottom augmenté */
+}
+/* Ancienne section liée à l'en-tête des cartes (conservée si utilisée ailleurs) */
+ .thematic-card-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-accent, #cc5500);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+ .thematic-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111;
+  margin: 0;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.thematic-card-content {
+  padding: var(--spacing-lg);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+
+@media (max-width: 959.98px) {
+  .thematic-card {
+    margin: var(--spacing-sm) var(--spacing-xs) var(--spacing-md) var(--spacing-sm);
+  }
+  
+  .thematic-card-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .thematic-card-title {
+    font-size: 1.05rem;
+  }
+  
+  .thematic-card-content {
+    padding: var(--spacing-md);
+  }
+}
+
+/* ========================================
+   ALIGNEMENT ET ESPACEMENT
+   ======================================== */
+
+.matCardPadding {
+  margin-left: 30px;
+  margin-right: 12px;
+  margin-top: 20px;
+  margin-bottom: var(--spacing-md);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.header-wrapper {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+app-header-display {
+  margin-left: 0;
+  margin-right: 0;
+  display: block;
+}
+
+/* ========================================
+   IMAGES ET MÉDIAS
+   ======================================== */
+
 .img2 {
-  //   width: 95%;
-  margin-top: 10px;
-  margin-right: 15px;
+  margin-top: var(--spacing-sm);
+  margin-right: var(--spacing-md);
+  max-width: 95%;
+}
+
+mat-card img {
+  object-fit: contain;
+  width: 100%;
+  margin: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-base);
+  
+  &:hover {
+    transform: scale(1.02);
+    cursor: pointer;
+  }
 }
 
 .lazy-image {
   opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity var(--transition-slow) ease-in-out;
 }
 
 .lazy-image.loaded {
   opacity: 1;
 }
 
+/* ========================================
+   LAYOUT PRINCIPAL ET CONTENEURS
+   ======================================== */
 
+body {
+  margin-top: var(--spacing-lg);
+  background-color: var(--background-page);
+}
 
-/*.main {   // deprecate
+.drawer-container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  background-color: var(--background-page);
   display: flex;
-  flex-flow: column;
-} */
+  flex-direction: column;
+}
 
-  .child1 { // determine the size of the first column
-      flex: 2;
-      /* background-color: lightgrey !important; */
-      margin-left: 2px !important;
-      margin-right: 10px;
-      /* width: 75%; supprimé pour éviter la large marge à droite */
-    }
+.app-drawer {
+  width: 340px;
+  background-color: var(--background-drawer);
+  box-shadow: var(--shadow-lg);
+}
 
-@media (max-width: 813px) { //change the layout of the parent box  and create the layout for the picture for small screen
-  .child1 {
-    flex-flow: column;
-    align-items: stretch;
-    /* background-color: lightgrey !important; */
-    margin-left: 5px;
-    margin-right: 5px;
+@media (max-width: 1280px) {
+  .app-drawer {
+    width: 300px;
   }
 }
 
-
-@media (min-width: 1280px ) { //change the layout of the parent box  and create the layout for the picture for big screen
-  .child1 {
-    flex: 3;
-    margin-left: 2px;
-    margin-right: 20px; /* marge un peu plus grande à droite en desktop */
-    /* width: 75%; supprimé */
-  }
+.parent {
+  display: flex;
+  padding-bottom: var(--spacing-xl);
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  gap: var(--spacing-md);
 }
 
-
+.child1 {
+  flex: 3 1 0;
+  min-width: 0;
+}
 
 .child2 {
   display: flex;
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 280px;
+  max-width: 380px;
   flex-flow: column;
-  // flex-grow:  1;
+  gap: var(--spacing-md);
 }
 
+@media (max-width: 813px) {
+  .parent {
+    flex-flow: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .child1 {
+    margin-right: var(--spacing-xs);
+    margin-left: var(--spacing-xs);
+  }
+  
+  .child2 {
+    max-width: 100%;
+  }
+}
 
-  .ground-div1 { //bande grise for the drawer
-    display: flex;
-    background-color: whitesmoke;
-    justify-content: flex-start;
+@media (min-width: 1280px) {
+  .child1 { 
+    flex: 3 1 0; 
   }
+  
+  .child2 { 
+    flex: 1 1 0; 
+    min-width: 360px; 
+    max-width: 440px; 
+  }
+}
 
-  .ground-div2 { //bande bleue
-    background-color: rgb(155, 177, 225);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+/* ========================================
+   DRAWER ET LIENS
+   ======================================== */
 
-  /* Neutralise les paddings/marges globaux à l'intérieur de la carte Info
-     pour éviter la petite bande blanche à gauche, tout en ré-appliquant
-     un padding standard uniquement au contenu. */
-  /* Nouveau schéma : mat-card-header sans padding, mat-card-content avec padding standard */
-  .info-card-header {
-    background-color: rgb(155, 177, 225);
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    /* marges plus proches des bords, identiques gauche/droite */
-    margin-left: 8px !important;
-    margin-right: 8px !important;
-    margin-top: 8px;
-    margin-bottom: 0;
-    /* léger padding interne pour respirer autour de l'icône */
-    padding: 6px 12px;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-  .info-card-header .mat-button, .info-card-header button {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-  }
-  .info-card-content {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-    box-sizing: border-box;
-  }
+.ground-div1 {
+  display: flex;
+  background-color: var(--background-drawer);
+  justify-content: flex-start;
+}
 
-  /* Petit espace blanc sous la barre bleue quand le panneau est fermé */
-  .info-card-closed-spacer {
-    height: 8px;
-  }
+.ground-div2 {
+  background-color: var(--background-header-info);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .itemTitle { // styling the big title of the item
-    padding-top: 10px;
-    margin-bottom: 10px;
-    font-size: 50px;
-    color: #283593;
-    line-height: 50px;
+.selectedListTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 40px;
+
+  .mat-icon {
+    margin-right: var(--spacing-sm);
+    font-size: 1.75rem !important;
+    color: var(--primary-light);
   }
+}
+
+.selectedItemRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+
+  &:first-child {
+    margin-top: var(--spacing-sm);
+  }
+  
+  &:hover {
+    background-color: rgba(40, 53, 147, 0.05);
+  }
+}
+
+.selectedItemText {
+  font-size: 1.05rem;
+  color: var(--primary-color);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  line-height: 1.3;
+  transition: color var(--transition-fast);
+  
+  &:hover {
+    color: var(--accent-color);
+  }
+}
+
+/* ========================================
+   TITRE ET EN-TÊTE DE PAGE
+   ======================================== */
+
+.itemTitle {
+  padding-top: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 600;
+  color: #111;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.aliases {
+  margin-bottom: var(--spacing-md);
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.itemDescription {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: var(--spacing-lg);
+  font-style: italic;
+}
 
 @media (max-width: 959.98px) {
   .itemTitle {
-    font-size: 37px;
-    line-height: 45px;
+    font-size: 2.25rem;
+    line-height: 1.2;
     overflow-wrap: break-word;
     word-break: break-word;
     hyphens: auto;
-    max-width: 100%;
-    white-space: normal;
-  }
-}
-
-  .aliases { //styling the aliases of the item
-    font-size: 16px;
-    margin-bottom: 15px;
-    font-weight: 500;
-  }
-
-  .itemDescription { // styling the description of the itmm
-    font-size: 16px;
-    // padding-top:5px
-  }
-
-  /*.drawerBackground {  //background color of the drawer
-  background-color: lightgray;
-}
-    */
-
-
-  /*  TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version.  */
-  /*  TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version.  */
-  /*  TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version.  */
-  mat-card img {
-    object-fit: contain; /*this makes the image in src fit to the size specified below*/
-    width: 100%;
-    margin: 5px;
-  }
-
-  .itemSelected-mat-card {
-    height: fit-content;
-    background-color: rgb(99, 98, 98) !important;
-    margin-bottom: 4px;
-    margin-right: 2px;
-    margin-left: 2px;
-  }
-
-  .external-links { // styling the box of the external links
-    height: fit-content;
-    background-color: rgb(250, 235, 187);
-    margin-bottom: 4px;
-    margin-right: 2px;
-    margin-left: 2px;
-  }
-
-  /*
-
-    .externalLinks-title {  // styling the titles of the external links
-  color:#AD1457;
-  font-size: 25px !important;
-  font-weight:500;
-  padding: 5px;
-  margin-left: auto;
-  height:40px;
-}
-*/
-
-
-
-
-
-  /*
- .external-links-details { //size of the text of the statements in the external links
-  font-size: 14px;
-  padding: 10px;
-  margin: 0px;
-}
-    */
-
-  /* removed empty rule: .icon.mat-mdc-button.mat-small */
-
-  /* removed empty rule: .details2.percent2 */
-
-  .example-form {
-    min-width: 150px;
-    max-width: 500px;
-    width: 100%;
-  }
-
-  table { // for the mat-tab if I use it
-    width: 100%;
-  }
-
-
-  /*
-    .linksToItem-mat-card{
-  height: fit-content;
-  background-color:#e1f5fe !important;
-  margin-bottom: 4px;
-  margin-right: 2px;
-  margin-left: 2px;
-}
-
-*/
-
-  .map-container {
-    position: absolute;
-    margin: 30px;
-  }
-
-  .map-frame {
-    border: 2px solid black;
-    height: 100%;
-  }
-
-  /*
-    #c1{
-  float:right;
-}​
-
-#map {
-  height: 100%;
-}
-
-*/
-
-
-
-  .img {
-    width: 40%;
-    height: 100px;
-    margin: 10px;
-  }
-
-
-
-  .hide-division {
-    display: none;
-  }
-
-  .show-division {
-    display: block;
-  }
-
-  /*
- .padding1 {
-  padding: 6 px;
-  margin-right: 20 px;
-}
-
-
-.w-100 {      
-  width: 100% !important;
-  margin-right: 20 px;
-}
-
-*/
-
-
-
-  .mat-list-base.inline-list {
-    display: flex; /*inline list*/
-    padding: 2 px;
-  }
-
-
-  .blue-text {
-    color: #283593;
-  }
-
-  .blue-text2 {
-    color: #283593;
-    font-size: 120%;
-    font-weight: 600;
-  }
-
-  /* removed empty rule: .mdheadline .subdivision-title */
-
-
-
-
-  .commonsMediaStyle {
-    padding: 10px;
-    margin: 10px;
-    text-overflow: ellipsis;
-    word-break: normal;
-  }
-
-  /* removed empty rule: .percent2.white-text */
-
-
-
-  .details > label {
-    overflow-wrap: break-word;
-    padding: 0px;
-  }
-
-
-  .example-spacer {
-    flex: 1 1 auto;
-  }
-
-  .example-form {
-    min-width: 150px;
-    max-width: 500px;
-    width: 100%;
-  }
-
-  .example-full-width {
-    width: 20%;
-  }
-
-  ul.inline {
-    display: inline
-  }
-
-  .percent {
-    font-size: 60%;
-  }
-
-  .percent3 {
-    padding: 15px;
-    font-size: 150%;
-    font-weight: 321;
-  }
-
-  /*.percent5 {
-    font-size: 12px !important;
-  }---*/
-
-  .percent4 { // display FactGrid id
-    color: #3F51B5;
-    margin-bottom: 2px;
-    font-size: 140%;
-    font-weight: 400;
-  }
-
-
-  .mw-headline {
-    color: #3F51B5;
-    font-weight: 550;
-  }
-
-  .referenceProperty {
-    color: #AD1457;
-  }
-
-
-
-  #leaflet-map {
-    flex: 5;
-    height: 100%;
-    width: 100%
-  }
-
-  button {
-    font-size: 10px;
-    height: auto;
-    width: 170px;
-    line-height: 16px !important;
-    padding: 2px 2px 2px 10px !important;
-    margin-right: 5px;
-  }
-
-  button-content {
-    text-overflow: ellipsis;
-  }
-
-  .icon {
-    font-size: 30px !important;
-  }
-
-  /* removed empty rule: .icon .white-text */
-
-
-
-  /*  TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.  */
-  /*  TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.  */
-  ::ng-deep .mat-button-focus-overlay {
-    background-color: transparent !important;
-  }
-
-  .mat-mdc-button.mat-small {
-    min-width: 10px !important;
-    max-width: 20px !important;
-  }
-
-
-
-  .example-additional-selection {
-    font-size: 0.5em;
-  }
-
-  /* removed empty rule: .mat-elevation-z8 .external-links */
-
-  // Supprime le soulignement des icônes open_in_new sur les liens internes, même avec l'encapsulation Angular
-  ::ng-deep a[mat-icon-button],
-  ::ng-deep a.mat-icon-button {
-    text-decoration: none !important;
   }
   
+  .aliases {
+    font-size: 1rem;
+  }
+  
+  .itemDescription {
+    font-size: 0.95rem;
+  }
+}
+
+mat-card img {
+  object-fit: contain;
+  width: 100%;
+  margin: 5px;
+}
+
+/* ========================================
+   LIENS EXTERNES
+   ======================================== */
+
+.external-links {
+  height: fit-content;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff3d6 100%);
+  margin: 0 var(--spacing-xs) var(--spacing-xs);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(173, 20, 87, 0.1);
+  transition: all var(--transition-base);
+  
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* ========================================
+   UTILITAIRES
+   ======================================== */
+
+
+.itemSelected-mat-card {
+  height: fit-content;
+  background-color: var(--background-drawer) !important;
+  margin: 0 var(--spacing-xs) 12px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  padding: 8px 0 4px 0;
+}
+
+.selectedListTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.selectedItemRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 4px 0;
+  margin: 2px 0;
+  min-height: 0;
+}
+
+.selectedItemText {
+  font-size: 0.97rem;
+  line-height: 1.2;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.itemSelected-mat-card .mat-icon-button.internalLink {
+  margin-left: 2px;
+  padding: 0 2px;
+  min-width: 18px;
+  min-height: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.itemSelected-mat-card .mat-icon.internalLink, .itemSelected-mat-card .internalLink mat-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.hide-division {
+  display: none;
+}
+
+.show-division {
+  display: block;
+}
+
+.blue-text {
+  color: var(--primary-color);
+}
+
+.blue-text2 {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 1.875rem !important;
+  transition: transform var(--transition-fast);
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.whiteText {
+  color: var(--primary-color);
+}
+
+.blueButton {
+  color: var(--primary-color);
+  font-size: medium;
+  line-height: 1.875rem;
+}
+
+.whiteButton {
+  color: var(--text-light);
+  font-size: medium;
+  line-height: 1.875rem;
+}
+
+.mat-icon.blueButton {
+  color: var(--primary-color) !important;
+  background: none !important;
+}
+
+button[mat-icon-button] .mat-icon {
+  color: var(--primary-color) !important;
+}
+
+:host ::ng-deep .mat-drawer-content {
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .mat-drawer-container {
+  position: relative;
+}
+
+/* ========================================
+   SPINNER ET ÉTATS DE CHARGEMENT
+   ======================================== */
+
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ========================================
+   STYLES COMPLÉMENTAIRES
+   ======================================== */
+
+.example-form {
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.map-container {
+  position: absolute;
+  margin: var(--spacing-lg);
+}
+
+.map-frame {
+  border: 2px solid var(--border-color-strong);
+  height: 100%;
+  border-radius: var(--radius-sm);
+}
+
+.img {
+  width: 40%;
+  height: 100px;
+  margin: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+}
+
+.mat-list-base.inline-list {
+  display: flex;
+  padding: var(--spacing-xs);
+}
+
+.commonsMediaStyle {
+  padding: var(--spacing-sm);
+  margin: var(--spacing-sm);
+  text-overflow: ellipsis;
+  word-break: normal;
+}
+
+.details > label {
+  overflow-wrap: break-word;
+  padding: 0;
+}
+
+.example-full-width {
+  width: 20%;
+}
+
+ul.inline {
+  display: inline;
+}
+
+.percent {
+  font-size: 60%;
+}
+
+.mw-headline {
+  color: var(--primary-light);
+  font-weight: 550;
+}
+
+.referenceProperty {
+  color: #AD1457; /* harmonisation avec le bouton références */
+}
+
+#leaflet-map {
+  flex: 5;
+  height: 100%;
+  width: 100%;
+}
+
+button {
+  font-size: 0.875rem;
+  height: auto;
+  width: 170px;
+  line-height: 1rem !important;
+  padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-sm) !important;
+  margin-right: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+button-content {
+  text-overflow: ellipsis;
+}
+
+::ng-deep .mat-button-focus-overlay {
+  background-color: transparent !important;
+}
+
+.mat-mdc-button.mat-small {
+  min-width: 10px !important;
+  max-width: 20px !important;
+}
+
+.example-additional-selection {
+  font-size: 0.5em;
+}
+
+::ng-deep a[mat-icon-button],
+::ng-deep a.mat-icon-button {
+  text-decoration: none !important;
+}
+
+.error-message {
+  text-align: center;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 600px;
+  background-color: #f0f0f0;
+  color: #000;
+  border: 2px double #999;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.error-message p {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.error-message button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  border: 1px solid #999;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.error-message button:hover {
+  background-color: #e0e0e0;
+}

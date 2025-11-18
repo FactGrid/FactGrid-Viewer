@@ -54,7 +54,7 @@ export class ItemSparqlService {
     const url = this.newSparqlAdress("https://database.factgrid.de/query/#" + encodeURIComponent(sparql));
     return this.request.getList(url).pipe(
       map(res => {
-        const b = res.results.bindings[0];
+        const b = res.results?.bindings?.[0];
         return {
           Q8Test: b?.isLocality?.value === "true",
           Q12Test: b?.isOrganisation?.value === "true",
@@ -74,6 +74,7 @@ export class ItemSparqlService {
 
 
   itemSparql(item): Observable<any> {
+    // Ne PAS initialiser item.sparql avec of(undefined) pour éviter d'émettre/compléter avant les vraies données
     return this.batchAskQuery(item.id).pipe(
       switchMap(batch => {
         this.Q8Test = of(batch.Q8Test); //Lieu
@@ -154,31 +155,23 @@ export class ItemSparqlService {
     if (test5 === true) {
       result = this.Q16200Sparql(item);
     }
+    else if (test1 === true) {
+      result = this.Q12Sparql(test1, item);
+    }
+    else if (test2 === true) {
+      result = this.Q37073Sparql(test2, item)
+    }
+    else if (test3 === true) {
+      result = this.Q456376Sparql(test3, item)
+    }
+    else if (test4 === true) {
+      result = this.Q24499Sparql(item);
+    }
+    else if (test6 === true) {
+      result = this.Q77457Sparql(item);
+    }
     else {
-      if (test1 === true) {
-        result = this.Q12Sparql(test1, item);
-      }
-      else {
-        if (test2 === true) {
-          result = this.Q37073Sparql(test2, item)
-        }
-        else {
-          if (test3 === true) {
-            result = this.Q456376Sparql(test3, item)
-          }
-          else {
-            if (test4 === true) {
-              result = this.Q24499Sparql(item);
-            }
-            else {
-              if (test6 === true) {
-                result = this.Q77457Sparql(item);
-              }
-              else result = this.noResult()
-            }
-          }
-        }
-      }
+      result = this.noResult()
     }
     return result
   }
@@ -260,7 +253,7 @@ export class ItemSparqlService {
     return of(test)
   }
 
-  Q16200TestGet(item) {
+  Q16200TestGet(item) { // Address
     let test: boolean = false;
     if (
       item &&
@@ -408,8 +401,11 @@ export class ItemSparqlService {
     let suffix = "ORDER%20by%20%3FitemLabel";
     let prefix = "https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%20WHERE%20%7B%20%20%3Fitem%20wdt%3AP247%2Fwdt%3AP3%2a%20wd%3A";
     u = prefix + res.id + this.langService + suffix;
-    console.log(u);
-    return this.sparqlQuery(u).pipe(map(res => ["Q24499", this.listFromSparql(res).results.bindings]));
+    
+    return this.sparqlQuery(u).pipe(map(r => {
+      
+      return ["Q24499", this.listFromSparql(r).results.bindings];
+    }));
   }
 
   Q8Sparql(res) {  //Lieu

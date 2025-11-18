@@ -21,9 +21,8 @@ export class RoleOfObjectRenderingService {
 
   transformProperties(re) {
     this.roleOfObject(re);
-    this.transformP248(re);
+ //   this.transformP248(re);
   }
-
 
   roleOfObject(re) {
     // List of supported roles
@@ -70,7 +69,11 @@ export class RoleOfObjectRenderingService {
                       label: snak.mainsnak.label,
                       description: snak.mainsnak.description,
                       datavalue: {
-                        value: { id: snak.mainsnak.datavalue?.value?.id }
+                        value: {
+                          id: snak.mainsnak.datavalue?.value?.id,
+                          label: snak.mainsnak.label,
+                          description: snak.mainsnak.description
+                        }
                       }
                     },
                     id: role.id,
@@ -105,52 +108,66 @@ export class RoleOfObjectRenderingService {
 
 
   private transformP248(re) {
-    for (const prop in re.claims) {
-      if (prop !== "P248") continue;
-      const statements = re.claims[prop];
-      const values: { label: string, id: string, order: number, extra: string }[] = [];
-      for (const statement of statements) {
-        let label = statement.mainsnak.label || statement.mainsnak.datavalue?.value || "";
-        let id = statement.mainsnak.datavalue?.value?.id;
-        let url = id ? `https://www.wikidata.org/wiki/${id}` : null;
-        let order = Number.MAX_SAFE_INTEGER;
-        let extra = "";
+    const statements = re.claims["P248"];
+    if (!Array.isArray(statements) || statements.length === 0) {
+      return;
+    }
 
-        // Cherche P499 (ordre)
-        if (statement.qualifiers && statement.qualifiers["P499"] && statement.qualifiers["P499"][0]?.datavalue?.value) {
-          order = parseInt(statement.qualifiers["P499"][0].datavalue.value.amount, 10);
-        }
+    const values: { label: string; id: string; order: number; extra: string }[] = [];
 
-        // Cherche autres qualifiers (ex: P820)
-        for (const qid in statement.qualifiers) {
-          if (qid !== "P499") {
-            const q = statement.qualifiers[qid][0];
-            if (q?.datavalue?.value) {
-              extra += ` (${q.datavalue.value})`;
-            }
-          }
-        }
+    for (const statement of statements) {
+      const mainsnak = statement.mainsnak || {};
+      const datavalue = mainsnak.datavalue || {};
+      const value = datavalue.value || {};
 
-        values.push({ label, id, order, extra });
+      const label = mainsnak.label || value.label || "";
+      const id = value.id;
+      let order = Number.MAX_SAFE_INTEGER;
+      let extra = "";
+
+      // P499 = ordre
+      if (statement.qualifiers?.["P499"]?.[0]?.datavalue?.value) {
+        order = parseInt(statement.qualifiers["P499"][0].datavalue.value.amount, 10);
       }
 
-      // Trie par ordre, puis place les sans ordre à la fin
-      values.sort((a, b) => a.order - b.order);
-
-      // Stocke le tableau aligné dans claims
-      re.claims.P248_aligned = values;
-
-      // Nettoyage des qualifiers utilisés
-  /*    for (const statement of statements) {
-        if (statement.qualifiers) {
-          delete statement.qualifiers["P499"];
-          delete statement.qualifiers["P820"];
+      // autres qualifiers -> extra
+      if (statement.qualifiers) {
+        for (const qid in statement.qualifiers) {
+          if (qid === "P499") continue;
+          const q = statement.qualifiers[qid][0];
+          if (q?.datavalue?.value) {
+            extra += ` (${q.datavalue.value})`;
+          }
         }
-        if (statement.qualifiers2) {
-          statement.qualifiers2 = statement.qualifiers2.filter(q => q.id !== "P499" && q.id !== "P820");
-        }
-      } */
+      }
+
+      values.push({ label, id, order, extra });
     }
+
+    // tri selon order
+    values.sort((a, b) => a.order - b.order);
+
+    // label combiné, ex : "Jacques, Louis"
+    const combinedLabel = values
+      .map(v => v.label)
+      .filter(Boolean)
+      .join(", ");
+
+    const first = statements[0];
+
+    const alignedStatement = {
+      ...first,
+      mainsnak: {
+        ...first.mainsnak,
+        label: combinedLabel,
+        datavalue: {
+          value: values
+        }
+      },
+      label: combinedLabel
+    };
+
+    re.claims["P248"] = [alignedStatement];
   }
   
 

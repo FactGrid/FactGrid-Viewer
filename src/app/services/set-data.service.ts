@@ -27,10 +27,16 @@ baseGetURL = 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids='
 getUrlSuffix= '&format=json&origin=*' ; 
 	
 	itemToDisplay(id) {
+		if (!id) {
+			return new Observable<any[]>(observer => {
+				observer.next([]);
+				observer.complete();
+			});
+		}
 		let labelLength: number = 0
 		let url = this.baseGetURL + id + this.getUrlSuffix;
 		let completeItem = this.request.getItem(url).pipe(
-			map(res => Object.values(res.entities)),
+			map(res => res && res.entities ? Object.values(res.entities) : []),
 			map(res => {
 				// Réordonne qualifiers-order pour chaque claim de chaque propriété
 				res.forEach((entity: any) => {

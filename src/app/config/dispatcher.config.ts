@@ -15,7 +15,8 @@ export const CAREER_DISPLAY_PROPERTIES = [ //by display order
   { property: 'P165', comment: 'activities' },
   { property: 'P865', comment: 'professional address' },
   { property: 'P315', comment: 'employer' },
-  { property: 'P242', comment: 'events witness' },
+  { property: 'P673', comment: 'income' },
+ 
   { property: 'P119', comment: 'active participant to' },
   { property: 'P776', comment: 'business partner' },
 ];
@@ -92,7 +93,8 @@ export const EVENT_DISPLAY_PROPERTIES = [
 
 export const EXCLUDED_DISPLAY_PROPERTIES = [
   { property: 'P899', comment: "object type properties" }, // Ajoutez ici les identifiants des propriétés à ne pas afficher
-  { property: 'P679', comment: "FactGrid map" } //
+  { property: 'P679', comment: "FactGrid map" }, 
+  { property: 'P720', comment: "FactGrid list" } 
   // ...
 ];
 
@@ -147,6 +149,7 @@ export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P38', comment: 'deathday' },
   { property: 'P168', comment: 'deathplace' },
   { property: 'P162', comment: 'cause of death' },
+  { property: 'P885', comment: 'circumstances of death' },
   { property: 'P40', comment: 'burialdate' },
   { property: 'P79', comment: 'grave' },
   { property: 'P141', comment: 'father' },
@@ -155,11 +158,16 @@ export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P84', comment: 'marriage' },
   { property: 'P200', comment: 'number of children' },
   { property: 'P150', comment: 'children' },
+  { property: 'P230', comment: 'intimate relationship' },
+  { property: 'P1267', comment: 'signature' },
   { property: 'P172', comment: 'religion' },
+  { property: 'P616', comment: 'country of citizenship' },
   { property: 'P83', comment: 'place (residence)' },
   { property: 'P296', comment: 'sejour' },
+  { property: 'P242', comment: 'events witness' },
   { property: 'P208', comment: 'address' },
-  { property: 'P1267', comment: 'signature' },
+  { property: 'P460', comment: 'language skills' },
+  { property: 'P171', comment: 'public awards and titles' }  
 ];
 
 export const EXTERNAL_LINKS_DISPLAY_PROPERTIES = [
@@ -189,8 +197,11 @@ export const SOCIABILITY_DISPLAY_PROPERTIES = [
   { property: 'P703', comment: 'personal connections' },
   { property: 'P447', comment: 'masonic degree' },
   { property: 'P497', comment: 'interested in' },
+  { property: 'P452', comment: 'field of expertise' },
   { property: 'P167', comment: 'contributor to' },
-  { property: 'P278', comment: 'subscriptions signed' }
+  { property: 'P278', comment: 'subscriptions signed' },
+  { property: 'P513', comment: 'patients' },
+  { property: 'P447', comment: 'masonic degree' }
 ];
 
 export const HEADER_DISPLAY_PROPERTIES = [
@@ -206,17 +217,13 @@ export const SOURCES_DISPLAY_PROPERTIES = [
   { property: 'P51', comment: 'primary source' },
   { property: 'P143', comment: 'mentioned in' },
   { property: 'P185', comment: 'archives at' },
-  { property: 'P146', comment: 'on line information' }
+  { property: 'P146', comment: 'on line information' },
+  { property: 'P1275', comment: 'has works in the collection' }
 ];
 
-export const ITEM_INFO_PROPERTIES = [
+export const TECHNICALITIES_DISPLAY_PROPERTIES = [
   { property: 'P994', comment: 'PhiloBiblon vocabulary term' },
   { property: 'P1132', comment: 'FactGrid keyword' },
-   { property: 'P2', comment: 'instance of' },
-  { property: 'P3', comment: 'subclass of' },
-  { property: 'P8', comment: 'part of' },
-  { property: 'P97', comment: 'field of research' },
-  { property: 'P131', comment: 'research projects that contributed to this data set' }
 ];
 
 

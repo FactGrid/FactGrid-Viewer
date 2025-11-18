@@ -1,0 +1,61 @@
+<div [ngClass]="isList ? 'show-division':'hide-division'">
+  <mat-card appearance="outlined" class="mat-elevation-z12">
+    <mat-card-content class="cardBackground">
+ 
+      <ng-container *ngIf="isSearch">
+        <div class="searchFormPadding">
+          <mat-form-field appearance="outline">
+            <input matInput (keyup)="applyFilter($event)" placeholder="Search">
+          </mat-form-field>
+          <span>&nbsp;&nbsp;&nbsp;{{list.length}}</span>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="list.length >= 10; else nonVirtualList">
+        <cdk-virtual-scroll-viewport [itemSize]="rowHeight" class="virtual-scroll-viewport" [style.height.px]="getViewportHeightPx(list.length)">
+          <ng-container *ngFor="let L of list; trackBy: trackByFn">
+            <ng-container *ngIf="customRowTemplate; else defaultRow">
+              <ng-container *ngTemplateOutlet="customRowTemplate; context: {$implicit: L}"></ng-container>
+            </ng-container>
+            <ng-template #defaultRow>
+              <div class="sparql-div statementStyle">
+                {{L.itemLabel?.value}}
+                <button mat-icon-button class="internalLink" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
+                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+                </button>
+                <span *ngIf="L.itemDescription">, {{L.itemDescription.value}}</span>
+                <span *ngIf="L.year">, {{L.year.value}}</span>
+                <hr>
+              </div>
+            </ng-template>
+          </ng-container>
+        </cdk-virtual-scroll-viewport>
+      </ng-container>
+      <ng-template #nonVirtualList>
+        <div class="non-virtual-list">
+          <ng-container *ngFor="let L of list; trackBy: trackByFn">
+            <ng-container *ngIf="customRowTemplate; else defaultRow2">
+              <ng-container *ngTemplateOutlet="customRowTemplate; context: {$implicit: L}"></ng-container>
+            </ng-container>
+            <ng-template #defaultRow2>
+              <div class="sparql-div statementStyle">
+                {{L.itemLabel?.value}}
+                <button mat-icon-button class="internalLink" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
+                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+                </button>
+                <span *ngIf="L.itemDescription">, {{L.itemDescription.value}}</span>
+                <span *ngIf="L.year">, {{L.year.value}}</span>
+                <hr>
+              </div>
+            </ng-template>
+          </ng-container>
+        </div>
+      </ng-template>
+      <span>
+        <button mat-icon-button color="primary" class="internalLink" (click)="onClickDownload(langService?.csv)">
+          <mat-icon color="primary" [inline]="true">download</mat-icon>
+        </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </span>
+    </mat-card-content>
+  </mat-card>
+</div>

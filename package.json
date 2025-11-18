@@ -10,7 +10,15 @@
     "e2e": "ng e2e",
     "heroku-postbuild": "ng build --configuration production",
     "compodoc": "npx compodoc -p tsconfig.doc.json",
-    "compodoc:serve": "npx compodoc -p tsconfig.doc.json -s"
+    "compodoc:serve": "npx compodoc -p tsconfig.doc.json -s",
+    "theme": "node switch-palette.js",
+    "theme:default": "node switch-palette.js 0",
+    "theme:blue-orange": "node switch-palette.js 1",
+    "theme:green-amber": "node switch-palette.js 2",
+    "theme:violet-cyan": "node switch-palette.js 3",
+    "theme:navy-coral": "node switch-palette.js 4",
+    "theme:burgundy-gold": "node switch-palette.js 5",
+    "theme:preview": "start theme-preview.html"
 
 
   },

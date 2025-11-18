@@ -14,8 +14,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrl: './header-display.component.scss'
 })
 export class HeaderDisplayComponent {
-
   @Input() headerDetail;
+  @Input() id: string;
+  @Input() factGridUrl: string;
 
   // Optimized headerDetail for display in the template
   headerDetailOptimized: any[] = [];
@@ -50,7 +51,6 @@ export class HeaderDisplayComponent {
       // Les propriétés id, label, description sont directement sur l'objet claimsArr
       // Les claims individuels sont dans le tableau claimsArr lui-même
       const claims = claimsArr.filter((obj: any) => obj?.mainsnak);
-      
       return {
         id: claimsArr.id || '',
         label: claimsArr.label || claimsArr.id || '', // Use the label from the array properties
@@ -59,5 +59,4 @@ export class HeaderDisplayComponent {
       };
     });
   }
-
 }

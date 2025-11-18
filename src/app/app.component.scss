@@ -1,10 +1,18 @@
-
 .custom-toolbar {
   display: flex;
   flex-flow: row;
-  padding-top: 50px;
-  padding-bottom:20px;
-  background-color:white;
+  align-items: center;
+  min-height: 48px;
+  height: 56px;
+  padding: 0 16px;
+  background-color: #222;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.05), rgba(0,0,0,0.05)),
+    url('/assets/toolbar/4096px-Mediterranean_chart_fourteenth_century.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 
 }
 
@@ -13,7 +21,26 @@
 }
 
 .toolbar-btn {
-  margin-top: -10px; /* Ajustez la valeur selon le rendu souhaité */
+  margin: 0 4px;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border-radius: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  border: none;
+  transition: none;
+}
+
+
+.mat-icon, .material-icons, mat-icon {
+  color: #fff !important;
+  font-size: 24px !important;
 }
 
 /* Par défaut, mobile caché, desktop visible */
@@ -130,6 +157,27 @@
   footer, app-footer {
     flex-shrink: 0;
   }
+
+
+.factgrid-logo {
+  width: 40px;
+  height: 40px;
+  vertical-align: bottom;
+  padding: 4px;
+  margin: 4px;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .factgrid-logo {
+    width: 32px;
+    height: 32px;
+    margin: 2px;
+    padding: 2px;
+  }
+}
+
+/* project-overlay supprimé : le sélecteur projet est désormais dans la top-toolbar du display */
 
 
 

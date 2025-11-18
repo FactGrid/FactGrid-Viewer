@@ -48,23 +48,37 @@ export class ItemDetailsService {
         }
         if (itemProperties[i] === "P320") {
           re.claims[itemProperties[i]][j].mainsnak.datatype = "sparql";
-          //   if(re.claims[itemProperties[i]][j].mainsnak.datavalue.value.includes("item")===false){ re.claims[itemProperties[i]][j].mainsnak.datavalue.value="undefined"};
+          //   if(re.claims[itemProperties[i]][j].mainsnak.datavalue.value.includes("item")==false){ re.claims[itemProperties[i]][j].mainsnak.datavalue.value="undefined"};
         };
 
         this.factgrid.setSubtitle1(re, itemProperties[i], lang); // to set a subtitle
 
-        if (re.claims[itemProperties[i]][j].mainsnak.datatype !== "wikibase-item") { continue }
-        let number: number = j;
-        this.factgrid.setSubtitle2(re, itemProperties[i], number, lang)
-        for (let k = 0; k < items.length; k++) {
-          if (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.id === items[k].id) {
-            //     re.claims[itemProperties[i]][j].mainsnak.id = items[k].id;
-            re.claims[itemProperties[i]][j].mainsnak.label = items[k].label;
-            if (items[k].description !== undefined)
-              re.claims[itemProperties[i]][j].mainsnak.description = items[k].description;
-            items[k].description ? (re.claims[itemProperties[i]][j].mainsnak.separator = ", ") : (re.claims[itemProperties[i]][j].mainsnak.separator = "");
-            if (items[k].aliases !== undefined)
-              re.claims[itemProperties[i]][j].mainsnak.aliases = items[k].aliases;
+        if (re.claims[itemProperties[i]][j].mainsnak.datatype === "wikibase-item" || re.claims[itemProperties[i]][j].mainsnak.datatype === "wikibase-property") {
+          let number: number = j;
+          this.factgrid.setSubtitle2(re, itemProperties[i], number, lang)
+          for (let k = 0; k < items.length; k++) {
+            if (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.id === items[k].id) {
+              // Enrichir l'objet value
+              re.claims[itemProperties[i]][j].mainsnak.datavalue.value.label = items[k].label;
+              if (items[k].description !== undefined)
+                re.claims[itemProperties[i]][j].mainsnak.datavalue.value.description = items[k].description;
+              items[k].description ? (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.separator = ", ") : (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.separator = "");
+              if (items[k].aliases !== undefined)
+                re.claims[itemProperties[i]][j].mainsnak.datavalue.value.aliases = items[k].aliases;
+            }
+          }
+          
+          const value = re.claims[itemProperties[i]][j].mainsnak.datavalue.value;
+          const mainsnak = re.claims[itemProperties[i]][j].mainsnak;
+
+          // Fallback: si le label est toujours manquant sur la valeur, on utilise l'id.
+          if (value && value.id && !value.label) {
+            value.label = value.id;
+          }
+
+          // Assurer la redondance : copier le label de la valeur vers le mainsnak pour compatibilité
+          if (value && value.label && !mainsnak.label) {
+            mainsnak.label = value.label;
           }
         }
       }
@@ -101,13 +115,15 @@ export class ItemDetailsService {
             if (q.datatype === "wikibase-item" && q.datavalue?.value) {
               const val = q.datavalue.value;
               const enriched = items.find(it => it.id === val.id);
+              // Substitution simple : label = label || id
+              let label = (enriched && enriched.label) ? enriched.label : (val.label ? val.label : val.id);
               display.push({
                 id: val.id,
-                label: enriched?.label || val.label || val.id,
-                description: enriched?.description || val.description || "",
-                aliases: enriched?.aliases || val.aliases || [],
+                label: label,
+                description: (enriched && enriched.description) ? enriched.description : (val.description || ""),
+                aliases: (enriched && enriched.aliases) ? enriched.aliases : (val.aliases || []),
                 datatype: "wikibase-item",
-                separator: (enriched?.description || val.description) ? ", " : ""
+                separator: ((enriched && enriched.description) || val.description) ? ", " : ""
               });
             } else if (q.datatype === "commonsMedia" && q.datavalue?.value) {
               display.push({

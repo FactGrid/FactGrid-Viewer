@@ -1,74 +1,157 @@
-<div class="cardBackground">
-  <div class="FactGridTitle" [class.with-researchfield-input]="showResearchField">
-    FactGrid
-  </div>
-  <div class="subTitle">{{subtitle}}</div>
-  @let selected = (selectedResearchField$ | async);
-  <div class="selected-research-field" style="display: flex; align-items: center; gap: 4px;">
-    @if (selected?.name !== '-' && selected?.name !== '' && selected?.name !== 'all') {
-    {{ selected.name }}
-    <button mat-icon-button
-            aria-label="Désélectionner le projet"
-            style="margin-left: 2px; font-size: 18px;"
-            (click)="clearProjectSearch()">
-      <mat-icon>close</mat-icon>
-    </button>
-    }
-    <!-- Sinon, rien n'est affiché mais l'espace reste réservé -->
-  </div>
-
-</div>
-
-<div class="search-center2">
-  <div class="search-field-col">
-    <mat-form-field appearance="outline" class="search-field">
-      <input matInput
-        class="search-input-style"
-        [placeholder]="itemsInput"
-        [formControl]="searchInput">
-      <button mat-icon-button
-              matSuffix
-              *ngIf="searchInput.value"
-              aria-label="Effacer"
-              (click)="clearItemSearch()">
-        <mat-icon>close</mat-icon>
-      </button>
-      @if (
-      (selectedResearchField$ | async)?.id &&
-      (selectedResearchField$ | async)?.id !== 'all' &&
-      (selectedResearchField$ | async)?.id !== '-' &&
-      (selectedResearchField$ | async)?.id !== 'Q0'
-      ) {      
-      <div class="search-icons-row">
+@if (!compact) {
+  <div class="cardBackground">
+    <div class="FactGridTitle" [class.with-researchfield-input]="showResearchField">
+      FactGrid
+    </div>
+    <div class="subTitle">{{subtitle}}</div>
+    @let selected = (selectedResearchField$ | async);
+    <div class="selected-research-field" style="display: flex; align-items: center; gap: 4px;">
+      @if (selected?.name !== '-' && selected?.name !== '' && selected?.name !== 'all') {
+        {{ selected.name }}
         <button mat-icon-button
-                class="small-icon-btn people-btn"
-                (click)="togglePeopleFilter()"
-                [class.active]="filterPeople === 'people'"
-                [matTooltip]="filterPeople === 'people' ? filterPeopleDeactivate : filterPeopleActivate"
-                aria-label="Filtrer par personnes">
-          <mat-icon class="small-icon"
-                    [ngClass]="filterPeople === 'people' ? 'icon-active' : 'icon-inactive'">
-            {{ filterPeople === 'people' ? 'person' : 'person_outline' }}
-          </mat-icon>
+                aria-label="Désélectionner le projet"
+                style="margin-left: 2px; font-size: 18px;"
+                (click)="clearProjectSearch()">
+          <mat-icon>close</mat-icon>
         </button>
-        <button mat-icon-button
-                class="small-icon-btn"
-                (click)="togglePublicationFilter()"
-                [class.active]="filterPublication === 'publication'"
-                [matTooltip]="filterPublication === 'publication' ? filterPublicationDeactivate : filterPublicationActivate" aria-label="Filtrer par publications">
-          <mat-icon class="small-icon"
-                    [ngClass]="filterPublication === 'publication' ? 'icon-active' : 'icon-inactive'">
-            {{ filterPublication === 'publication' ? 'menu_book' : 'menu_book' }}
-          </mat-icon>
+      }
+      <!-- Sinon, rien n'est affiché mais l'espace reste réservé -->
+    </div>
+  </div>
+}
+
+<div class="search-center2" [class.compact-mode]="compact">
+  <div class="search-field-col" *ngIf="compact; else fullSearchField">
+    <div class="compact-dual-search">
+      <!-- Réserve toujours la place du sélecteur projet, même s'il n'est pas affiché -->
+      <div class="compact-search-wrapper compact-project" [class.invisible-project]="!showResearchField" matTooltip="{{ projectDisplayValue || projectsInput }}">
+        <ng-container *ngIf="showResearchField; else emptyProjectSelector">
+          <mat-icon class="compact-search-icon">settings</mat-icon>
+          <input
+            #projectInputCompact
+            class="compact-search-input"
+            [placeholder]="projectsInput"
+            [value]="projectDisplayValue"
+            (focus)="onProjectInputFocus()"
+            (blur)="onProjectInputBlur()"
+            (input)="onProjectInputChange($event)" />
+          <button
+            *ngIf="(selectedResearchField$ | async)?.id && (selectedResearchField$ | async)?.id !== 'all' && (selectedResearchField$ | async)?.id !== '-'"
+            type="button"
+            class="compact-clear-btn"
+            aria-label="Effacer le projet"
+            (click)="clearProjectSearch()">
+            ✕
+          </button>
+          <!-- Dropdown autocomplete simple -->
+          <div class="compact-project-dropdown" *ngIf="showProjectDropdown && (filteredResearchFields$ | async) as projects">
+            <div
+              *ngFor="let project of projects"
+              class="compact-project-option"
+              (mousedown)="selectProjectCompact(project)">
+              {{ project.name }}
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #emptyProjectSelector>
+          <!-- Réserve l'espace mais n'affiche rien -->
+        </ng-template>
+      </div>
+      <!-- Input item compact -->
+      <div class="compact-search-wrapper">
+        <mat-icon class="compact-search-icon">search</mat-icon>
+        <input
+          class="compact-search-input"
+          [placeholder]="itemsInput"
+          [formControl]="searchInput" />
+        <button
+          *ngIf="searchInput.value"
+          type="button"
+          class="compact-clear-btn"
+          aria-label="Effacer"
+          (click)="clearItemSearch()">
+          ✕
         </button>
       </div>
-      }
-
-
-    </mat-form-field>
-      <!-- Ajoute ce bloc juste après le mat-form-field -->
-
     </div>
+  </div>
+  <ng-template #fullSearchField>
+    <div class="search-row-full">
+      <!-- Sélecteur de projet aligné avec la recherche item -->
+      <mat-form-field
+        appearance="outline"
+        class="search-field project-field"
+        *ngIf="showResearchField">
+        <mat-label>{{ projectSearch }}</mat-label>
+        <input
+          #searchResearchFieldInput
+          type="text"
+          matInput
+          [formControl]="searchResearchField"
+          [matAutocomplete]="autoResearchField"
+          [placeholder]="projectsInput">
+        <mat-autocomplete
+          #autoResearchField="matAutocomplete"
+          [displayWith]="displayResearchField"
+          class="wide-autocomplete"
+          (optionSelected)="researchFieldSelect($event.option.value)">
+          <mat-option
+            *ngFor="let researchField of filteredResearchFields$ | async"
+            [value]="researchField"
+            class="research-field-option">
+            <span>{{ researchField.name }}</span>
+            <span *ngIf="researchField.description" class="research-field-description">
+              {{ researchField.description }}
+            </span>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="search-field main-search-field">
+        <input matInput
+          class="search-input-style"
+          [placeholder]="itemsInput"
+          [formControl]="searchInput">
+        <button mat-icon-button
+                matSuffix
+                *ngIf="searchInput.value"
+                aria-label="Effacer"
+                (click)="clearItemSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+        @if (
+        (selectedResearchField$ | async)?.id &&
+        (selectedResearchField$ | async)?.id !== 'all' &&
+        (selectedResearchField$ | async)?.id !== '-' &&
+        (selectedResearchField$ | async)?.id !== 'Q0'
+        ) {      
+        <div class="search-icons-row">
+          <button mat-icon-button
+                  class="small-icon-btn people-btn"
+                  (click)="togglePeopleFilter()"
+                  [class.active]="filterPeople === 'people'"
+                  [matTooltip]="filterPeople === 'people' ? filterPeopleDeactivate : filterPeopleActivate"
+                  aria-label="Filtrer par personnes">
+            <mat-icon class="small-icon"
+                      [ngClass]="filterPeople === 'people' ? 'icon-active' : 'icon-inactive'">
+              {{ filterPeople === 'people' ? 'person' : 'person_outline' }}
+            </mat-icon>
+          </button>
+          <button mat-icon-button
+                  class="small-icon-btn"
+                  (click)="togglePublicationFilter()"
+                  [class.active]="filterPublication === 'publication'"
+                  [matTooltip]="filterPublication === 'publication' ? filterPublicationDeactivate : filterPublicationActivate" aria-label="Filtrer par publications">
+            <mat-icon class="small-icon"
+                      [ngClass]="filterPublication === 'publication' ? 'icon-active' : 'icon-inactive'">
+              {{ filterPublication === 'publication' ? 'menu_book' : 'menu_book' }}
+            </mat-icon>
+          </button>
+        </div>
+        }
+      </mat-form-field>
+    </div>
+  </ng-template>
 </div>
 
 <!-- Affichage de la liste des items trouvés -->
@@ -81,12 +164,15 @@
     @let filtered = (filteredItems$ | async);
     @let searchValue = (searchInputValue$ | async);
     @if (searchValue && searchValue.length > 0) {
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-      <mat-form-field appearance="outline" class="filter-field">
-        <mat-label>{{filterResults}}</mat-label>
-        <input matInput [formControl]="filterInput">
-      </mat-form-field>
-      <span class="item-count">
+    <div class="items-filter-row">
+      <div class="compact-filter-wrapper">
+        <span class="compact-filter-label">{{filterResults}}</span>
+        <input
+          class="compact-filter-input"
+          type="text"
+          [formControl]="filterInput" />
+      </div>
+      <span class="item-count compact-item-count">
         {{ filtered.length }} {{dataOptions}}
       </span>
     </div>
@@ -117,46 +203,48 @@
 }
 
 
-<!---@let filtered = (filteredItems$ | async);
-@let searchValue = (searchInputValue$ | async);
-@if (isArray(filtered) && filtered.length === 0 && searchValue) { -->
+<!--
+  Bloc "visites précédentes" et liens avancés.
+  Désactivé dans le mode de recherche intégré (app-display) pour ne pas masquer l'input.
+  Si besoin pour un écran d'accueil dédié à la recherche, ce bloc pourra être réactivé
+  ou déplacé dans un autre composant.
 @let filtered = (filteredItems$ | async);
 @if (isArray(filtered) && filtered.length === 0) {
-<div>
-  <div class="search-center">
-    <a [routerLink]="['./advanced_search']">{{advanced_search}}</a> <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-    <a href="https://database.factgrid.de/query/#%23model%0A%0ASELECT%20%3Fitem%20%3Fviewer%20%3FitemLabel%20%20WHERE%20%7B%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%3Fitem%20wdt%3AP2%20wd%3AQ7%3B%0A%20%20%20%20%20%20%20%20wdt%3AP247%20wd%3AQ24708.%0A%20%20BIND%28STRAFTER%28STR%28%3Fitem%29%2C%20STR%28wd%3A%29%29%20AS%20%3FitemId%29%0A%20%20BIND%28IRI%28CONCAT%28%22https%3A%2F%2Fdatabase.factgrid.de%2Fviewer%2Fitem%2F%22%2C%20%3FitemId%29%29%20AS%20%3Fviewer%29%0A%7D%0A">
-      sparql query
-    </a>
-    <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-    <!---       <a [routerLink]="['/harmonia_universalis']">Harmonia Universalis</a> --->
-  </div>
+  <div>
+    <div class="search-center">
+      <a [routerLink]="['./advanced_search']">{{advanced_search}}</a> <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+      <a href="https://database.factgrid.de/query/#%23model%0A%0ASELECT%20%3Fitem%20%3Fviewer%20%3FitemLabel%20%20WHERE%20%7B%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22%5BAUTO_LANGUAGE%5D%2Cen%22.%20%7D%0A%20%20%3Fitem%20wdt%3AP2%20wd%3AQ7%3B%0A%20%20%20%20%20%20%20%20wdt%3AP247%20wd%3AQ24708.%0A%20%20BIND%28STRAFTER%28STR%28%3Fitem%29%2C%20STR%28wd%3A%29%29%20AS%20%3FitemId%29%0A%20%20BIND%28IRI%28CONCAT%28%22https%3A%2F%2Fdatabase.factgrid.de%2Fviewer%2Fitem%2F%22%2C%20%3FitemId%29%29%20AS%20%3Fviewer%29%0A%7D%0A">
+        sparql query
+      </a>
+      <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+    </div>
 
-  <div class="search-itemSelected">
-    <mat-card appearance="outlined" class="search-itemSelected-mat-card">
-      <div class="selectedListTitle2">{{formerVisitsTitle}}</div>
-      <div class="selectedItemSize">
-        <hr>
-        <mat-card-content>
-          <div>
-            @for (selectedItem of selectedItemsList; track selectedItem) {
-            <div class="labelTitlePadding">
-              @if (selectedItem) {
-              <span class="selectedItemText">
-                {{selectedItem.label}}&nbsp;
-                <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]" (click)="$event.stopPropagation()"><mat-icon class="whiteButton" [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              </span>
+    <div class="search-itemSelected">
+      <mat-card appearance="outlined" class="search-itemSelected-mat-card">
+        <div class="selectedListTitle2">{{formerVisitsTitle}}</div>
+        <div class="selectedItemSize">
+          <hr>
+          <mat-card-content>
+            <div>
+              @for (selectedItem of selectedItemsList; track selectedItem) {
+                <div class="labelTitlePadding">
+                  @if (selectedItem) {
+                    <span class="selectedItemText">
+                      {{selectedItem.label}}&nbsp;
+                      <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]" (click)="$event.stopPropagation()"><mat-icon class="whiteButton" [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </span>
+                  }
+                  <br>
+                </div>
               }
-              <br>
             </div>
-            }
-          </div>
-        </mat-card-content>
-      </div>
-    </mat-card>
+          </mat-card-content>
+        </div>
+      </mat-card>
+    </div>
   </div>
-</div>
- }
+}
+-->
 
 
 

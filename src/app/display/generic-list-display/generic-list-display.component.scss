@@ -1,0 +1,431 @@
+.linkedItemText {
+
+  color: #222;
+  text-decoration: none;
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  border-radius: 4px;
+  transition: text-decoration 0.15s, background 0.15s;
+  cursor: pointer;
+}
+.linkedItemText:hover, .linkedItemText:focus {
+  text-decoration: underline;
+  background: rgba(40,53,147,0.06);
+  color: #222;
+}
+
+/* Lien FactGrid spécifique : noir, souligné au hover */
+.factgrid-link {
+  color: #111 !important;
+  text-decoration: none;
+}
+.factgrid-link:hover, .factgrid-link:focus {
+  color: #111 !important;
+  text-decoration: underline;
+}
+
+/* Supprimer l'espace entre le lien et le séparateur */
+.linkedItemText + .description-text,
+.linkedItemText + .description-text:before {
+  margin-left: 0 !important;
+}
+.qualifierProperty + span,
+.referenceProperty + span {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.hover-bg-light {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+// Bloc pour forcer l'affichage des références sur une nouvelle ligne
+.reference-block {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+// Supprime tout espace résiduel sur le bouton Références
+.reference-indent {
+  margin-left: 32px !important;
+}
+.references-toggle-btn {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  line-height: 1.2 !important;
+  height: auto !important;
+  box-shadow: none !important;
+}
+.references-toggle-btn.mat-button,
+.references-toggle-btn.mat-mdc-button,
+.references-toggle-btn.mat-mdc-button-base {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  line-height: 1.2 !important;
+  height: auto !important;
+  box-shadow: none !important;
+}
+
+.references-toggle-btn.reference-indent {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 0;
+  line-height: 1.2;
+}
+// Indentation pour le bouton Références afin d'aligner avec les références
+.reference-indent {
+  margin-left: 32px !important;
+}
+/* ========================================
+   GENERIC LIST DISPLAY - Style unifié
+   ======================================== */
+
+.cardBackground {
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 4px 0;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+/* ========================================
+   TITRE DE SECTION
+   ======================================== */
+
+.subdivisionTitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #283593;
+  margin: 0 0 12px 0;
+  padding: 0;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+
+.list-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  color: #283593;
+  letter-spacing: 0.01em;
+}
+
+/* ========================================
+   STYLES DE LISTE
+   ======================================== */
+
+.listStyle {
+  margin: 0 0 16px 0;
+  padding: 8px 0;
+  list-style: none;
+  border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+}
+
+.generic-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.generic-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(227, 232, 239, 0.6);
+  font-size: 0.95rem;
+  color: #1f2d40;
+  line-height: 1.6;
+  transition: background-color 200ms ease;
+}
+
+.generic-list li:hover {
+  background-color: rgba(40, 53, 147, 0.02);
+}
+
+.generic-list li:last-child {
+  border-bottom: none;
+}
+
+/* ========================================
+   PROPRIÉTÉS ET LABELS
+   ======================================== */
+
+.labelTitlePadding {
+  padding: 0;
+  margin: 4px 0;
+  display: block;
+}
+
+.propertyStyle {
+  font-weight: 600;
+  color: var(--color-primary, #3F51B5) !important;
+  font-size: 0.95rem;
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 150ms ease;
+}
+
+.hover-bg-light:hover {
+  background-color: rgba(63, 81, 181, 0.08);
+  cursor: help;
+}
+
+.referenceProperty {
+  font-weight: 400;
+  color: #111 !important;
+  font-size: 0.875rem;
+  font-style: italic;
+  display: inline-block;
+  margin-right: 2px;
+  padding: 0;
+  border-radius: 3px;
+  transition: background-color 150ms ease;
+}
+
+/* ========================================
+   STATEMENTS ET QUALIFICATIFS
+   ======================================== */
+
+// Indentation uniforme avec références et bouton Références
+// Indentation plus importante pour les statements (valeurs, qualifiers, références)
+// Indentation plus importante pour les statements (valeurs, qualifiers, références)
+.statementStyle {
+  padding: 6px 0 6px 64px;
+  width: auto;
+  max-width: 100%;
+  font-size: 0.95rem;
+  color: #1f2d40;
+  line-height: 1.7;
+  margin: 4px 0;
+  
+  > div {
+    padding: 4px 0;
+  }
+}
+
+.qualifierStyle {
+  margin-left: 0;
+  margin-top: 6px;
+  font-size: 0.875rem;
+  color: #5f6c7f;
+  line-height: 1.6;
+  padding: 4px 0;
+  border-left: 2px solid rgba(173, 20, 87, 0.15);
+  padding-left: 12px;
+}
+
+.qualifierProperty {
+  color: #AD1457;
+  font-size: 0.875rem;
+  font-style: italic;
+  margin-right: 2px;
+  padding: 0;
+}
+
+/* ========================================
+   RÉFÉRENCES ET CALENDRIERS
+   ======================================== */
+
+// Indentation sur le conteneur pour que la barre verticale suive
+.referenceStyle {
+  margin-left: 48px !important;
+  margin-top: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: #5f6c7f;
+  line-height: 1.6;
+  background-color: rgba(102, 153, 204, 0.03); /* couleur primaire très claire */
+  border-left: 3px solid var(--color-primary, #6699CC) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+.calendarStyle {
+  font-size: 0.8rem;
+  color: #111 !important;
+  margin-left: 6px;
+  font-style: italic;
+}
+
+/* ========================================
+   ÉTATS ET DÉCORATIONS
+   ======================================== */
+
+.warningDeprecated {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.description-text {
+  color: #5f6c7f;
+  font-size: 0.875rem;
+  margin-left: 4px;
+  font-style: italic;
+}
+
+.inlineStyle {
+  display: inline-block;
+  margin-right: 2px;
+}
+
+/* ========================================
+   BOUTONS ET LIENS
+   ======================================== */
+
+.references-toggle-btn {
+  margin: 2px 0 2px 0; /* réduit pour coller aux qualificatifs */
+  padding: 1px 6px; /* hauteur minimale */
+  font-size: 0.85rem; /* même taille que les qualifiers */
+  line-height: 1.25; /* compaction verticale */
+  font-weight: 400; /* poids normal */
+  color: #AD1457;
+  background-color: rgba(173, 20, 87, 0.03);
+  border: 1px solid rgba(173, 20, 87, 0.18);
+  border-radius: 4px;
+  min-height: 0; /* supprime hauteur forcée */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+
+  &:hover {
+    background-color: rgba(173, 20, 87, 0.08);
+    border-color: rgba(173, 20, 87, 0.26);
+  }
+}
+
+.triangle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--color-accent, #cc5500) !important;
+  margin-right: 8px;
+  transition: transform 150ms ease;
+  vertical-align: middle;
+  
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.references-label {
+  color: #111 !important;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.95em;
+  letter-spacing: 0.01em;
+  margin-left: 0;
+  margin-right: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  display: inline;
+}
+
+.internalLink {
+  display: inline-flex;
+  align-items: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 2px;
+  margin: 0 2px;
+  vertical-align: middle;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+  }
+}
+
+.displayLayout {
+  word-break: break-all;
+  display: inline-block;
+  max-width: 100%;
+}
+
+a {
+  color: #3F51B5;
+  text-decoration: none;
+  transition: color 150ms ease;
+  
+  &:hover {
+    color: #283593;
+    text-decoration: underline;
+  }
+}
+
+/* ========================================
+   IMAGES
+   ======================================== */
+
+.cover {
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 
+    0 2px 8px rgba(40, 53, 147, 0.08),
+    0 1px 3px rgba(40, 53, 147, 0.04);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.cover:hover {
+  box-shadow: 
+    0 4px 12px rgba(40, 53, 147, 0.12),
+    0 2px 6px rgba(40, 53, 147, 0.06);
+  transform: scale(1.02);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 959.98px) {
+  .subdivisionTitle {
+    font-size: 1.05rem;
+  }
+  
+  .list-title {
+    font-size: 1rem;
+  }
+  
+  .statementStyle {
+    font-size: 0.9rem;
+  }
+  
+  .qualifierStyle {
+    margin-left: 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .subdivisionTitle {
+    font-size: 1rem;
+  }
+  
+  .cover {
+    width: 100px;
+  }
+
+}

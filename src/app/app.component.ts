@@ -8,13 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { FooterComponent } from './footer/footer.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RequestService } from './services/request.service';
-import { SelectedResearchFieldService, ResearchField } from './services/selected-research-field.service';
+import { SelectedResearchFieldService } from './services/selected-research-field.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { SelectedLangService } from './selected-lang.service';
@@ -39,8 +37,6 @@ export interface Lang {
     RouterModule,
     FooterComponent,
     MatTooltipModule,
-    MatFormFieldModule,
-    MatInputModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatDividerModule
@@ -69,9 +65,6 @@ export class AppComponent implements OnInit {
   ];
 
   researchFields: any[] = [];
-  private researchFields$ = new BehaviorSubject<any[]>([]);
-  searchResearchField = new FormControl<ResearchField | null>(null);
-  filteredResearchFields$: Observable<any[]>;
 
   selectedLang: string = (localStorage['selectedLang'] === undefined) ? 'en' : localStorage['selectedLang'];
   selectedPage = (sessionStorage['selectedPage'] === undefined)
@@ -97,14 +90,6 @@ export class AppComponent implements OnInit {
   projectSearch: string = "Search a project";
   projectName: string = "Project name";
 
-  getResearchFieldQuery(lang: string): string {
-    return `https://database.factgrid.de/sparql?query=SELECT ?item ?itemLabel ?itemDescription  
-    WHERE {
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "${lang},en". }
-      ?item wdt:P2 wd:Q11295.
-    }`;
-  }
-
   constructor() { }
 
   ngOnInit(): void {
@@ -124,50 +109,9 @@ export class AppComponent implements OnInit {
     this.projectSearch = this.lang.getTranslation('projectSearch', this.lang.selectedLang);
     this.projectName = this.lang.getTranslation('projectName', this.lang.selectedLang);
 
-    // Initialisation du champ projet avec l'objet projet courant
-    const selected = this.selectedResearchFieldService.getSelectedResearchField();
-    this.searchResearchField.setValue(selected);
-
     this.selectedResearchFieldService.showResearchField$.subscribe(show => {
       this.showResearchField = show;
     })
-
-    // Synchronisation continue avec le service
-    this.selectedResearchFieldService.selectedResearchField$.subscribe(selected => {
-      if (this.searchResearchField.value?.id !== selected?.id) {
-        this.searchResearchField.setValue(selected, { emitEvent: false });
-      }
-    });
-
-    // Initialisation de l'observable filtré, toujours prêt
-    this.filteredResearchFields$ = combineLatest([
-      this.researchFields$,
-      this.searchResearchField.valueChanges.pipe(startWith(''))
-    ]).pipe(
-      map(([fields, value]) => {
-        const search = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
-        return fields.filter(f => f.name.toLowerCase().includes(search));
-      })
-    );
-
-    // Récupération des projets depuis le backend
-    this.request.getList(this.getResearchFieldQuery(this.selectedLang))
-      .pipe(
-        map(res => this.listFromSparql(res)),
-        map(res => [
-          { name: '-', id: '-' },
-          ...res.results.bindings.map(b => ({
-            name: b.itemLabel.value,
-            id: b.item.id,
-            description: b.itemDescription?.value ?? ''
-          }))
-        ])
-      )
-      .subscribe(projects => {
-        projects.sort((a, b) => a.name.localeCompare(b.name));
-        this.researchFields = projects;
-        this.researchFields$.next(projects); // met à jour le BehaviorSubject
-      });
   }
 
   langSetting(lang) {
@@ -178,42 +122,14 @@ export class AppComponent implements OnInit {
     window.location.reload();
   }
 
-  researchFieldSelect(researchField) {
-    this.selectedResearchFieldService.setSelectedResearchField({
-      id: researchField.id,
-      name: researchField.name,
-      description: researchField.description ?? ''
-    });
-    // Synchronise l'input projet avec la sélection (objet projet)
-    this.searchResearchField.setValue(researchField);
-  }
-
   linking() {
     window.open('https://database.factgrid.de/wiki/Main_Page', '_blank');
   }
 
-  listFromSparql(res) {
-    if (res !== undefined) {
-      if (res.results !== undefined) {
-        for (let i = 0; i < res.results.bindings.length; i++) {
-          res.results.bindings[i]["item"].id = res.results.bindings[i]["item"].value.replace(
-            "https://database.factgrid.de/entity/", "");
-          res.results.bindings[i]["item"].id.startsWith("P") ? res.results.bindings[i]["item"].entity = "property" : res.results.bindings[i]["item"].entity = "item";
-        }
-      }
-    }
-    else {
-      res = { head: { vars: ['item', 'itemLabel', 'itemDescription', 'fLabel', 'activityLabel'] }, results: { bindings: [] } }
-    }
-    return res
-  }
-
-  displayResearchField(researchField: any): string {
-    return researchField && researchField.name ? researchField.name : '-';
-  }
-
   toggleResearchField() {
-    this.showResearchField = !this.showResearchField;
-    this.selectedResearchFieldService.setShowResearchField(this.showResearchField);
+    const current = this.selectedResearchFieldService.getShowResearchField();
+    const next = !current;
+    this.selectedResearchFieldService.setShowResearchField(next);
+    this.showResearchField = next;
   }
 }

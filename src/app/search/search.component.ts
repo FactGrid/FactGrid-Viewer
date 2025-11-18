@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Observable, Subscription, BehaviorSubject, map, switchMap, tap, debounceTime,
@@ -79,6 +79,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   private readonly searchCache = inject(SearchCacheService);
   private readonly router = inject(Router);
 
+  // ========== OUTPUTS (EMBEDDED MODE) ==========
+  @Output() itemSelected = new EventEmitter<string>();
+
+  // ========== INPUTS (DISPLAY MODES) ==========
+  @Input() compact = false;
+
   // ========== UI TEXTS ==========
   title = 'factgrid';
   subtitle = '';
@@ -99,9 +105,11 @@ export class SearchComponent implements OnInit, OnDestroy {
   showResearchField = false;
   showInDescription = false;
   isSearching = false;
+  showProjectDropdown = false;
+  projectDisplayValue = '';
 
   // ========== FORM CONTROLS ==========
-  searchResearchField = new FormControl('');
+  searchResearchField = new FormControl<ResearchField | string>('');
   searchInput = new FormControl();
   filterInput = new FormControl('');
 
@@ -183,6 +191,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.initSelectedItemsList();
     this.initShowResearchFieldSync();
     this.initResearchFields();
+    this.initProjectList();
     this.initSearchResults();
     this.initFilteredItems();
     this.initHintValue();
@@ -204,13 +213,26 @@ export class SearchComponent implements OnInit, OnDestroy {
     // Changement de couleur temporaire (par exemple 200ms)
     setTimeout(() => {
       this.clickedItemId = null;
+      // Toujours émettre l'événement de sélection
+      this.itemSelected.emit(itemId);
+      // Navigation directe pour le mode "page de recherche" autonome
       this.router.navigate(['/item', itemId]);
+      // Ferme le panneau de résultats en vidant la recherche et la liste
+      this.searchInput.setValue('', { emitEvent: true });
+      this.filterInput.setValue('', { emitEvent: false });
+      this.items = [];
+      this.items$.next([]);
+      this.totalResults = 0;
+      this.currentPage = 0;
+      this.changeDetector.markForCheck();
     }, 200);
   }
 
 
   private initResearchFields() {
-    const sub = this.selectedResearchField.selectedResearchField$.subscribe(() => {
+    const sub = this.selectedResearchField.selectedResearchField$.subscribe(selected => {
+      this.searchResearchField.setValue(selected, { emitEvent: false });
+      this.updateProjectDisplayValue(selected);
       this.searchInput.setValue('');
       this.items = [];
       this.items$.next([]);
@@ -255,6 +277,48 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.changeDetector.markForCheck();
     });
     this.subscriptions.push(sub);
+  }
+
+  private initProjectList() {
+    const selected = this.selectedResearchField.getSelectedResearchField();
+    this.searchResearchField.setValue(selected);
+    this.updateProjectDisplayValue(selected);
+
+    this.filteredResearchFields$ = combineLatest([
+      this.researchFields$,
+      this.searchResearchField.valueChanges.pipe(startWith(''))
+    ]).pipe(
+      map(([fields, value]) => {
+        const search = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
+        return fields.filter(f => f.name.toLowerCase().includes(search));
+      })
+    );
+
+    this.request.getList(this.getResearchFieldQuery(this.lang.selectedLang))
+      .pipe(
+        map(res => this.listFromSparql(res)),
+        map(res => [
+          { name: '-', id: '-', description: '' },
+          ...res.results.bindings.map((b: any) => ({
+            name: b.itemLabel.value,
+            id: b.item.id,
+            description: b.itemDescription?.value ?? ''
+          }))
+        ])
+      )
+      .subscribe(projects => {
+        projects.sort((a: any, b: any) => a.name.localeCompare(b.name));
+        this.researchFields = projects;
+        this.researchFields$.next(projects);
+      });
+  }
+
+  private getResearchFieldQuery(lang: string): string {
+    return `https://database.factgrid.de/sparql?query=SELECT ?item ?itemLabel ?itemDescription  
+    WHERE {
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "${lang},en". }
+      ?item wdt:P2 wd:Q11295.
+    }`;
   }
 
   /**
@@ -552,10 +616,51 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   clearItemSearch() {
-    this.searchInput.setValue('', { emitEvent: false });
+    this.searchInput.setValue('', { emitEvent: true });
+    this.filterInput.setValue('', { emitEvent: false });
     this.items = [];
     this.items$.next([]);
-    this.changeDetector.detectChanges();
+    this.totalResults = 0;
+    this.currentPage = 0;
+    this.changeDetector.markForCheck();
+  }
+
+  onProjectInputFocus() {
+    this.showProjectDropdown = true;
+    this.changeDetector.markForCheck();
+  }
+
+  onProjectInputBlur() {
+    setTimeout(() => {
+      this.showProjectDropdown = false;
+      const selected = this.selectedResearchField.getSelectedResearchField();
+      this.updateProjectDisplayValue(selected);
+      this.changeDetector.markForCheck();
+    }, 200);
+  }
+
+  onProjectInputChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    this.projectDisplayValue = value;
+    this.searchResearchField.setValue(value);
+    this.showProjectDropdown = true;
+    this.changeDetector.markForCheck();
+  }
+
+  updateProjectDisplayValue(field: ResearchField | null) {
+    if (!field || field.id === 'all' || field.id === '-') {
+      this.projectDisplayValue = '';
+    } else {
+      this.projectDisplayValue = field.name;
+    }
+  }
+
+  selectProjectCompact(project: ResearchField) {
+    this.researchFieldSelect(project);
+    this.updateProjectDisplayValue(project);
+    this.showProjectDropdown = false;
+    this.changeDetector.markForCheck();
   }
 
   onShowInDescriptionChange(checked: boolean) {

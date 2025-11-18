@@ -1,0 +1,142 @@
+/* ========================================
+   THÈME FACTGRID - Variables de couleurs
+   
+   Pour changer de palette, modifiez simplement
+   les valeurs ci-dessous
+   ======================================== */
+
+// ====== PALETTE PERSONNALISÉE : BLEU #384952 ======
+$primary-color: #384952;      // Bleu principal
+$primary-light: #506a7a;      // Bleu clair (+20% luminosité)
+$primary-dark: #232d36;       // Bleu foncé (-20% luminosité)
+$accent-color: #00bcd4;       // Bleu accent vif
+$accent-light: #4dd0e1;       // Bleu accent clair
+
+// ====== PALETTES ALTERNATIVES (décommenter pour utiliser) ======
+
+// PALETTE 1 : Bleu Académique / Orange
+// $primary-color: #1e3a8a;
+// $primary-light: #3b82f6;
+// $primary-dark: #1e40af;
+// $accent-color: #ea580c;
+// $accent-light: #f97316;
+
+// PALETTE 2 : Vert Forêt / Ambre
+// $primary-color: #065f46;
+// $primary-light: #059669;
+// $primary-dark: #064e3b;
+// $accent-color: #d97706;
+// $accent-light: #f59e0b;
+
+// PALETTE 3 : Violet Profond / Cyan
+// $primary-color: #5b21b6;
+// $primary-light: #7c3aed;
+// $primary-dark: #4c1d95;
+// $accent-color: #0891b2;
+// $accent-light: #06b6d4;
+
+// PALETTE 4 : Bleu Marine / Corail
+// $primary-color: #0c4a6e;
+// $primary-light: #0284c7;
+// $primary-dark: #075985;
+// $accent-color: #dc2626;
+// $accent-light: #ef4444;
+
+// PALETTE 5 : Bordeaux / Or
+// $primary-color: #7f1d1d;
+// $primary-light: #b91c1c;
+// $primary-dark: #991b1b;
+// $accent-color: #ca8a04;
+// $accent-light: #eab308;
+
+// ====== COULEURS D'ARRIÈRE-PLAN ======
+$background-page: #f8f9fc;
+$background-card: #ffffff;
+$background-card-glass: rgba(255, 255, 255, 0.85);
+$background-info: #fff8e1;
+$background-drawer: #fafbfc;
+$background-header-info: #e8eaf6;
+
+// ====== COULEURS DE TEXTE ======
+$text-primary: #1a2332;
+$text-secondary: #5f6c7f;
+$text-light: #ffffff;
+$text-muted: #9ea8b8;
+
+// ====== BORDURES ======
+$border-color: #e3e8ef;
+$border-color-strong: #cbd5e1;
+
+// ====== RAYONS DE BORDURE ======
+$radius-sm: 6px;
+$radius-md: 12px;
+$radius-lg: 16px;
+
+// ====== OMBRES ======
+$shadow-sm: 0 1px 3px rgba(40, 53, 147, 0.06), 0 1px 2px rgba(40, 53, 147, 0.04);
+$shadow-md: 0 4px 12px rgba(40, 53, 147, 0.08), 0 2px 4px rgba(40, 53, 147, 0.04);
+$shadow-lg: 0 8px 24px rgba(40, 53, 147, 0.12), 0 4px 8px rgba(40, 53, 147, 0.06);
+$shadow-hover: 0 12px 32px rgba(40, 53, 147, 0.14), 0 4px 12px rgba(40, 53, 147, 0.08);
+
+// ====== ESPACEMENTS ======
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// ====== TRANSITIONS ======
+$transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// ====== EXPORT EN CSS VARIABLES ======
+:root {
+  // Couleurs principales
+  --primary-color: #{$primary-color};
+  --primary-light: #{$primary-light};
+  --primary-dark: #{$primary-dark};
+  --accent-color: #{$accent-color};
+  --accent-light: #{$accent-light};
+  
+  // Arrière-plans
+  --background-page: #{$background-page};
+  --background-card: #{$background-card};
+  --background-card-glass: #{$background-card-glass};
+  --background-info: #{$background-info};
+  --background-drawer: #{$background-drawer};
+  --background-header-info: #{$background-header-info};
+  
+  // Texte
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --text-light: #{$text-light};
+  --text-muted: #{$text-muted};
+  
+  // Bordures
+  --border-color: #{$border-color};
+  --border-color-strong: #{$border-color-strong};
+  
+  // Rayons
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  
+  // Ombres
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-hover: #{$shadow-hover};
+  
+  // Espacements
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  
+  // Transitions
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+  --transition-slow: #{$transition-slow};
+}

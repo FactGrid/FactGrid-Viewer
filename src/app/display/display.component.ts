@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, OnDestroy, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackListDetailsService } from '../services/back-list-details.service';
@@ -13,30 +13,31 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { JoinPipe } from '../join.pipe';
 import { ItemInfoComponent } from './item-info/item-info.component';
+import { GenericListDisplayComponent } from './generic-list-display/generic-list-display.component';
 import { HeaderDisplayComponent } from './header-display/header-display.component';
-import { CareerDisplayComponent } from './career-display/career-display.component';
-import { MainDisplayComponent } from './main-display/main-display.component';
-import { EducationDisplayComponent } from './education-display/education-display.component';
-import { SociabilityDisplayComponent } from './sociability-display/sociability-display.component';
-import { SourcesDisplayComponent } from './sources-display/sources-display.component';
-import { Sparql0DisplayComponent } from './sparql0-display/sparql0-display.component';
-import { Sparql1DisplayComponent } from './sparql1-display/sparql1-display.component';
-import { Sparql2DisplayComponent } from './sparql2-display/sparql2-display.component';
-import { Sparql3DisplayComponent } from './sparql3-display/sparql3-display.component';
-import { Sparql4DisplayComponent } from './sparql4-display/sparql4-display.component';
+// ...
+import { ThematicCardComponent } from './thematic-card/thematic-card.component';
+import { SparqlDisplayComponent } from './sparql-display/sparql-display.component';
+import { SparqlDisplayService, SparqlAllCardsState } from './services/sparql-display.service';
 import { IframesDisplayComponent } from './iframes-display/iframes-display.component';
 import { TextDisplayComponent } from './text-display/text-display.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatListModule } from '@angular/material/list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { SelectedLangService } from '../selected-lang.service';
+import { SelectedResearchFieldService, ResearchField } from '../services/selected-research-field.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { ItemDisplayDispatcherService } from './services/item-display-dispatcher.service';
 import { RouterModule } from '@angular/router';
+import { SearchComponent } from '../search/search.component';
 
 @Component({
   selector: 'app-display',
@@ -44,14 +45,16 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./display.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, MatTabsModule, MatButtonModule, RouterModule, NgIf, MatProgressSpinnerModule, MatSidenavModule,
-    MatIconModule, MatCardModule, NgFor, NgClass, TextDisplayComponent, Sparql0DisplayComponent,
-    Sparql1DisplayComponent, Sparql2DisplayComponent, Sparql3DisplayComponent, Sparql4DisplayComponent,
-    ItemInfoComponent, MainDisplayComponent, HeaderDisplayComponent, SociabilityDisplayComponent,
-    SourcesDisplayComponent, EducationDisplayComponent, CareerDisplayComponent, IframesDisplayComponent, JoinPipe
+  CommonModule, MatTabsModule, MatButtonModule, RouterModule, NgIf, MatProgressSpinnerModule, MatSidenavModule, MatToolbarModule, MatBadgeModule, MatListModule, MatTooltipModule,
+    MatIconModule, MatCardModule, NgFor, NgClass, TextDisplayComponent, SparqlDisplayComponent,
+    ItemInfoComponent, HeaderDisplayComponent, SearchComponent,
+  IframesDisplayComponent, ThematicCardComponent, JoinPipe, GenericListDisplayComponent
   ]
 })
 export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
+    subtitle: string;
+  private sparqlDisplayService = inject(SparqlDisplayService);
+  constructor(private cdr: ChangeDetectorRef) {}
 
   public from: string;
 
@@ -69,6 +72,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private iframesDisplay = inject(IframesDisplayService);
   private sanitizer = inject(DomSanitizer);
   private observer = inject(BreakpointObserver);
+  private selectedResearchFieldService = inject(SelectedResearchFieldService);
 
   // Données principales
   item: any;
@@ -90,7 +94,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   urlId: string;
   linkedItems: any[];
   linkedItems2: any[];
-  factGridUrl: string;
+  factGridUrl: string = "https://database.factgrid.de/entity/";
   sources: any;
   mainList: any[] = [];
   list: any[] = [];
@@ -131,7 +135,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   isTopPicture = false;
   isTraining = false;
   isCareer = false;
-  isSociability = false;
   isOther = false;
   isSource = false;
   isActivity = false;
@@ -144,15 +147,12 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   isStemma = false;
   isFamilyTree = false;
   isFrames = false;
-  isSparql0 = false;
-  isSparql1 = false;
-  isSparql2 = false;
-  isSparql3 = false;
-  isSparql4 = false;
+  // Les cartes SPARQL sont affichées directement à partir de sparql$ | async
   isTechnicality = false;
   isTranscription = false;
   isInfo = false;
   isMobile = false;
+  drawerOpened = false;
   isAliases = false;
 
   // Divers
@@ -188,12 +188,18 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   sparqlSubject2: string;
   sparqlSubject3: string;
   sparqlSubject4: string;
+  sparql$: Observable<any[][]> | null = null;
+
+  // Titres/listes calculés au niveau parent pour les cartes SPARQL (via le service)
+  sparqlCards$: Observable<SparqlAllCardsState> | null = null;
 
   // Subscriptions
   subscription0: Subscription;
   subscription1: Subscription;
   subscription2: Subscription;
   subscription3: Subscription;
+  sparqlSubscription: Subscription;
+  selectedResearchFieldSubscription: Subscription;
 
   // Textes d’interface
   newSearch: string = "new search";
@@ -201,32 +207,69 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   mainPage: string = "main page";
   externalLinksTitle: string = "External links";
   formerVisitsTitle: string = "you have visited:";
+  careerTitle: string;
   factGridQuery: string = "FactGrid query";
   clickToDisplay: string = "click to display";
   clickToDownload: string = "click to download";
   stemma: string = "stemma";
   factGridLogo: string = 'https://upload.wikimedia.org/wikipedia/commons/b/b6/FactGrid-Logo4.png';
+  currentProject: ResearchField | null = null;
 
   ngOnInit(): void {
-    const selectedResearchField = localStorage.getItem('selectedResearchField');
-    this.from = (selectedResearchField === 'Q10441') ? 'paris' : 'search';
+    this.subtitle = this.lang.getTranslation('subtitle', this.lang.selectedLang);
 
-    this.isSpinner = true;
-    this.isInfo = false;
+    // Gestion de l’ancien format (simple string) et du nouveau (JSON)
+    const rawSelectedResearchField = localStorage.getItem('selectedResearchField');
+    let researchFieldId = rawSelectedResearchField;
+    if (rawSelectedResearchField && rawSelectedResearchField.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(rawSelectedResearchField);
+        researchFieldId = parsed.id || 'all';
+      } catch {
+        researchFieldId = 'all';
+      }
+    }
+    this.from = (researchFieldId === 'Q10441') ? 'paris' : 'search';
+
+    // Projet sélectionné (pour l'affichage sur la page d'accueil)
+    this.currentProject = this.selectedResearchFieldService.getSelectedResearchField();
+    this.selectedResearchFieldSubscription = this.selectedResearchFieldService.selectedResearchField$
+      .subscribe(field => {
+        this.currentProject = field;
+      });
+
+  this.isSpinner = true;
+  this.isInfo = false;
+  this.drawerOpened = false;
     this.newSearch = this.lang.getTranslation('newSearch', this.lang.selectedLang);
     this.linkedPagesTitle = this.lang.getTranslation('linkedPagesTitle', this.lang.selectedLang);
     this.mainPage = this.lang.getTranslation('mainPage', this.lang.selectedLang);
     this.factGridQuery = this.lang.getTranslation('factGridQuery', this.lang.selectedLang);
     this.externalLinksTitle = this.lang.getTranslation('externalLinksTitle', this.lang.selectedLang);
     this.formerVisitsTitle = this.lang.getTranslation('formerVisitsTitle', this.lang.selectedLang);
+    // Titre pour la carte "Carrière" avec repli du header si absent dans la i18n
+    this.careerTitle =
+      this.lang.getTranslation('careerTitle', this.lang.selectedLang) ||
+      this.lang.getTranslation('careerAndActivities', this.lang.selectedLang) ||
+      this.lang.getTranslation('career', this.lang.selectedLang) ||
+      'Career';
     this.clickToDownload = this.lang.getTranslation('clickToDownLoad', this.lang.selectedLang);
     this.clickToDisplay = this.lang.getTranslation('clickToDisplay', this.lang.selectedLang);
     this.stemma = this.lang.getTranslation('stemma', this.lang.selectedLang);
 
     this.subscription0 = this.route.paramMap.subscribe(params => {
       this.itemId = params.get('id');
-      this.loadBackList();
-      this.loadItem();
+      this.drawerOpened = false; // Fermer le drawer à chaque changement d'item
+      if (this.itemId) {
+        this.loadBackList();
+        this.loadItem();
+      } else {
+        // Aucun item au démarrage : afficher directement la page d'accueil
+        this.item = null;
+        // Charger la liste des items visités pour la page d'accueil
+        this.selectedItemsList = JSON.parse(localStorage.getItem('selectedItems')) || [];
+        this.isSpinner = false;
+      }
     });
   }
 
@@ -258,15 +301,17 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadItem() {
     this.subscription2 = this.setData.itemToDisplay(this.itemId).subscribe(item => {
       this.isMain = this.isOther = this.isPicture = this.isSource = this.isTraining = this.isCareer =
-        this.isFamilyTree = this.isSociability = this.isIframes = this.isActivity = this.isWikis =
+        this.isFamilyTree = this.isIframes = this.isActivity = this.isWikis =
         this.isExternalLinks = this.isInfo = false;
 
-      if (!item) return;
+      if (!item || !Array.isArray(item) || item.length === 0) {
+        this.item = null;
+        return;
+      }
       this.item = item;
       console.log('Item loaded:', this.item);
       this.setList.addToSelectedItemsList(item[0]);
       this.claims = item[0].claims;
-      this.setList.addToSelectedItemsList(item[0]);
       if (!this.claims.P2) { alert("property P2 undefined"); return; }
       if (!this.claims.P320) { this.hideList(); }
       this.natureOf = this.claims.P2[0].mainsnak.datavalue.value.id;
@@ -334,13 +379,11 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Iframes
       this.iframes = [];
-      console.log('About to call setIframesDisplay', { item: this.item, claims: this.item?.[0]?.claims, itemIndexList: this.item?.[1] });
       try {
         this.iframesDisplay.setIframesDisplay(this.item, this.iframes);
       } catch (e) {
-        console.error('Error calling setIframesDisplay', e, { item: this.item, iframes: this.iframes });
+        // noop
       }
-      console.log('After setIframesDisplay', { iframes: this.iframes });
       this.isIframes = this.iframes.length > 0;
 
       // Extraction des URLs brutes pour les iframes
@@ -438,23 +481,18 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         checkInfoList();
       }
 
-      // sparql lists
-
-      console.log('item[0].sparql', this.item[0].sparql);
-
-      if (this.item[0].sparql && typeof this.item[0].sparql.subscribe === 'function') {
-        this.item[0].sparql.subscribe(res => this.sparqlDisplay(res));
-      } else {
-        // Attendre que sparql soit prêt
-        const checkSparql = () => {
-          if (this.item[0].sparql && typeof this.item[0].sparql.subscribe === 'function') {
-            this.item[0].sparql.subscribe(res => this.sparqlDisplay(res));
-          } else {
-            setTimeout(checkSparql, 30);
-          }
-        };
-        checkSparql();
-      }
+      // sparql lists (async pipe) : attendre explicitement que le champ soit bien initialisé
+      const waitForSparqlObservable = () => {
+        if (this.item[0].sparql && typeof this.item[0].sparql.subscribe === 'function') {
+          this.sparql$ = this.item[0].sparql as Observable<any[][]>;
+          // Délègue la construction des titres/listes au service
+          this.sparqlCards$ = this.sparqlDisplayService.buildAllCardsState(this.sparql$, this.lang);
+        } else {
+          this.sparql$ = null;
+          setTimeout(waitForSparqlObservable, 100);
+        }
+      };
+      waitForSparqlObservable();
 
       // Spinner
       this.isSpinner = false;
@@ -476,45 +514,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onThumbnailLoad(picture: any): void { }
 
-  sparqlDisplay(u) {
-    if (!u) return;
-    if (u[0]) {
-      this.sparqlSubject0 = u[0][0];
-      this.sparqlData0 = u[0][1];
-      this.isSparql0 = !!(this.sparqlData0 && this.sparqlData0[0]);
-    }
-    if (u[1]) {
-      this.sparqlSubject1 = u[1][0];
-      this.sparqlData1 = u[1][1];
-      this.isSparql1 = !!(this.sparqlData1 && this.sparqlData1[0]);
-    }
-    if (u[2]) {
-      this.sparqlSubject2 = u[2][0];
-      this.sparqlData2 = u[2][1];
-      this.isSparql2 = !!(this.sparqlData2 && this.sparqlData2[0]);
-    }
-    if (u[3]) {
-      this.sparqlSubject3 = u[3][0];
-      if (u[3].osm_id) {
-        this.sparqlSubject3 = "current address:";
-        let label = { value: u[3].display_name };
-        let osm_id = { id: "Q1188609" };
-        let v = { item: osm_id, itemLabel: label };
-        this.sparqlData3 = [v];
-      } else {
-        this.sparqlData3 = u[3][1];
-      }
-      this.isSparql3 = !!(this.sparqlData3 && this.sparqlData3[0]);
-    }
-    if (u[4]) {
-      this.sparqlSubject4 = u[4][0];
-      this.sparqlData4 = u[4][1];
-      this.isSparql4 = !!(this.sparqlData4 && this.sparqlData4[0]);
-    }
-  }
-
   openImage(url: string): void {
-    console.log(url);
     if (url) {
       window.open(url, '_blank');
     }
@@ -535,10 +535,22 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void { }
 
+  // Réception de la sélection d'un item depuis le composant de recherche embarqué
+  onSearchItemSelected(itemId: string): void {
+    if (!itemId) {
+      return;
+    }
+    this.router.navigate(['/item', itemId]);
+  }
+
   ngOnDestroy(): void {
     this.subscription0?.unsubscribe();
     this.subscription1?.unsubscribe();
     this.subscription2?.unsubscribe();
     this.subscription3?.unsubscribe();
+    this.sparqlSubscription?.unsubscribe();
+    this.selectedResearchFieldSubscription?.unsubscribe();
   }
+
+  
 }

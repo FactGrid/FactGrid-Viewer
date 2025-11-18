@@ -89,29 +89,18 @@ export class ItemDisplayDispatcherService {
       isOrg = target.locationAndContext.length > 0;
     }
 
-    // Activity
-    target.activityDetail = [];
-    let isActivity = false;
-    if (claims.P2?.activity !== undefined) {
-      this.blockDisplay.setActivityDisplay(item, target.activityDetail);
-      isActivity = target.activityDetail.length > 0;
-    }
 
-    // Event
-    target.eventDetail = [];
-    let isEvent = false;
-    if (claims.P2?.event !== undefined) {
-      this.blockDisplay.setEventDisplay(item, target.eventDetail);
-      isEvent = target.eventDetail.length > 0;
-    }
-
-    // Document
-    target.documentDetail = [];
-    let isDocument = false;
-    if (claims.P2?.document !== undefined) {
-      this.blockDisplay.setDocumentDisplay(item, target.documentDetail);
-      isDocument = target.documentDetail.length > 0;
-    }
+    // InfoList (remplie entièrement par setInfoDisplay)
+    this.blockDisplay.setInfoDisplay(item, target);
+    target.infoList = {
+      instancesList: target.instancesList,
+      subclassesList: target.subclassesList,
+      classesList: target.classesList,
+      natureOfList: target.natureOfList,
+      technicalities: target.infoProperties, // alias pour compatibilité
+      infoProperties: target.infoProperties
+    };
+    // isInfoList sera défini plus bas, une seule fois
 
     // Sources
     target.sourcesList = [];
@@ -144,34 +133,45 @@ export class ItemDisplayDispatcherService {
 
     // Item info
 
-    // MainList
-    target.mainList = [];
-    let isMain = false;
+  // MainList
+  target.mainList = [];
+  let isMain = false;
+  let isActivity = false;
+  let isDocument = false;
+  let isEvent = false;
+
 
     if (claims.P2 === undefined) {
       if (claims.P3 !== undefined) {
         target.mainList.push(claims.P3);
       }
     } else {
-      target.mainList = []
+      // Concaténer toutes les sections sauf lifeAndFamily
+      let allSections = []
         .concat(
-          target.lifeAndFamily || [],
           target.locationAndContext || [],
           target.locationAndSituation || [],
           target.activityDetail || [],
           target.eventDetail || [],
           target.documentDetail || [],
           target.otherClaims || []
-      );
-
- /*     Object.keys(claims).forEach(key => {
-        if (key.startsWith('Q') && Array.isArray(claims[key])) {
-          // Par exemple, pour les ajouter à mainList :
-          target.mainList.push(claims[key]);
+        );
+      // Exclure les propriétés qui sont dans technicalities (par propertyId)
+      this.blockDisplay.setInfoDisplay(item, target); // S'assurer que infoList est à jour
+      let technicalityProps = [];
+      let tempTechnicalities = [];
+      //  this.blockDisplay.setTechnicalitiesDisplay(item, tempTechnicalities);
+      //  if (tempTechnicalities.length > 0) {
+      //    technicalityProps = tempTechnicalities.map(t => t.propertyId);
+      //  }
+      // Filtrer chaque entrée de allSections pour retirer celles dont la propriété est dans technicalityProps
+      target.mainList = allSections.filter(section => {
+        // section peut être un tableau de claims, on vérifie le propertyId
+        if (Array.isArray(section) && section.length > 0 && section[0].mainsnak && section[0].mainsnak.property) {
+          return !technicalityProps.includes(section[0].mainsnak.property);
         }
+        return true;
       });
-      */
-
     }
     isMain = target.mainList.length > 0;
     if (claims.P2 !== undefined && claims.P2[0]?.mainsnak?.label !== undefined) {
@@ -190,24 +190,8 @@ export class ItemDisplayDispatcherService {
     isFrames = target.iframes.length > 0;
     */
 
-    // InfoList
-   
-    this.blockDisplay.setItemInfoDisplay(item, target);
-
-  let technicalities: any[] = [];
-  this.blockDisplay.setTechnicalitiesDisplay(item, technicalities);
-
-    target.infoList = {
-      instancesList: target.instancesList,
-      subclassesList: target.subclassesList,
-      classesList: target.classesList,
-      natureOfList: target.natureOfList,
-      technicalities: technicalities,
-      infoProperties: target.infoProperties // Ajout pour affichage détaillé
-    };
-
-    // Flag unique pour l'affichage
-    let isInfoList =
+    // InfoList (flag unique pour l'affichage)
+    const isInfoList =
       (target.infoList.instancesList && target.infoList.instancesList.length > 0) ||
       (target.infoList.subclassesList && target.infoList.subclassesList.length > 0) ||
       (target.infoList.classesList && target.infoList.classesList.length > 0) ||
@@ -223,7 +207,6 @@ export class ItemDisplayDispatcherService {
 
 
     // ... (autres propriétés comme dans votre code)
-
 
     // Retourne les flags utiles
     return {

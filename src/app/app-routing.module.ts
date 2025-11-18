@@ -11,7 +11,7 @@ export const routingConfiguration: ExtraOptions = {
 
 const routes: Routes = [
 
-  { path: '', component:SearchComponent},
+  { path: '', loadComponent: () => import('./display/display.component').then(mod => mod.DisplayComponent) },
 /*  { path: 'item/:id',
     component: DisplayComponent,  
     children: [

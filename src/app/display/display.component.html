@@ -1,220 +1,225 @@
-<head>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-        crossorigin="" />
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-        rel="stylesheet">
-
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-          integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-          crossorigin=""></script>
-
-</head>
-
-<body>
-
-
-  <div class="center">
-
-    <button mat-button color="primary" class="mat-typography"
-            [routerLink]="from === 'paris' ? '/paris' : '/'">
-      {{newSearch}}
-    </button>
-
-
-
+<!-- Spinner de chargement centré -->
+@if (isSpinner) {
+  <div class="spinner">
+    <mat-spinner diameter=50 mode="indeterminate"></mat-spinner>
   </div>
-
-    <div class="spinner">
-      @if (isSpinner) {
-      <mat-spinner diameter=50 mode="indeterminate"></mat-spinner>
-      }
-    </div>
-
-    @if (!isSpinner) {
-    <div>
-      <mat-drawer-container class="drawer-container">
-        <mat-drawer #drawer mode="push">
-          <div class="ground-div0">
-            <div class="icon mat-button"
-                 style="display: flex; align-items: center; justify-content: flex-end;">
-              <span class="blueButton">{{mainPage}}</span>
-              <button mat-icon-button (click)="drawer.toggle()">
-                <mat-icon class="blueButton">chevron_right</mat-icon>
-              </button>
-            </div>
-
-          </div>
-          <div>
-          <mat-card appearance="outlined" class=mat-elevation-z12>
-            <mat-card-content class="cardBackground">
-            <div class="listTitleStart">  <!-- ListTitleStart seems to be deprecated -->
-            @if ("main"!==undefined) {
-          <div class="subdivisionTitle">{{linkedPagesTitle}}</div>   
 }
-            </div>
-              @for (item of linkedItems; track item.id) {
-           <div>   
-                <span>
-                  &nbsp;&nbsp;{{ item.label }}, {{ item.id }}
-                  <mat-icon-button class="internalLink" [routerLink]="['/item', item.id]"><mat-icon color="primary" [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </span>
-                <hr>
+
+<!-- Message d'erreur si P2 absent -->
+@if (isError) {
+  <div class="error-message">
+    <p>Property P2 is missing.</p>
+    <button (click)="addInFactGrid()">Add it in FactGrid</button>
+  </div>
+}
+
+<!-- Conteneur principal avec drawer -->
+@if (!isSpinner && !isError) {
+  <mat-drawer-container class="drawer-container" [autosize]="true">
+    <mat-drawer #drawer [mode]="isMobile ? 'over' : 'push'" [opened]="drawerOpened" position="start" class="app-drawer">
+          <mat-toolbar class="side-toolbar">
+            <span class="toolbar-text">{{linkedPagesTitle}}</span>
+            <span class="example-spacer"></span>
+            <button mat-button class="close-btn" (click)="drawerOpened = false; drawer.close()" matTooltip="Fermer le panneau">
+              <mat-icon>close</mat-icon>
+              <span>Fermer</span>
+            </button>
+          </mat-toolbar>
+          <div class="info-card-content">
+            @for (link of linkedItems; track link.id) {
+              <div class="selectedItemRow">
+                <a class="selectedItemText" [routerLink]="['/item', link.id]" (click)="isMobile ? drawer.close() : null">{{link.label}}</a>
               </div>
-}
-          </mat-card-content>
-          </mat-card>
+            }
           </div>
         </mat-drawer>
-        <mat-drawer-content class="drawer-background">
-          <div class="ground-div1">
-            <div class="icon mat-button" style="display: flex; align-items: center;">
-              <button mat-icon-button (click)="drawer.toggle()"><mat-icon class="blueButton">chevron_left</mat-icon></button><span class="blueButton">{{linkedPagesTitle}}</span>
-            </div>
-          </div>
-
+  <mat-drawer-content>
+          <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
+            <mat-toolbar class="top-toolbar">
+            <button mat-button class="drawer-toggle"
+        (click)="drawerOpened = !drawerOpened; drawer.toggle()"
+        [disabled]="!(linkedItems?.length)"
+        [attr.aria-expanded]="drawer.opened"
+        [attr.aria-pressed]="drawer.opened"
+        matTooltip="Ouvrir/fermer le panneau des pages liées">
+              <mat-icon class="icon" style="color: #1565c0;">{{ drawerOpened ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+              <span>{{linkedPagesTitle}}<ng-container *ngIf="linkedItems?.length"> ({{linkedItems.length}})</ng-container></span>
+            </button>
+            <span class="example-spacer"></span>
+            <!-- Barre de recherche intégrée en mode compact (état antérieur) -->
+            <app-search
+              [compact]="true"
+              (itemSelected)="onSearchItemSelected($event)">
+            </app-search>
+          </mat-toolbar>
+          <div class="toolbar-band"></div>
           <div class="parent">
             <div class="child1">
-              <div class="matCardPadding">
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <div class="cardBackground">
-
-                    <mat-card-content>
-                      
-                        <div class="itemTitle" [attr.lang]="selectedLang === 'de' ? 'de' : null">{{ label }}</div>
-
-                      
-                      <div [ngClass]="isAliases ? 'hide-division':'show-division'" class="aliases">
-                        {{ aliases | join }}
-                      </div>
-                      <div class="itemDescription">
-                        {{ description }}
-                      </div>
-                      <br>
-                      <div>
-                        <span class="propertyStyle">FactGrid ID:&nbsp;&nbsp;</span> @if (id) {
-                        <span class="percent4">
-                          <a href="https://database.factgrid.de/wiki/Item:{{id}}" target="_blank" rel="noopener">{{ id }}</a>
-                        </span>
-                        }
-                      </div>
-                      <!---               image on the top for small screens                       --->
-                      @for (picture of pictures; track picture.uniqueKey) {
-                      <div [ngClass]="isTopPicture ? 'show-division':'hide-division'">
-                        <div class="img2">
-                          <!--                  <mat-card appearance="outlined" class=mat-elevation-z2>
-              <img mat-card-image src={{picture.picture}} (click)="openImage(picture.picture)">-->
-
-                          <img mat-card-image [src]="picture.thumbnail"
-                               [attr.data-src]="picture.full"
-                               loading="lazy"
-                               alt="Image description"
-                               (error)="onImageError($event)"
-                               (click)="openImage(picture.full)" />
-                          <!--                  </mat-card>   -->
-                        </div>
-                      </div>
-                      }
-                      <!--                   end of image on the top for small screens             --->
-                    </mat-card-content>
-                    <app-header-display [headerDetail]="this.headerDetail"></app-header-display>
+              <!-- Vue d'accueil lorsqu'aucun item n'est chargé -->
+              <ng-container *ngIf="item; else homeView">
+              <div class="thematic-cards-grid">
+                <!-- Carte d'informations générales avec fond teinté -->
+                <app-thematic-card [collapsible]="false" class="info-themed-card">
+                  <div class="info-themed-content">
+                    <div class="itemTitle">{{ label }}</div>
+                    <div class="aliases" *ngIf="aliases?.length">{{ aliases | join:', ' }}</div>
+                    <div class="itemDescription" *ngIf="description">{{ description }}</div>
+                    <div class="header-container">
+                      <app-header-display [headerDetail]="headerDetail" [id]="id" [factGridUrl]="factGridUrl"></app-header-display>
+                    </div>
                   </div>
-                </mat-card>
+                </app-thematic-card>
+              @if (isIdentity) {
+                  <app-thematic-card [collapsible]="true" [title]="identityTitle">
+                    <app-generic-list-display [title]="identityTitle" [items]="identity"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+                @if (isPerson) {
+                  <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [title]="'Biographie'">
+                    <app-generic-list-display [title]="'Biographie'" [items]="lifeAndFamily"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+                @if (trans !== "") { <app-thematic-card><app-text-display [trans]="trans"></app-text-display></app-thematic-card> } <!----transcription-->
+                @if (isTraining) {
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="training">
+                    <app-generic-list-display  [title]="training" [items]="education"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+                @if (isCareer) {
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerTitle">
+                    <app-generic-list-display [title]="careerTitle" [items]="careerAndActivities"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+                @if (isSociability) {
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sociabilityTitle">
+                    <app-generic-list-display [title]="sociabilityTitle" [items]="sociabilityAndCulture"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+                @if (isCulture) {
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cultureTitle">
+                    <app-generic-list-display [title]="cultureTitle" [items]="culture"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+
+               @if (isCareerStatement) {
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerStatementTitle">
+                    <app-generic-list-display [title]="careerStatementTitle" [items]="careerStatementDetail"></app-generic-list-display>
+                  </app-thematic-card>
+                }
+
+                @if (isMain) {
+                    <app-thematic-card collapsible="true" [title]="mainTitle" icon="star" [startCollapsed]="lifeAndFamily?.length">
+                        <div class="thematic-card-header-bar"></div>
+                      <app-generic-list-display [title]="''" [items]="mainList"></app-generic-list-display>
+                      </app-thematic-card>
+                }
+                @if (isIframes) { <app-thematic-card><app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display></app-thematic-card> }
+                <ng-container *ngIf="sparqlCards$ | async as cards">
+                  <div *ngIf="cards">
+                    <ng-container *ngIf="cards.sparql0.list?.length">
+                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql0.title">
+                        <div class="thematic-card-header-bar"></div>
+                        <app-sparql-display
+                          #sparqlDisplay0
+                          sparqlType="sparql0"
+                          [sparqlData]="cards.sparql0.list"
+                          [sparqlSubject]="cards.sparql0.subject"
+                          [langService]="lang"
+                          [parentTitle]="cards.sparql0.title">
+                        </app-sparql-display>
+                      </app-thematic-card>
+                    </ng-container>
+
+                    <ng-container *ngIf="cards.sparql1.list?.length">
+                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql1.title">
+                        <div class="thematic-card-header-bar"></div>
+                        <app-sparql-display
+                          #sparqlDisplay1
+                          sparqlType="sparql1"
+                          [sparqlData]="cards.sparql1.list"
+                          [sparqlSubject]="cards.sparql1.subject"
+                          [langService]="lang"
+                          [parentTitle]="cards.sparql1.title">
+                        </app-sparql-display>
+                      </app-thematic-card>
+                    </ng-container>
+
+                    <ng-container *ngIf="cards.sparql2.list?.length">
+                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql2.title">
+                        <div class="thematic-card-header-bar"></div>
+                        <app-sparql-display
+                          #sparqlDisplay2
+                          sparqlType="sparql2"
+                          [sparqlData]="cards.sparql2.list"
+                          [sparqlSubject]="cards.sparql2.subject"
+                          [langService]="lang"
+                          [parentTitle]="cards.sparql2.title">
+                        </app-sparql-display>
+                      </app-thematic-card>
+                    </ng-container>
+
+                    <ng-container *ngIf="cards.sparql3.list?.length">
+                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql3.title">
+                        <div class="thematic-card-header-bar"></div>
+                        <app-sparql-display
+                          #sparqlDisplay3
+                          sparqlType="sparql3"
+                          [sparqlData]="cards.sparql3.list"
+                          [sparqlSubject]="cards.sparql3.subject"
+                          [langService]="lang"
+                          [parentTitle]="cards.sparql3.title">
+                        </app-sparql-display>
+                      </app-thematic-card>
+                    </ng-container>
+
+                    <ng-container *ngIf="cards.sparql4.list?.length">
+                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql4.title">
+                        <div class="thematic-card-header-bar"></div>
+                        <app-sparql-display
+                          #sparqlDisplay4
+                          sparqlType="sparql4"
+                          [sparqlData]="cards.sparql4.list"
+                          [sparqlSubject]="cards.sparql4.subject"
+                          [langService]="lang"
+                          [parentTitle]="cards.sparql4.title">
+                        </app-sparql-display>
+                      </app-thematic-card>
+                    </ng-container>
+                  </div>
+                </ng-container>
+                <app-thematic-card *ngIf="showSources" [collapsible]="true"  [startCollapsed]="true" [title]="sources">
+                  <app-generic-list-display [title]="sources" [items]="sourcesList"></app-generic-list-display>
+                </app-thematic-card>
+                <app-thematic-card [collapsible]="true"  [startCollapsed]="true" title="Informations sur l'élément">
+                  <app-item-info [infoList]="infoList"></app-item-info>
+                </app-thematic-card>
               </div>
-              <div>
-              </div>
+              </ng-container>
 
-              <!--********************** section Main  *********************** -->
+              <ng-template #homeView>
+                <div class="thematic-cards-grid">
+                  <div class="matCardPadding">
+                    <div class="itemTitle">FactGrid</div>
+                    <div class="itemDescription" style="margin-bottom: 8px;">
+                      {{ subtitle }}
+                    </div>
 
+                    <!-- Projet sélectionné -->
+                    <div class="itemDescription" *ngIf="currentProject && currentProject.id !== 'all'" style="margin-bottom: 12px;">
+                      <strong>{{ currentProject.name }}</strong>
+                      <span *ngIf="currentProject.description"> – {{ currentProject.description }}</span>
+                    </div>
 
-              @if (isMain) {
-                <div class="matCardPadding">
-                  <mat-card appearance="outlined" class=mat-elevation-z12>
-                    <app-main-display [mainList]="this.mainList" [mainTitle]="this.mainTitle" [list]="this.list"></app-main-display>
-                  </mat-card>
+                    <p class="itemDescription">
+                      Utilisez la barre de recherche en haut pour trouver une personne, une publication ou un autre item dans FactGrid.<br>
+                      Vous pouvez également sélectionner un projet, puis commencer à taper quelques lettres du nom ou du titre pour afficher les résultats ici.
+                    </p>
+                  </div>
                 </div>
-              }
+              </ng-template>
 
 
-
-              <!--************************ end of main section *********************-->
-              @if (this.trans !== "") {   <app-text-display [trans]="this.trans"></app-text-display>   } <!----transcription-->
-              <!-- ********************************section Training ******************************-->
-
-              @if (isTraining) {
-                <div class="matCardPadding">
-                  <mat-card appearance="outlined" class=mat-elevation-z12>
-                    <app-education-display [education]="this.education" [training]="this.training"></app-education-display>
-                  </mat-card>
-                </div>
-              }
-
-
-              <!--  ******************************* section Career ****************************************  -->
-
-              @if (isCareer) {
-                <div class="matCardPadding">
-                  <mat-card appearance="outlined" class=mat-elevation-z12>
-                    <app-career-display [careerAndActivities]="this.careerAndActivities" [career]="this.career"></app-career-display>
-                  </mat-card>
-                </div>
-              }
-
-              <!---************************************ section Sociability **********************************-->
-
-              @if (isSociability) {
-                <div class="matCardPadding">
-                  <mat-card appearance="outlined" class=mat-elevation-z12>
-                    <app-sociability-display [sociabilityAndCulture]="this.sociabilityAndCulture" [sociability]="this.sociability"></app-sociability-display>
-                  </mat-card>
-                </div>
-              }
-
-              <!-- ******************************* iFrames ****************************************  -->
-
-              @if (isIframes) {
-                <div class="matCardPadding">
-                  <mat-card appearance="outlined" class=mat-elevation-z12>
-                    <app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display>
-                  </mat-card>
-                </div>
-              }
-
-              <!-- ************************************* sparql0 **************************************** -->
-              @if (isSparql0) {
-                <app-sparql0-display [sparqlData]="this.sparqlData0" [sparqlSubject]="this.sparqlSubject0"></app-sparql0-display>
-              }
-
-              <!-- ************************************* sparql3 **************************************** -->
-              @if (isSparql3) {
-                <app-sparql3-display [sparqlData]="this.sparqlData3" [sparqlSubject]="this.sparqlSubject3"></app-sparql3-display>
-              }
-
-              <!--      ************************************* sparql1 **************************************** -->
-              @if (isSparql1) {
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-sparql1-display [sparqlData]="this.sparqlData1" [sparqlSubject]="this.sparqlSubject1"></app-sparql1-display>
-                </mat-card>
-              }
-
-              <!-- ************************************* sparql2 **************************************** -->
-              @if (isSparql2) {
-                <app-sparql2-display [sparqlData]="this.sparqlData2" [sparqlSubject]="this.sparqlSubject2"></app-sparql2-display>
-              }
-
-              <!-- ************************************* sparql4 **************************************** -->
-              @if (isSparql4) {
-                <app-sparql4-display [sparqlData]="this.sparqlData4" [sparqlSubject]="this.sparqlSubject4"></app-sparql4-display>
-              }
-
-              <!-- ******************************* section Sources ****************************************  -->
-
-              @if (isSource) {
-                <mat-card appearance="outlined" class=mat-elevation-z12>
-                  <app-sources-display [sourcesList]="this.sourcesList" [sources]="this.sources"></app-sources-display>
-                </mat-card>
-              }
 
               <!--  ************************************* sparql3 ****************************************
   <div class="matCardPadding" [ngClass]="isSparql0 ? 'show-division':'hide-division'">
@@ -223,7 +228,7 @@
     </mat-card>
   </div>-->
               <!-- ******************************* Info ****************************************  -->
-              <div class="matCardPadding">
+              <div class="matCardPadding" style="display: none;">
                 <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
                   <div class="info-card-header">
                     <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
@@ -240,30 +245,22 @@
               </div>
 
             </div>
-
-              <!-- ****************************************** Pictures ****************************************  -->
-              <div class="child2">
-                <mat-card appearance="outlined">
-                  <div class="img2" [ngClass]="isPicture ? 'show-division':'hide-division'">
-                    @for (picture of pictures; track picture.uniqueKey) {
+            <!-- ****************************************** Pictures ****************************************  -->
+            <div class="child2">
+              <mat-card appearance="outlined">
+                <div class="img2" [ngClass]="isPicture ? 'show-division':'hide-division'">
+                  @for (picture of pictures; track picture.uniqueKey) {
                     <div>
-                      <!---     <mat-card appearance="outlined" class=mat-elevation-z8>
-  <img mat-card-image src={{picture.picture}} (click)="openImage(picture.picture)">--->
-
-
                       <img mat-card-image [src]="picture.thumbnail"
                            [attr.data-src]="picture.full"
                            loading="lazy"
                            alt="Image description"
                            (load)="onThumbnailLoad(picture)"
-                           (error)="onImageError($event)"
                            (click)="openImage(picture.full)" />
-
-                      <!---</mat-card> --->
                     </div>
                   }
-               </div>
-            </mat-card>
+                </div>
+              </mat-card>
 
   <!-- ************************************* external links ****************************************  -->
                       <!--          <div>   -->
@@ -303,31 +300,29 @@
                       <!--              </div> -->
                       <!-- ************************************* selected items  ****************************************  -->
                       <!--         <div>  -->
-                      <mat-card appearance="outlined" class="mat-elevation-z8 ">
-                        <div class="itemSelected-mat-card">
-                          <mat-card-content>
-                            <div class="selectedListTitle">{{formerVisitsTitle}}</div>
-                            <br>
-                            <div>
-                              <div *ngFor="let selectedItem of selectedItemsList">
-                                <div>
-                                  <span *ngIf="selectedItem" class="selectedItemText">
-                                    {{selectedItem.label}}
-                                    <mat-icon-button class="internalLink" [routerLink]="['/item', selectedItem.value.id]" (click)="$event.stopPropagation()"><mat-icon [inline]="true">open_in_new</mat-icon></mat-icon-button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                  </span>
-                                </div>
-                                <br>
-                              </div>
-                            </div>
-                          </mat-card-content>
+                      <mat-card appearance="outlined" class="mat-elevation-z8 itemSelected-mat-card">
+                        <div class="info-card-header selectedListTitle">
+                          <mat-icon class="icon blue-text">history</mat-icon>
+                          {{formerVisitsTitle}}
                         </div>
+                        <mat-card-content class="info-card-content">
+                          <div *ngIf="selectedItemsList?.length === 0" class="itemDescription">Aucune visite précédente.</div>
+                          <div *ngFor="let selectedItem of selectedItemsList" class="selectedItemRow">
+                            <span *ngIf="selectedItem">
+                              <a class="selectedItemLink"
+                                 [routerLink]="['/item', selectedItem?.value?.id]"
+                                 (click)="$event.stopPropagation()"
+                                 >
+                                {{selectedItem.label}}
+                              </a>
+                            </span>
+                          </div>
+                        </mat-card-content>
                       </mat-card>
                       <!--          </div>  -->
 
-                    </div>
             </div>
+          </div>
         </mat-drawer-content>
       </mat-drawer-container>
-    </div>
     }
-  </body>

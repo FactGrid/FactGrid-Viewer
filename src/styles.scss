@@ -1,5 +1,39 @@
-/* You can add global styles to this file, and also import other style files */
+
 @use '@angular/material' as mat;
+
+@include mat.core();
+// Exposition des design tokens en variables CSS globales
+// Surcharge du token CSS Material 3 pour la couleur primaire personnalisée
+// Design tokens personnalisés pour les cartes thématiques et sparql display
+:root {
+  /* Thematic Card Tokens */
+  --thematic-card-padding: 24px;
+  --thematic-card-margin: 16px;
+  --thematic-card-width: 100%;
+  --thematic-card-max-width: 600px;
+  --thematic-card-radius: 14px;
+  /* Sparql Display Tokens */
+  --sparql-display-padding: 20px;
+  --sparql-display-margin: 12px;
+  --sparql-display-width: 100%;
+  --sparql-display-max-width: 900px;
+  --md-sys-color-primary: #6699CC; // bleu personnalisé
+  --color-primary: #6699CC;
+  --md-sys-color-secondary: #cc5500; // accent orange personnalisé
+  --color-accent: #cc5500;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 32px;
+  --spacing-xl: 64px;
+  --radius-main: 8px;
+  --color-primary: #6c7a89;
+  --font-title: 20px;
+  --font-title-weight: 600;
+  --font-subtitle: 16px;
+  --font-subtitle-weight: 400;
+}
+/* You can add global styles to this file, and also import other style files */
 
 
 // src/styles.scss
@@ -266,6 +300,11 @@ html, body {
 
 @mixin font-size($sizeValue:16px) {
  font-size: $sizeValue;
+}
+
+/* Base globale de typographie pour tout le projet */
+body {
+  font-size: 16px; /* taille de base unifiée */
 }
 
 .cardBackground {

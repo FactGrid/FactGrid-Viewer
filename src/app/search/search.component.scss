@@ -1,3 +1,20 @@
+  /* margin-top supprimé, style d'origine rétabli */
+/* ancienne variante pour la croix à gauche, plus utilisée */
+.compact-clear-btn.left {
+  display: none;
+}
+
+.compact-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: inherit;
+  font-size: 15px;
+  padding-right: 32px; /* espace pour la croix à droite */
+  padding-left: 0;
+}
 
 
 .search-container {
@@ -63,6 +80,199 @@
   min-height: 100%;
 }
 
+/* Mode compact quand intégré dans app-display (toolbar) */
+:host-context(app-display) .search-center2.compact-mode {
+  margin: 0;
+  padding-top: 4px;
+}
+
+:host-context(app-display) .search-field-col {
+  max-width: 360px;
+}
+
+:host-context(app-display) .compact-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+:host-context(app-display) .compact-search-icon {
+  font-size: 18px;
+}
+
+:host-context(app-display) .compact-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: inherit;
+  font-size: 14px;
+}
+
+:host-context(app-display) .compact-clear-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  color: inherit;
+}
+.compact-clear-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  color: inherit;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+/* Layout double input compact : projet + item */
+
+/* Conteneur double input compact : projet + item */
+.compact-dual-search {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* projet à gauche, items à droite */
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 10px;
+}
+
+/* Cadre arrondi pour chaque selector */
+.compact-search-wrapper {
+  flex: 1 1 0;
+  min-width: 0;
+  background: #fff;
+  border: 1.5px solid #d1d5db;
+  border-radius: 18px;
+  box-shadow: 0 1px 4px rgba(44,62,80,0.06);
+  padding: 0 18px 0 10px;
+  margin: 0;
+  padding-top: 14px;
+  transition: border-color 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+  max-width: 260px;
+}
+
+.compact-search-wrapper:focus-within {
+  border-color: #AD1457;
+  box-shadow: 0 2px 8px rgba(173,20,87,0.08);
+}
+
+
+.compact-search-wrapper.compact-project {
+  position: relative;
+  flex: 0 0 180px; /* largeur fixe plus compacte pour le projet */
+  max-width: 220px;
+  min-width: 180px;
+}
+
+/* Quand le sélecteur projet n'est pas affiché, on réserve l'espace mais on masque le contenu */
+.compact-search-wrapper.invisible-project {
+  visibility: hidden;
+}
+
+
+
+/* ancienne redéfinition, neutralisée pour éviter les conflits de largeur */
+.compact-search-wrapper.compact-project {
+  position: relative;
+}
+
+.compact-project-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.compact-project-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.15s;
+}
+
+.compact-project-option:hover {
+  background-color: rgba(63, 81, 181, 0.08);
+}
+
+.compact-project-option:active {
+  background-color: rgba(63, 81, 181, 0.12);
+}
+
+/* Liste de résultats en carte flottante dans le display */
+:host-context(app-display) .items-list-container {
+  position: absolute;
+  top: 56px; /* sous la toolbar */
+  right: 16px;
+  max-width: 420px;
+  width: calc(100% - 32px);
+  max-height: 60vh;
+  z-index: 1000;
+  pointer-events: none; /* laisse les clics aux enfants */
+}
+
+:host-context(app-display) .items-list-inner {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  padding: 8px 0;
+  overflow-y: auto;
+  pointer-events: auto; /* clics actifs dans la carte */
+}
+
+:host-context(app-display) .items-list-inner .item-row {
+  font-size: 13px;
+  padding: 4px 12px;
+  text-align: left;
+}
+
+:host-context(app-display) .items-list-inner .item-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+:host-context(app-display) .items-list-inner .item-label,
+:host-context(app-display) .items-list-inner .item-description {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: visible;
+}
+
+:host-context(app-display) .items-list-inner .item-label {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+:host-context(app-display) .items-list-inner .item-description {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
 
  
 
@@ -104,6 +314,29 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   width: 100%;
   max-width: 300px;
   box-sizing: border-box;
+ }
+
+/* Ligne complète pour recherche projet + item en mode plein */
+.search-row-full {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.search-row-full .search-field {
+  flex: 1 1 0;
+}
+
+.search-row-full .project-field {
+  max-width: 260px;
+}
+
+.search-row-full .main-search-field {
+  max-width: 420px;
 }
 
 .selected-project-label {
@@ -133,6 +366,43 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   margin-top: 24px;
   color: #AD1457;
   font-size: 1.1em;
+}
+
+/* Ligne de filtre compacte dans le panneau des items */
+.items-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.compact-filter-wrapper {
+  flex: 1 1 auto;
+  max-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compact-filter-label {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.compact-filter-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 24px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.compact-item-count {
+  font-size: 11px;
+  opacity: 0.8;
 }
 
 

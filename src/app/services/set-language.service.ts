@@ -90,8 +90,10 @@ export class SetLanguageService {
       const descObj = this.getLangValue(item.descriptions, lang);
       const aliases = this.getAliases(item.aliases, lang);
 
-      const label = labelObj?.value ?? undefined;
+      let label = labelObj?.value ?? undefined;
       const description = descObj?.value ?? undefined;
+
+      
 
       let externalLink: string | undefined;
       if (item.datatype === "external-id" && item.claims?.P236?.[0]?.mainsnak?.datavalue?.value) {

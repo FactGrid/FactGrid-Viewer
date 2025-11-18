@@ -1,0 +1,33 @@
+<div class="project-selector">
+  <div class="project-selector-inner">
+    <mat-icon class="project-icon">settings</mat-icon>
+    <input
+      type="text"
+      class="project-input"
+      [placeholder]="projectName"
+      [formControl]="searchResearchField"
+      [matAutocomplete]="autoProject" />
+    <button
+      *ngIf="searchResearchField.value?.id && searchResearchField.value.id !== 'all'"
+      type="button"
+      class="project-clear-btn"
+      aria-label="Réinitialiser le projet"
+      (click)="clearSelection()">
+      ✕
+    </button>
+  </div>
+
+  <mat-autocomplete
+    #autoProject="matAutocomplete"
+    [displayWith]="displayResearchField"
+    (optionSelected)="onProjectSelected($event.option.value)">
+    <mat-option
+      *ngFor="let researchField of filteredResearchFields$ | async"
+      [value]="researchField">
+      <span>{{ researchField.name }}</span>
+      <span *ngIf="researchField.description" class="project-description">
+        {{ researchField.description }}
+      </span>
+    </mat-option>
+  </mat-autocomplete>
+</div>
