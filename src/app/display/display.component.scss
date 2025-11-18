@@ -484,81 +484,129 @@
    On retire l'ancienne variante glass pour éviter les collisions et gardons seulement
    des ajustements mineurs éventuels ici si nécessaire. */
 
-/* Conteneur global des cartes thématiques pour fournir un fond gris très léger
-   permettant de détacher visuellement chaque carte blanche. */
-.thematic-cards-grid {
-  /* Fond retiré pour ne pas impacter le titre; on garde uniquement le flux des cartes */
-  padding: 0 0 12px 0;
-  margin-top: 8px;
-  position: relative;
-}
-
-/* Variante expérimentale : layout basé sur gap (réversible)
-   Pour tester : ajouter / retirer la classe `gap-layout` sur le conteneur
-   `<div class="thematic-cards-grid gap-layout">`.
-   Avantage : pas d'effondrement de marge et espacement prévisible via `gap`.
+/* Conteneur global des cartes thématiques — layout permanent basé sur gap.
+   `gap` contrôle l'espacement inter-cartes (prévisible, sans effondrement de
+   marge). Les marges externes des cartes sont neutralisées ici pour que le
+   comportement soit centralisé et cohérent.
 */
-.thematic-cards-grid.gap-layout {
+.thematic-cards-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px; /* espacement vertical entre cartes — ajuster si besoin */
-  padding-left: 12px; /* préserve l'espace à gauche demandé */
-  padding-right: 12px;
+  gap: 8px; /* espacement vertical réduit entre cartes */
+  padding: 0 12px 12px 12px; /* préserve espace gauche/droite pour les cartes thématiques */
+  margin-top: 8px;
+  position: relative;
   box-sizing: border-box;
+  min-height: 0; /* évite le collapse des enfants overflow (cdk-virtual-scroll) dans un contexte flex */
 }
 
-/* Quand on utilise gap-layout, neutraliser les marges individuelles des cartes
-   pour éviter double-espacement (les marges antérieures restent dans le scss
-   mais sont écrasées par cette règle). */
-.thematic-cards-grid.gap-layout > app-thematic-card,
-.thematic-cards-grid.gap-layout > .thematic-card {
+/* Neutraliser marges externes des cartes — gap va gérer l'espacement */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card,
+:host ::ng-deep .thematic-cards-grid > .thematic-card {
   margin: 0 !important;
+  padding: 0 !important; /* force suppression padding hérité */
+  display: block !important;
+  width: 100% !important;
+  min-height: 0; /* permet aux contenus à overflow (scroll) de calculer correctement leur hauteur */
 }
 
-/* Normaliser le padding/margin interne des cartes (SPARQL, generic-list, iframes)
-   lorsque le mode gap-layout est activé. Gap règle l'espace entre cartes; ces
-   overrides garantissent que l'espace intérieur des cartes est identique.
-*/
-:host ::ng-deep .thematic-cards-grid.gap-layout app-sparql-display .cardBackground,
-:host ::ng-deep .thematic-cards-grid.gap-layout app-generic-list-display .cardBackground,
-:host ::ng-deep .thematic-cards-grid.gap-layout app-iframes-display .cardBackground {
-  padding: 8px !important; /* uniforme haut/bas/gauche/droite */
-  margin: 0 !important;    /* évite marge-bottom interne doublée */
+/* Uniformiser et aligner les boîtes internes des cartes thématiques
+   — enlever le padding interne du `card-body` des `app-thematic-card` enfants
+   puis donner à tous les `.cardBackground` internes le même box sizing
+   et le même padding horizontal afin que SPARQL et generic-list s'alignent. */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card .card-body {
+  padding: 0 !important;
   box-sizing: border-box !important;
 }
 
-/* Si certains SPARQL utilisent directement mat-card, on neutralise aussi
-   les marges/paddings du mat-card interne */
-:host ::ng-deep .thematic-cards-grid.gap-layout app-sparql-display mat-card,
-:host ::ng-deep .thematic-cards-grid.gap-layout app-generic-list-display mat-card {
+:host ::ng-deep .thematic-cards-grid app-sparql-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid app-iframes-display .cardBackground {
+  margin: 0 !important;
+  display: block !important;
+  padding: 8px 12px !important; /* vertical 8px, horizontal 12px */
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+}
+
+/* DEBUG: ajouter fonds semi-transparents pour visualiser largeur réelle */
+/* debug backgrounds removed */
+
+/* Règle très spécifique pour annuler les max-width/centering globaux
+   et forcer la boîte interne à remplir la zone de la carte thématique. */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-sparql-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-generic-list-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-iframes-display .cardBackground {
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  padding: 8px 12px !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* Forcer les wrappers Angular (.ng-star-inserted) éventuels à remplir la largeur
+   pour que .cardBackground ne soit pas contraint par un parent intermédiaire. */
+:host ::ng-deep .thematic-cards-grid app-sparql-display > *,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display > *,
+:host ::ng-deep .thematic-cards-grid app-iframes-display > * {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
+  box-sizing: border-box !important;
 }
 
-/* Espacement vertical entre cartes (hors première) */
-.thematic-cards-grid > app-thematic-card + app-thematic-card {
-  margin-top: 6px;
+/* Forcer les éléments `.show-division` à remplir la largeur quand présents
+   (préventif si la classe est appliquée sur un wrapper intermédiaire). */
+:host ::ng-deep .thematic-cards-grid .show-division {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
 }
 
-/* Réduction de l'espacement vertical global des cartes à l'intérieur
-   du conteneur thématique : priorité locale pour rapprocher les cartes. */
-:host ::ng-deep .thematic-cards-grid > app-thematic-card {
-  margin: 14px 12px; /* haut/bas augmenté pour aligner avec SPARQL */
+/* Si la classe est appliquée directement sur la .cardBackground, garantir comportement */
+:host ::ng-deep .thematic-cards-grid .cardBackground.show-division {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  padding: 8px 12px !important;
 }
 
-/* Forcer l'homogénéité en ciblant la classe interne .thematic-card (cas où
-   la règle de component scss prendrait le dessus). Utiliser !important pour
-   garantir l'application locale aux cartes dans ce conteneur. */
-:host ::ng-deep .thematic-cards-grid > .thematic-card {
-  margin: 14px 12px !important;
+/* Annuler le padding-left global appliqué aux mat-card-content seulement dans la grille thématique */
+:host ::ng-deep .thematic-cards-grid app-thematic-card mat-card-content,
+:host ::ng-deep .thematic-cards-grid app-thematic-card .mat-card-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
 }
 
-/* Augmenter l'espacement des cartes qui contiennent un composant SPARQL
-   : utilise :has() si le navigateur le supporte, et sert de règle prioritaire
-   pour ré-élever l'inter-espacement de ces cartes (opération inverse). */
-:host ::ng-deep .thematic-cards-grid > app-thematic-card:has(app-sparql-display),
-:host ::ng-deep .thematic-cards-grid > .thematic-card:has(app-sparql-display) {
-  margin: 14px 12px !important; /* top/bottom augmenté */
+/* debug outlines removed */
+
+/* Forcer les hôtes des displays à occuper toute la largeur afin
+   d'éliminer toute différence de boite entre SPARQL et Generic */
+:host ::ng-deep .thematic-cards-grid app-sparql-display,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display,
+:host ::ng-deep .thematic-cards-grid app-iframes-display {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+}
+
+/* Neutralise marges/paddings de mat-card internes si présents */
+:host ::ng-deep .thematic-cards-grid app-sparql-display mat-card,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display mat-card {
+  margin: 0;
+  padding: 0;
 }
 /* Ancienne section liée à l'en-tête des cartes (conservée si utilisée ailleurs) */
  .thematic-card-header {
