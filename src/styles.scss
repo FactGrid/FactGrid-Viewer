@@ -7,7 +7,7 @@
 // Design tokens personnalisés pour les cartes thématiques et sparql display
 :root {
   /* Thematic Card Tokens */
-  --thematic-card-padding: 24px;
+  --thematic-card-padding: 3px;
   --thematic-card-margin: 16px;
   --thematic-card-width: 100%;
   --thematic-card-max-width: 600px;
@@ -219,20 +219,23 @@ html, body {
 }
 
 .mat-mdc-form-field-infix {
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  width: 100% !important;
-  max-width: 100% !important;
+  /* Keep compact inputs but avoid forcing nowrap globally with !important.
+     This lets components which need wrapping (header info box, lists)
+     override when necessary. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 100%;
 }
 
 .mat-mdc-input-element {
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  display: block !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 100%;
+  display: block;
 }
 
 .ellipsis-option {
@@ -243,10 +246,23 @@ html, body {
   white-space: nowrap;
 }
 
-.autocomplete-option-content {
-  font-weight: 500;
+
+.mat-autocomplete-panel .mat-option {
   font-size: 1.25em;
-  color: #283593;
+  color: #222;
+  line-height: 1.1; /* interlignage serré */
+  min-height: 28px; /* hauteur minimale réduite */
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+
+
+.autocomplete-option-content {
+  /* Consolidated autocomplete styling (avoid duplicates). */
+  font-weight: 500;
+  color: #222;
+  font-size: 0.95em;
   display: block;
   white-space: normal; // autorise le retour à la ligne
   overflow: visible; // plus de masquage
@@ -255,29 +271,11 @@ html, body {
   max-width: 100%; // prend toute la largeur de l’option
 }
 
-
-.mat-autocomplete-panel .mat-option {
-  font-size: 1.25em !important;
-  color: #222 !important;
-  line-height: 1.1 !important; /* interlignage serré */
-  min-height: 28px !important; /* hauteur minimale réduite */
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
-}
-
-
-
-.autocomplete-option-content {
-  font-weight: 500;
-  color: #222 !important; // Texte noir pour le contenu personnalisé
-  font-size: 0.95em; // Taille de police réduite
-}
-
 .mat-mdc-autocomplete-panel .mat-mdc-option {
   border-bottom: 12px solid #fafbfc; // couleur du fond du panneau
-  background: #fff !important;
-  font-size: 0.95em !important;
-  color: #222 !important;
+  background: #fff;
+  font-size: 0.95em;
+  color: #222;
 }
 
 
@@ -287,7 +285,7 @@ html, body {
 
 .mat-autocomplete-panel .mat-option:hover,
 .mat-autocomplete-panel .mat-option.mat-active {
-  background: #f5f5f5 !important;
+  background: #f5f5f5;
 }
 
 
@@ -335,9 +333,10 @@ body {
 }
 
 .statementStyle { //size of the text of the statements
-  //color: black;
-  //color:mat-primary;
-  width: 60vw;
+  // avoid fixed viewport widths which can break component layouts;
+  // allow container sizing and constrain to full width when needed
+  width: auto;
+  max-width: 100%;
   font-size: 16px;
   padding-left: 15px;
   padding-top: 2px;
@@ -373,14 +372,13 @@ body {
 }
 
 .references-toggle-btn { // button for displaying/hiding references
-  background: #fff !important; // white background
-  // color: #3F51B5 !important; // blue text
-  color: #AD1457 !important; // red text
+  background: #fff; // white background
+  color: #AD1457; // red text
   font-size: 0.80rem;
   font-style: italic;
   font-weight: 400;
-  border: none !important; // no border
-  box-shadow: none !important;
+  border: none; // no border
+  box-shadow: none;
   border-radius: 4px;
   margin-left: 4px;
   margin-bottom: 4px;
@@ -391,10 +389,9 @@ body {
   min-width: 0;
 
   &:hover, &:focus {
-    background: #f6f8fd !important; // blue background on hover/focus
-   // color: #3F51B5 !important; // blue text on hover/focus
-    color: #AD1457 !important; // red text
-    box-shadow: none !important;
+    background: #f6f8fd; // blue background on hover/focus
+    color: #AD1457; // red text
+    box-shadow: none;
   }
 }
 
@@ -433,50 +430,49 @@ body {
 
 
   .warningDeprecated { //warning for deprecated statements
-    font-size: 14px !important;
+    font-size: 14px;
     color: #AD1457;
-    // font-style:italic;
   }
 
-  .qualifierTextColor { //color of the text of the qualifier
+  /* UNUSED: .qualifierTextColor { //color of the text of the qualifier
     color: black;
-  }
+  } */
 
   .selectedItemText {
     font-size: 16px; // from 16px
     color: white;
   }
 
-.selectedItemText2 {
+/* UNUSED: .selectedItemText2 {
   font-size: 16px;
   color: white;
   // line-height: 15 px;
   // display:list-item;
   padding: 10 px;
-  }
+  } */
 
 
- .search-center { //style for the links in the search components
-    display: flex;
-    justify-content: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
+/* UNUSED: .search-center { //style for the links in the search components
+   display: flex;
+   justify-content: center;
+   padding-top: 10px;
+   padding-bottom: 10px;
+ } */
 
-.search-center1 { // for styling the search components
+/* UNUSED: .search-center1 { // for styling the search components
   margin-top: 20px;
   margin-left: 10px;
   display: flex;
   justify-content: center;
-}
+} */
 
-.search-center2 {
+/* UNUSED: .search-center2 {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-left: 16px;
   padding-right: 16px;
-}
+} */
 
 .search-inputs-row {
   display: flex;
@@ -607,36 +603,37 @@ mat-form-field.search-field {
 }
 
 .small-icon-btn .mat-icon {
+  /* UNUSED: .small-icon-btn .mat-icon {
   color: #3F51B5;
-}
+} */
 
-.people-btn {
+/* UNUSED: .people-btn {
   /* Optionnel : pour séparer un peu plus */
   margin-right: 4px;
-}
+} */
 
-.small-icon {
-  font-size: 18px !important;
-  width: 18px !important;
-  height: 18px !important;
-  line-height: 18px !important;
-}
+/* UNUSED: .small-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+} */
 
 button.mat-icon-button.active .mat-icon {
-  color: #1976d2 !important; // bleu pour actif
+  color: #1976d2; // bleu pour actif
   background: #e3f2fd;
   border-radius: 50%;
 }
 
 button.mat-icon-button .mat-icon {
-  color: #888 !important; // gris pour inactif
+  color: #888; // gris pour inactif
 }
 
 
-.search-center3 { // for styling the search components
+.search-center3 { /* UNUSED
   display: flex;
   justify-content: center;
-}
+} */
 
 
   .referenceProperty { //style for the property labels of references
@@ -656,14 +653,14 @@ button.mat-icon-button .mat-icon {
   }
 
 
-  .mapPadding {
+  /* UNUSED: .mapPadding {
     padding-top: 10px;
     padding-bottom: 10px;
   }
 
   .subTitlePadding { // padding-bottom on the subtitles
     padding-bottom: 12px;
-  }
+  } */
 
   .matCardPadding { //padding top and left of the mat-card
     padding-top: 2px;
@@ -809,9 +806,9 @@ button.mat-icon-button .mat-icon {
 }
 
   @media (min-width: 959.98px) { // change the size of the picture for big screen
-    .smallPicture {
+    /* UNUSED: .smallPicture {
       width: 30%;
-    }
+    } */
   }
 
   .cover {
@@ -847,15 +844,15 @@ button.mat-icon-button .mat-icon {
     margin-bottom: 10px;
   }
 
-  .selectedListTitle2 { //size and color of the title of selectedList in search
+  /* UNUSED: .selectedListTitle2 { //size and color of the title of selectedList in search
     color: white;
-    font-size: 1.2rem !important;
+    font-size: 1.2rem;
     font-weight: 400;
     padding: 5px;
     margin-top: 20px;
     margin-left: 10px;
     margin-bottom: 10px;
-  }
+  } */
 
   .listTitleStart {
     align-self: start; // align left the subtitle linked page in the drawer
@@ -881,7 +878,7 @@ button.mat-icon-button .mat-icon {
 .search-itemSelected-mat-card { //style the card of selected items
   height: fit-content;
   width: 600px;
-  background-color: rgb(99, 98, 98) !important;
+  background-color: rgb(99, 98, 98);
   margin-bottom: 4px;
   margin-right: 2px;
   margin-left: 2px;
@@ -985,11 +982,11 @@ button.mat-icon-button .mat-icon {
 }
 
 .mat-mdc-form-field-subscript-wrapper.mat-mdc-form-field-bottom-align {
-  min-height: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  line-height: 0 !important;
-  height:0 !important;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  height: 0;
 }
 
 .whiteText {
@@ -1038,7 +1035,7 @@ button.mat-icon-button .mat-icon {
 }
 
 .hover-bg-light:hover, .hover-bg-light:focus {
-  background-color: #f5f5f5 !important; // gris très clair
+  background-color: #f5f5f5; // gris très clair
   cursor: pointer;
 }
 
@@ -1048,7 +1045,7 @@ button.mat-icon-button .mat-icon {
 }
 
 .hover-bg-accent:hover, .hover-bg-accent:focus {
-  background-color: #e3eafc !important; // bleu très clair
+  background-color: #e3eafc; // bleu très clair
   cursor: pointer;
 }
 
@@ -1056,11 +1053,15 @@ button.mat-icon-button .mat-icon {
   margin-left: 1em; // ou la valeur qui convient, par exemple 8px ou 16px
 }
 
-/* Force le padding et la marge à gauche sur tous les blocs Angular Material */
-mat-card-content, .mat-card-content, mat-card, .mat-card {
+/* Force le padding et la marge à gauche sur tous les blocs Angular Material
+   NOTE: commented out during thematic-cards layout refactor/testing —
+   this global rule caused horizontal misalignment between SPARQL and generic cards.
+   If necessary, re-enable or re-scope this rule (prefer scoped selectors).
+*/
+/* mat-card-content, .mat-card-content, mat-card, .mat-card {
   padding-left: 24px !important;
   margin-left: 0 !important;
-}
+} */
 
 @media (max-width: 813px) {
   mat-card-content, .mat-card-content, mat-card, .mat-card {
@@ -1069,11 +1070,11 @@ mat-card-content, .mat-card-content, mat-card, .mat-card {
 }
 
 .display mat-card {
-  padding-left: 0 !important;
+  padding-left: 0;
 }
 @media (max-width: 813px) {
   .display mat-card {
-    padding-left: 0 !important;
+    padding-left: 0;
   }
 }
 
