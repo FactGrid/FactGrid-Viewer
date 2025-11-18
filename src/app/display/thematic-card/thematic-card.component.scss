@@ -7,21 +7,42 @@
    ======================================== */
 
 /* NOTE: Utilisation de .thematic-card (classe hôte) plutôt que :host car ViewEncapsulation.None désactive le prétraitement Angular des pseudo-sélecteurs. */
- .thematic-card {
-  display: block;
-  background: linear-gradient(180deg,#ffffff 0%, #f7f9fc 100%); /* dégradé subtil pour différencier du fond */
-  border-radius: var(--thematic-card-radius);
+  /* Variables CSS locales pour contrôler l'espacement et l'apparence des cartes.
+    Elles peuvent être surchargées par un parent si nécessaire. */
+  :root {
+    --card-vertical-padding: 8px;
+    --card-horizontal-padding: 12px;
+    --card-gap: 12px;
+  }
+
+  /* NOTE: Utilisation de .thematic-card (classe hôte) plutôt que :host car ViewEncapsulation.None désactive le prétraitement Angular des pseudo-sélecteurs. */
+  .thematic-card {
   margin: var(--thematic-card-margin);
   padding: var(--thematic-card-padding);
   position: relative;
   min-width: 0;
-  border: 1px solid #c5d3e2; /* bordure plus fine mais visible */
+    /* padding global de la carte : si le contenu interne utilise .cardBackground
+      on préfère que le parent définisse le padding (ici, on laisse la carte
+      proposer une valeur par défaut via la variable) */
+    padding: var(--thematic-card-padding, var(--card-vertical-padding) var(--card-horizontal-padding));
   box-shadow: 0 2px 4px rgba(31,45,64,0.10), 0 1px 2px rgba(31,45,64,0.08);
   transition: box-shadow 160ms ease, border-color 160ms ease, transform 140ms ease;
 }
 
 .thematic-card:hover {
   box-shadow: 0 4px 10px rgba(31,45,64,0.16), 0 2px 4px rgba(31,45,64,0.10);
+
+  /* Fournir un fallback de padding pour les `.cardBackground` internes lorsque
+    le parent ne redéfinit pas explicitement le padding. Cela permet d'avoir
+    une apparence homogène même si certains displays n'appliquent pas leur
+    propre padding. */
+  .thematic-card .cardBackground {
+    padding: var(--card-vertical-padding) var(--card-horizontal-padding);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
   border-color: #b6c5d5;
   transform: translateY(-2px);
 }

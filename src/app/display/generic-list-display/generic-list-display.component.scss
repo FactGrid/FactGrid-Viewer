@@ -90,16 +90,17 @@
    ======================================== */
 
 .cardBackground {
+  /* Le layout (padding / margin / width) des cartes est géré par
+     `app-thematic-card` et le conteneur `.thematic-cards-grid`.
+     Ici on conserve uniquement des règles de neutralité et de box-sizing
+     afin que le parent applique l'espacement de manière cohérente. */
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
-  margin-bottom: 6px; /* augmenter l'espace sous la carte pour homogénéiser avec SPARQL */
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  padding: 8px 0; /* padding interne augmenté pour correspondre aux cartes SPARQL */
   overflow: visible;
   box-sizing: border-box;
+  padding: 0; /* contenu interne géré localement; padding de carte centralisé */
+  margin: 0;  /* espacement inter-cartes géré par le parent via `gap` */
 }
 
 /* ========================================
