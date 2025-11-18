@@ -1,7 +1,5 @@
-<div [ngClass]="isList ? 'show-division':'hide-division'">
-  <mat-card appearance="outlined" class="mat-elevation-z12">
-    <mat-card-content class="cardBackground">
- 
+<div class="cardBackground" [ngClass]="isList ? 'show-division':'hide-division'">
+
       <ng-container *ngIf="isSearch">
         <div class="searchFormPadding">
           <mat-form-field appearance="outline">
@@ -19,13 +17,10 @@
             </ng-container>
             <ng-template #defaultRow>
               <div class="sparql-div statementStyle">
-                {{L.itemLabel?.value}}
-                <button mat-icon-button class="internalLink" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                </button>
-                <span *ngIf="L.itemDescription">, {{L.itemDescription.value}}</span>
+                <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
+                  {{L.itemLabel?.value}}<span *ngIf="L.itemDescription" class="sparql-description">, {{L.itemDescription.value}}</span>
+                </a>
                 <span *ngIf="L.year">, {{L.year.value}}</span>
-                <hr>
               </div>
             </ng-template>
           </ng-container>
@@ -39,13 +34,10 @@
             </ng-container>
             <ng-template #defaultRow2>
               <div class="sparql-div statementStyle">
-                {{L.itemLabel?.value}}
-                <button mat-icon-button class="internalLink" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
-                </button>
-                <span *ngIf="L.itemDescription">, {{L.itemDescription.value}}</span>
+                <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
+                  {{L.itemLabel?.value}}<span *ngIf="L.itemDescription" class="sparql-description">, {{L.itemDescription.value}}</span>
+                </a>
                 <span *ngIf="L.year">, {{L.year.value}}</span>
-                <hr>
               </div>
             </ng-template>
           </ng-container>
@@ -56,6 +48,4 @@
           <mat-icon color="primary" [inline]="true">download</mat-icon>
         </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       </span>
-    </mat-card-content>
-  </mat-card>
 </div>

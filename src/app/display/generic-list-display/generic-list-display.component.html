@@ -46,7 +46,7 @@
             }
             @if (M && M.mainsnak && (M.mainsnak.datatype==='wikibase-item' || M.mainsnak.datatype==='wikibase-property')) {
               <span>
-                <a class="linkedItemText factgrid-link" [routerLink]="['/item', M.mainsnak.datavalue.value.id]">{{M.mainsnak.label}}</a>{{M.mainsnak.separator}}<span class="description-text">{{M.mainsnak.description}}</span>
+                <a class="linkedItemText factgrid-link" [routerLink]="['/item', M.mainsnak.datavalue.value.id]">{{M.mainsnak.label}}</a>{{M.mainsnak.datavalue.value.separator}}<span *ngIf="M.mainsnak.datavalue.value.description" class="description-text">{{M.mainsnak.datavalue.value.description}}</span>
               </span>
             }
             @if (M && M.rank=='deprecated') {

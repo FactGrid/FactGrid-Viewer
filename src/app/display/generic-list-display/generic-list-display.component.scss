@@ -1,28 +1,29 @@
 .linkedItemText {
 
-  color: #222;
+  color: #000;
   text-decoration: none;
   font-size: inherit;
   font-weight: inherit;
   padding: 0;
   border-radius: 4px;
-  transition: text-decoration 0.15s, background 0.15s;
+  transition: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 .linkedItemText:hover, .linkedItemText:focus {
-  text-decoration: underline;
-  background: rgba(40,53,147,0.06);
-  color: #222;
+  text-decoration: none;
+  background: none;
+  color: #000;
 }
 
-/* Lien FactGrid spécifique : noir, souligné au hover */
+/* Lien FactGrid spécifique : noir, sans souligné */
 .factgrid-link {
-  color: #111 !important;
+  color: #000 !important;
   text-decoration: none;
 }
 .factgrid-link:hover, .factgrid-link:focus {
-  color: #111 !important;
-  text-decoration: underline;
+  color: #000 !important;
+  text-decoration: none;
 }
 
 /* Supprimer l'espace entre le lien et le séparateur */
@@ -92,11 +93,11 @@
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
-  margin-bottom: 0;
+  margin-bottom: 6px; /* augmenter l'espace sous la carte pour homogénéiser avec SPARQL */
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding: 4px 0;
+  padding: 8px 0; /* padding interne augmenté pour correspondre aux cartes SPARQL */
   overflow: visible;
   box-sizing: border-box;
 }
@@ -214,6 +215,10 @@
   > div {
     padding: 4px 0;
   }
+}
+
+.factgrid-link:hover {
+  background-color: rgba(40, 53, 147, 0.1);
 }
 
 .qualifierStyle {

@@ -1,4 +1,3 @@
-<div class="thematic-card-header-bar" *ngIf="title"></div>
 <header class="card-header" *ngIf="title || hasProjectedHeader || collapsible" [class.has-custom]="hasProjectedHeader">
 	<ng-container *ngIf="hasProjectedHeader; else autoHeader">
 		<ng-content select="[card-header]"></ng-content>

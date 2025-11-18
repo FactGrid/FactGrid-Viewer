@@ -504,10 +504,22 @@
 :host ::ng-deep .thematic-cards-grid > app-thematic-card,
 :host ::ng-deep .thematic-cards-grid > .thematic-card {
   margin: 0 !important;
-  padding: 0 !important; /* force suppression padding hérité */
+  /* Restaurer le padding d'hôte pour conserver la bordure/le fond définis
+     par `thematic-card.component.scss`. On ne neutralise plus le padding. */
+  padding: var(--thematic-card-padding) !important;
   display: block !important;
   width: 100% !important;
   min-height: 0; /* permet aux contenus à overflow (scroll) de calculer correctement leur hauteur */
+}
+
+/* Assurer que tous les composants `app-thematic-card` à l'intérieur de la grille
+   sont des boîtes visibles (pas display:contents) — cela garantit que le
+   `gap` du conteneur flex s'applique entre chaque carte. */
+:host ::ng-deep .thematic-cards-grid app-thematic-card {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 /* Uniformiser et aligner les boîtes internes des cartes thématiques
@@ -515,7 +527,8 @@
    puis donner à tous les `.cardBackground` internes le même box sizing
    et le même padding horizontal afin que SPARQL et generic-list s'alignent. */
 :host ::ng-deep .thematic-cards-grid > app-thematic-card .card-body {
-  padding: 0 !important;
+  /* Valeurs canonique du composant pour préserver l'aspect "squelette" */
+  padding: 3px 8px 6px 8px !important;
   box-sizing: border-box !important;
 }
 
@@ -529,6 +542,13 @@
   max-width: 100% !important;
   box-sizing: border-box !important;
   min-width: 0 !important;
+}
+
+/* Important: neutraliser toute marge-bottom appliquée par les composants
+   internes (.cardBackground) pour que l'espacement vertical soit uniquement
+   gouverné par le `gap` du conteneur. */
+:host ::ng-deep .thematic-cards-grid .cardBackground {
+  margin-bottom: 0 !important;
 }
 
 /* DEBUG: ajouter fonds semi-transparents pour visualiser largeur réelle */
@@ -558,6 +578,14 @@
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
+}
+
+/* CIBLE MINIMALE: rendre transparents au layout les wrappers Angular insérés
+   immédiatement sous la grille (ng-star-inserted), afin que le `gap`
+   s'applique entre les vraies cartes. Ne pas toucher les paddings/bordures
+   des cartes elles-mêmes pour préserver le "squelette" visuel. */
+:host ::ng-deep .thematic-cards-grid > .ng-star-inserted {
+  display: contents !important;
 }
 
 /* Forcer les éléments `.show-division` à remplir la largeur quand présents
