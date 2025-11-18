@@ -602,13 +602,12 @@ mat-form-field.search-field {
   gap: 12px; /* espace entre les icônes */
 }
 
-.small-icon-btn .mat-icon {
-  /* UNUSED: .small-icon-btn .mat-icon {
+/* UNUSED: .small-icon-btn .mat-icon {
   color: #3F51B5;
 } */
 
 /* UNUSED: .people-btn {
-  /* Optionnel : pour séparer un peu plus */
+  // Optionnel : pour séparer un peu plus
   margin-right: 4px;
 } */
 
@@ -630,7 +629,7 @@ button.mat-icon-button .mat-icon {
 }
 
 
-.search-center3 { /* UNUSED
+/* UNUSED: .search-center3 {
   display: flex;
   justify-content: center;
 } */
@@ -656,11 +655,11 @@ button.mat-icon-button .mat-icon {
   /* UNUSED: .mapPadding {
     padding-top: 10px;
     padding-bottom: 10px;
-  }
+  } */
 
   .subTitlePadding { // padding-bottom on the subtitles
     padding-bottom: 12px;
-  } */
+  }
 
   .matCardPadding { //padding top and left of the mat-card
     padding-top: 2px;
