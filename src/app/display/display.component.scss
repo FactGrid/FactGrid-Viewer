@@ -510,6 +510,17 @@
   min-height: 0; /* permet aux contenus à overflow (scroll) de calculer correctement leur hauteur */
 }
 
+/* Restaurer visuellement les bordures et le fond des cartes thématiques
+   après les resets (assure uniformité entre generic et sparql). */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card {
+  border: 1px solid rgba(179, 198, 224, 0.8) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-radius: var(--thematic-card-radius) !important;
+  box-shadow: 
+    0 4px 16px rgba(40, 53, 147, 0.12),
+    0 2px 4px rgba(40, 53, 147, 0.08);
+}
+
 /* Uniformiser et aligner les boîtes internes des cartes thématiques
    — enlever le padding interne du `card-body` des `app-thematic-card` enfants
    puis donner à tous les `.cardBackground` internes le même box sizing
@@ -564,8 +575,10 @@
    et les `app-thematic-card` enfants à ne pas introduire de décalage.
    Ceci couvre le cas où l'inspecteur montre un `div.ng-star-inserted` avec left différent. */
 :host ::ng-deep .thematic-cards-grid > .ng-star-inserted {
-  display: block !important;
-  width: 100% !important;
+  /* Use display:contents so the inner app-thematic-card elements
+     are treated as direct children of the grid and receive the
+     grid's gap spacing. Keep other resets to avoid unexpected offsets. */
+  display: contents !important;
   max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
