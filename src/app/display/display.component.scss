@@ -544,6 +544,17 @@
   min-width: 0 !important;
 }
 
+/* Restaurer explicitement la bordure et le fond canonique pour les
+   contenus génériques afin qu'ils aient le même "squelette" visuel que
+   les cartes SPARQL (certaines instances semblaient perdre la bordure). */
+:host ::ng-deep .thematic-cards-grid app-generic-list-display,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display .cardBackground {
+  border: 1px solid #c5d3e2 !important;
+  border-radius: var(--thematic-card-radius) !important;
+  background: linear-gradient(180deg,#ffffff 0%, #f7f9fc 100%) !important;
+  box-shadow: 0 2px 4px rgba(31,45,64,0.06) !important;
+}
+
 /* Important: neutraliser toute marge-bottom appliquée par les composants
    internes (.cardBackground) pour que l'espacement vertical soit uniquement
    gouverné par le `gap` du conteneur. */
