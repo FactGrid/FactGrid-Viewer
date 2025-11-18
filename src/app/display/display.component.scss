@@ -588,7 +588,11 @@
    immédiatement sous la grille (ng-star-inserted), afin que le `gap`
    s'applique entre les vraies cartes. Ne pas toucher les paddings/bordures
    des cartes elles-mêmes pour préserver le "squelette" visuel. */
-:host ::ng-deep .thematic-cards-grid > .ng-star-inserted {
+:host ::ng-deep .thematic-cards-grid > div.ng-star-inserted {
+  /* apply display:contents only to plain div wrappers inserted by Angular,
+     not to component hosts (e.g. <app-thematic-card>) which may also carry
+     the .ng-star-inserted class — otherwise the component host loses its
+     box (border/background). */
   display: contents !important;
 }
 
