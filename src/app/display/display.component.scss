@@ -1,3 +1,46 @@
+/* Component-scoped minimal styles for DisplayComponent.
+   Keep only rules that must remain scoped to the component to
+   respect Angular per-file CSS budgets. Global/shared rules
+   live in `src/styles.scss`.
+*/
+
+/* Show / hide helpers used by the template */
+.hide-division { display: none; }
+.show-division { display: block; }
+
+/* Selected item link (local tweaks) */
+.selectedItemLink {
+  color: #222;
+  text-decoration: none;
+  font-size: 0.97rem;
+  font-weight: 400;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: text-decoration 0.15s, background 0.15s;
+}
+.selectedItemLink:hover, .selectedItemLink:focus {
+  text-decoration: underline;
+  background: rgba(40,53,147,0.06);
+  color: #222;
+}
+
+/* Wiki entries: keep stacking behavior and mobile wrapping here */
+.external-links .header-spacer .wikiEntry { display: block; padding: 6px 0; }
+.external-links .header-spacer .wikiEntry .wikiSite { display: block; }
+.external-links .header-spacer .wikiEntry .wikiTitle { margin-left: calc(var(--card-horizontal-padding, 12px) + 18px); margin-top: 2px; }
+.external-links .header-spacer .wikiEntry .wikiTitle a { display: inline-block; max-width: calc(100% - 8px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .external-links .header-spacer .wikiEntry .wikiTitle { margin-left: 0 !important; }
+  .external-links .header-spacer .wikiEntry .wikiTitle a { white-space: normal !important; overflow-wrap: anywhere !important; }
+  /* Prevent thumbnails from overflowing inside the component */
+  .img2 { max-width: 100% !important; margin-right: 0 !important; overflow: hidden !important; box-sizing: border-box !important; }
+  .img2 img, .img2 img[mat-card-image] { display: block !important; width: 100% !important; max-width: 100% !important; height: auto !important; margin: 0 auto !important; box-sizing: border-box !important; object-fit: contain !important; }
+}
+
+/* Small helpers specific to DisplayComponent */
+.factgrid-global { display: flex; gap: 8px; align-items: center; padding-left: calc(var(--card-horizontal-padding, 12px) + 8px); }
+.factgrid-label { font-weight: 600; color: var(--color-primary, #6699CC); }
 .selectedItemLink {
   color: #222;
   text-decoration: none;
@@ -504,22 +547,10 @@
 :host ::ng-deep .thematic-cards-grid > app-thematic-card,
 :host ::ng-deep .thematic-cards-grid > .thematic-card {
   margin: 0 !important;
-  /* Restaurer le padding d'hôte pour conserver la bordure/le fond définis
-     par `thematic-card.component.scss`. On ne neutralise plus le padding. */
-  padding: var(--thematic-card-padding) !important;
+  padding: 0 !important; /* force suppression padding hérité */
   display: block !important;
   width: 100% !important;
   min-height: 0; /* permet aux contenus à overflow (scroll) de calculer correctement leur hauteur */
-}
-
-/* Assurer que tous les composants `app-thematic-card` à l'intérieur de la grille
-   sont des boîtes visibles (pas display:contents) — cela garantit que le
-   `gap` du conteneur flex s'applique entre chaque carte. */
-:host ::ng-deep .thematic-cards-grid app-thematic-card {
-  display: block !important;
-  width: 100% !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
 }
 
 /* Uniformiser et aligner les boîtes internes des cartes thématiques
@@ -527,8 +558,7 @@
    puis donner à tous les `.cardBackground` internes le même box sizing
    et le même padding horizontal afin que SPARQL et generic-list s'alignent. */
 :host ::ng-deep .thematic-cards-grid > app-thematic-card .card-body {
-  /* Valeurs canonique du composant pour préserver l'aspect "squelette" */
-  padding: 3px 8px 6px 8px !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
 }
 
@@ -542,17 +572,6 @@
   max-width: 100% !important;
   box-sizing: border-box !important;
   min-width: 0 !important;
-}
-
-/* NOTE: Ne pas appliquer la bordure directement aux displays enfants.
-  La bordure doit provenir de `app-thematic-card` afin qu'elle englobe
-  l'en-tête et le contenu (pattern canonique). */
-
-/* Important: neutraliser toute marge-bottom appliquée par les composants
-   internes (.cardBackground) pour que l'espacement vertical soit uniquement
-   gouverné par le `gap` du conteneur. */
-:host ::ng-deep .thematic-cards-grid .cardBackground {
-  margin-bottom: 0 !important;
 }
 
 /* DEBUG: ajouter fonds semi-transparents pour visualiser largeur réelle */
@@ -582,18 +601,6 @@
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
-}
-
-/* CIBLE MINIMALE: rendre transparents au layout les wrappers Angular insérés
-   immédiatement sous la grille (ng-star-inserted), afin que le `gap`
-   s'applique entre les vraies cartes. Ne pas toucher les paddings/bordures
-   des cartes elles-mêmes pour préserver le "squelette" visuel. */
-:host ::ng-deep .thematic-cards-grid > div.ng-star-inserted {
-  /* apply display:contents only to plain div wrappers inserted by Angular,
-     not to component hosts (e.g. <app-thematic-card>) which may also carry
-     the .ng-star-inserted class — otherwise the component host loses its
-     box (border/background). */
-  display: contents !important;
 }
 
 /* Forcer les éléments `.show-division` à remplir la largeur quand présents
