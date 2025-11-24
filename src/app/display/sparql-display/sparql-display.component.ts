@@ -15,7 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
-import { CommonModule, NgClass, NgIf, NgFor, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SparqlDisplayService, SparqlDisplayType } from '../services/sparql-display.service';
@@ -34,8 +34,6 @@ import { SparqlDisplayService, SparqlDisplayType } from '../services/sparql-disp
     MatButtonModule,
     FormsModule,
     ScrollingModule,
-    NgIf,
-    NgFor,
     NgTemplateOutlet,
   ],
   templateUrl: './sparql-display.component.html',
