@@ -1,67 +1,51 @@
 <div class="cardBackground" [ngClass]="isList ? 'show-division' : 'hide-division'">
-  <ng-container *ngIf="isSearch">
+  @if (isSearch) {
     <div class="searchFormPadding">
       <mat-form-field appearance="outline">
         <input matInput (keyup)="applyFilter($event)" placeholder="Search" />
       </mat-form-field>
       <span>&nbsp;&nbsp;&nbsp;{{ list.length }}</span>
     </div>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="list.length >= 10; else nonVirtualList">
+  @if (list.length >= 10) {
     <cdk-virtual-scroll-viewport
       [itemSize]="rowHeight"
       class="virtual-scroll-viewport"
       [style.height.px]="getViewportHeightPx(list.length)"
     >
-      <ng-container *ngFor="let L of list; trackBy: trackByFn">
-        <ng-container *ngIf="customRowTemplate; else defaultRow">
-          <ng-container
-            *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"
-          ></ng-container>
-        </ng-container>
+      @for (L of list) {
+        @if (customRowTemplate) {
+          <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
+        }
         <ng-template #defaultRow>
           <div class="sparql-div statementStyle">
-            <a
-              class="sparql-link"
-              [routerLink]="['/item', L.item?.id]"
-              (click)="$event.stopPropagation()"
-            >
+            <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
               {{ L.itemLabel?.value
-              }}<span *ngIf="L.itemDescription" class="sparql-description"
-                >, {{ L.itemDescription.value }}</span
-              >
+              }}@if (L.itemDescription) {<span class="sparql-description">, {{ L.itemDescription.value }}</span>}
             </a>
-            <span *ngIf="L.year">, {{ L.year.value }}</span>
+            @if (L.year) {<span>, {{ L.year.value }}</span>}
           </div>
         </ng-template>
-      </ng-container>
+      }
     </cdk-virtual-scroll-viewport>
-  </ng-container>
+  }
   <ng-template #nonVirtualList>
     <div class="non-virtual-list">
-      <ng-container *ngFor="let L of list; trackBy: trackByFn">
-        <ng-container *ngIf="customRowTemplate; else defaultRow2">
-          <ng-container
-            *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"
-          ></ng-container>
-        </ng-container>
+      @for (L of list) {
+        @if (customRowTemplate) {
+          <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
+        }
         <ng-template #defaultRow2>
           <div class="sparql-div statementStyle">
-            <a
-              class="sparql-link"
-              [routerLink]="['/item', L.item?.id]"
-              (click)="$event.stopPropagation()"
-            >
+            <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
               {{ L.itemLabel?.value
-              }}<span *ngIf="L.itemDescription" class="sparql-description"
-                >, {{ L.itemDescription.value }}</span
-              >
+              }}@if (L.itemDescription) {<span class="sparql-description">, {{ L.itemDescription.value }}</span>}
             </a>
-            <span *ngIf="L.year">, {{ L.year.value }}</span>
+            @if (L.year) {<span>, {{ L.year.value }}</span>}
           </div>
         </ng-template>
-      </ng-container>
+      }
     </div>
   </ng-template>
   <span>
