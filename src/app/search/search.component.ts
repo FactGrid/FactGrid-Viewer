@@ -1,8 +1,28 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  inject,
+  ChangeDetectionStrategy,
+  Output,
+  EventEmitter,
+  Input,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  Observable, Subscription, BehaviorSubject, map, switchMap, tap, debounceTime,
-  combineLatest, filter, startWith, forkJoin, of
+  Observable,
+  Subscription,
+  BehaviorSubject,
+  map,
+  switchMap,
+  tap,
+  debounceTime,
+  combineLatest,
+  filter,
+  startWith,
+  forkJoin,
+  of,
 } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -30,8 +50,10 @@ import { ResearchField } from '../models/research-field.model';
 
 function normalizeString(s: string | undefined | null): string {
   if (!s) return '';
-  return s.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -62,7 +84,7 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     MatCardModule,
     MatAutocompleteModule,
     MatCheckboxModule,
-    MatSelectModule
+    MatSelectModule,
   ],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
@@ -202,7 +224,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searchInput.valueChanges.subscribe(() => {
       this.filterInput.setValue('', { emitEvent: false });
     });
-
   }
 
   onItemRowClick(itemId: string, event?: MouseEvent) {
@@ -228,9 +249,8 @@ export class SearchComponent implements OnInit, OnDestroy {
     }, 200);
   }
 
-
   private initResearchFields() {
-    const sub = this.selectedResearchField.selectedResearchField$.subscribe(selected => {
+    const sub = this.selectedResearchField.selectedResearchField$.subscribe((selected) => {
       this.searchResearchField.setValue(selected, { emitEvent: false });
       this.updateProjectDisplayValue(selected);
       this.searchInput.setValue('');
@@ -242,7 +262,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
     this.items = [];
     this.items$.next([]);
     this.termCache = {};
@@ -262,7 +282,10 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.filterPeopleActivate = this.lang.getTranslation('filterPeopleActivate', lang);
     this.filterPeopleDeactivate = this.lang.getTranslation('filterPeopleDeactivate', lang);
     this.filterPublicationActivate = this.lang.getTranslation('filterPublicationActivate', lang);
-    this.filterPublicationDeactivate = this.lang.getTranslation('filterPublicationDeactivate', lang);
+    this.filterPublicationDeactivate = this.lang.getTranslation(
+      'filterPublicationDeactivate',
+      lang
+    );
     this.dataOptions = this.lang.getTranslation('results', lang);
   }
 
@@ -272,7 +295,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   private initShowResearchFieldSync() {
-    const sub = this.selectedResearchField.showResearchField$.subscribe(show => {
+    const sub = this.selectedResearchField.showResearchField$.subscribe((show) => {
       this.showResearchField = show;
       this.changeDetector.markForCheck();
     });
@@ -286,27 +309,28 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     this.filteredResearchFields$ = combineLatest([
       this.researchFields$,
-      this.searchResearchField.valueChanges.pipe(startWith(''))
+      this.searchResearchField.valueChanges.pipe(startWith('')),
     ]).pipe(
       map(([fields, value]) => {
         const search = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
-        return fields.filter(f => f.name.toLowerCase().includes(search));
+        return fields.filter((f) => f.name.toLowerCase().includes(search));
       })
     );
 
-    this.request.getList(this.getResearchFieldQuery(this.lang.selectedLang))
+    this.request
+      .getList(this.getResearchFieldQuery(this.lang.selectedLang))
       .pipe(
-        map(res => this.listFromSparql(res)),
-        map(res => [
+        map((res) => this.listFromSparql(res)),
+        map((res) => [
           { name: '-', id: '-', description: '' },
           ...res.results.bindings.map((b: any) => ({
             name: b.itemLabel.value,
             id: b.item.id,
-            description: b.itemDescription?.value ?? ''
-          }))
+            description: b.itemDescription?.value ?? '',
+          })),
         ])
       )
-      .subscribe(projects => {
+      .subscribe((projects) => {
         projects.sort((a: any, b: any) => a.name.localeCompare(b.name));
         this.researchFields = projects;
         this.researchFields$.next(projects);
@@ -322,27 +346,28 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Récupère jusqu'à 50 items 
+   * Récupère jusqu'à 50 items
    */
   private fetchAutocompleteEntities(
     searchTerm: string,
     lang: string,
     maxResults: number = 50
-  ): Observable<{ items: WikibaseEntity[], total: number }> {
+  ): Observable<{ items: WikibaseEntity[]; total: number }> {
     return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
       map((res: any) => {
-        const total = res.searchinfo?.totalhits ?? (res.search?.length ?? 0);
+        const total = res.searchinfo?.totalhits ?? res.search?.length ?? 0;
         const items = (res.search || []).map((e: any) => ({
           id: e.id,
           label: e.label,
-          aliases: (e.aliases || []).filter((a: any) => a.language === lang).map((a: any) => a.value),
-          description: e.description || ''
+          aliases: (e.aliases || [])
+            .filter((a: any) => a.language === lang)
+            .map((a: any) => a.value),
+          description: e.description || '',
         }));
         return { items, total };
       })
     );
   }
-
 
   /**
    * Initialisation de la recherche principale avec pagination UI
@@ -351,7 +376,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searchResults$ = combineLatest([
       this.searchInput.valueChanges.pipe(startWith('')),
       this.showInDescriptionSubject,
-      this.selectedResearchField.selectedResearchField$
+      this.selectedResearchField.selectedResearchField$,
     ]).pipe(
       tap(([label]) => {
         this.isSearching = !!label && label.length > 0;
@@ -372,7 +397,11 @@ export class SearchComponent implements OnInit, OnDestroy {
           // On récupère jusqu'à 100 résultats, puis on découpe la page courante
           const offset = this.currentPage * this.pageSize;
           const maxResults = Math.min(this.maxApiResults, offset + this.pageSize);
-          return this.fetchAutocompleteEntities(searchTerm, this.lang.selectedLang, maxResults).pipe(
+          return this.fetchAutocompleteEntities(
+            searchTerm,
+            this.lang.selectedLang,
+            maxResults
+          ).pipe(
             map(({ items, total }) => {
               const pagedItems = items.slice(offset, offset + this.pageSize);
               this.totalResults = total;
@@ -394,17 +423,15 @@ export class SearchComponent implements OnInit, OnDestroy {
         const searchUrl = this.wikibaseSearch.buildSearchUrl(searchQuery);
 
         return this.wikibaseSearch.fetchAllIds(searchUrl).pipe(
-          tap(ids => {
+          tap((ids) => {
             const isComplete = ids.length < 2000;
             this.searchCache.setCacheComplete(isComplete);
           }),
-          switchMap(ids => this.wikibaseSearch.fetchEntities(ids)),
-          map(entities => this.searchFilter.filterResultsLocally(
-            entities,
-            searchTerm,
-            showInDescription,
-          )),
-          tap(items => {
+          switchMap((ids) => this.wikibaseSearch.fetchEntities(ids)),
+          map((entities) =>
+            this.searchFilter.filterResultsLocally(entities, searchTerm, showInDescription)
+          ),
+          tap((items) => {
             this.totalResults = items.length;
             if (this.searchCache.isComplete()) {
               this.searchCache.cacheItems(searchTerm, items);
@@ -445,20 +472,22 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   private buildSearchUrl(searchQuery: string): string {
-    return 'https://database.factgrid.de/w/api.php' +
+    return (
+      'https://database.factgrid.de/w/api.php' +
       '?action=query' +
       '&list=search' +
       '&format=json' +
       '&origin=*' +
       `&srsearch=${encodeURIComponent(searchQuery)}` +
       '&srnamespace=120' +
-      '&srlimit=500';
+      '&srlimit=500'
+    );
   }
 
   private fetchEntities(ids: string[]): Observable<WikibaseEntity[]> {
     if (ids.length === 0) return of([]);
     const chunks = chunkArray(ids, 50);
-    const requests = chunks.map(chunk => {
+    const requests = chunks.map((chunk) => {
       const idsParam = chunk.join('|');
       const getEntitiesUrl =
         `https://database.factgrid.de/w/api.php?action=wbgetentities` +
@@ -473,9 +502,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         })
       );
     });
-    return requests.length > 0 ?
-      forkJoin(requests).pipe(map(results => results.flat())) :
-      of([]);
+    return requests.length > 0 ? forkJoin(requests).pipe(map((results) => results.flat())) : of([]);
   }
 
   private filterResultsLocally(
@@ -484,11 +511,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     showInDescription: boolean
   ): WikibaseEntity[] {
     if (!this.broadCacheComplete && this.broadCacheItems.length > 0) {
-      return this.broadCacheItems.filter(item =>
+      return this.broadCacheItems.filter((item) =>
         this.matchesSearchCriteria(item, searchTerm, showInDescription)
       );
     }
-    return entities.filter(item =>
+    return entities.filter((item) =>
       this.matchesSearchCriteria(item, searchTerm, showInDescription)
     );
   }
@@ -502,7 +529,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     const normalizedAliases = (item.aliases || []).map(normalizeString);
     const normalizedDesc = normalizeString(item.description);
     if (normalizedLabel.includes(searchTerm)) return true;
-    if (normalizedAliases.some(alias => alias.includes(searchTerm))) return true;
+    if (normalizedAliases.some((alias) => alias.includes(searchTerm))) return true;
     if (showInDescription && normalizedDesc.includes(searchTerm)) return true;
     return false;
   }
@@ -517,14 +544,15 @@ export class SearchComponent implements OnInit, OnDestroy {
   private initFilteredItems() {
     this.filteredItems$ = combineLatest([
       this.items$,
-      this.filterInput.valueChanges.pipe(startWith(''))
+      this.filterInput.valueChanges.pipe(startWith('')),
     ]).pipe(
       map(([items, filterValue]) => {
         const filter = normalizeString(filterValue || '');
         if (!filter) return items;
-        return items.filter(item =>
-          normalizeString(item.label).includes(filter) ||
-          normalizeString(item.description).includes(filter)
+        return items.filter(
+          (item) =>
+            normalizeString(item.label).includes(filter) ||
+            normalizeString(item.description).includes(filter)
         );
       })
     );
@@ -538,11 +566,12 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   updateHintValue() {
     const selectedResearchField = this.selectedResearchField.getSelectedResearchField();
-    this.hintValue$ = this.items.length > 0
-      ? of(this.items.length)
-      : (!selectedResearchField || selectedResearchField.id === 'Q0')
-        ? this.pages
-        : of(0);
+    this.hintValue$ =
+      this.items.length > 0
+        ? of(this.items.length)
+        : !selectedResearchField || selectedResearchField.id === 'Q0'
+          ? this.pages
+          : of(0);
   }
 
   isArray(val: any): boolean {
@@ -559,15 +588,18 @@ export class SearchComponent implements OnInit, OnDestroy {
     if (res?.results) {
       for (let i = 0; i < res.results.bindings.length; i++) {
         const binding = res.results.bindings[i];
-        binding["item"].id = binding["item"].value.replace("https://database.factgrid.de/entity/", "");
-        binding["item"].id.startsWith("P")
-          ? binding["item"].entity = "property"
-          : binding["item"].entity = "item";
-        binding["itemLabel"].value = binding["itemLabel"].value;
-        if (binding["itemDescription"]) {
-          binding["itemDescription"].value = binding["itemDescription"].value;
+        binding['item'].id = binding['item'].value.replace(
+          'https://database.factgrid.de/entity/',
+          ''
+        );
+        binding['item'].id.startsWith('P')
+          ? (binding['item'].entity = 'property')
+          : (binding['item'].entity = 'item');
+        binding['itemLabel'].value = binding['itemLabel'].value;
+        if (binding['itemDescription']) {
+          binding['itemDescription'].value = binding['itemDescription'].value;
         } else {
-          binding["itemDescription"] = { value: '' };
+          binding['itemDescription'] = { value: '' };
         }
       }
     } else {
@@ -577,22 +609,26 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   private adaptEntities(entities: any[], lang: string): WikibaseEntity[] {
-    return entities.map(e => ({
+    return entities.map((e) => ({
       id: e.id,
       label: e.labels?.[lang]?.value || '',
       aliases: e.aliases?.[lang]?.map((a: any) => a.value) || [],
-      description: e.descriptions?.[lang]?.value || ''
+      description: e.descriptions?.[lang]?.value || '',
     }));
   }
 
   researchFieldSelect(researchField: any) {
     if (!researchField) {
-      this.selectedResearchField.setSelectedResearchField({ id: 'all', name: 'all', description: '' });
+      this.selectedResearchField.setSelectedResearchField({
+        id: 'all',
+        name: 'all',
+        description: '',
+      });
     } else {
       this.selectedResearchField.setSelectedResearchField({
         id: researchField.id,
         name: researchField.name,
-        description: researchField.description ?? ''
+        description: researchField.description ?? '',
       });
       if (researchField.name === 'Paris' || researchField.name === 'Harmonia Universalis') {
         return;
@@ -610,7 +646,11 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   clearProjectSearch() {
     this.searchResearchField.setValue('');
-    this.selectedResearchField.setSelectedResearchField({ id: 'all', name: 'all', description: '' });
+    this.selectedResearchField.setSelectedResearchField({
+      id: 'all',
+      name: 'all',
+      description: '',
+    });
     this.selectedResearchField.setShowResearchField(false);
     this.updateHintValue();
   }

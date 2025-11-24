@@ -8,10 +8,9 @@ describe('IframesDisplayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IframesDisplayComponent]
-    })
-    .compileComponents();
-    
+      imports: [IframesDisplayComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(IframesDisplayComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

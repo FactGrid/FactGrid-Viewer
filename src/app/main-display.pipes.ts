@@ -12,7 +12,7 @@ export class ObjectKeysPipe implements PipeTransform {
 @Pipe({ name: 'filterNotP499', standalone: true })
 export class FilterNotP499Pipe implements PipeTransform {
   transform(keys: string[]): string[] {
-    return keys.filter(k => k !== 'P499');
+    return keys.filter((k) => k !== 'P499');
   }
 }
 
@@ -21,11 +21,12 @@ export class FilterNotP499Pipe implements PipeTransform {
 export class OrderByP499Pipe implements PipeTransform {
   transform(statements: any[]): any[] {
     if (!statements) return [];
-    const withOrder = statements.filter(s => s.qualifiers && s.qualifiers['P499']);
-    const withoutOrder = statements.filter(s => !s.qualifiers || !s.qualifiers['P499']);
-    withOrder.sort((a, b) =>
-      parseInt(a.qualifiers['P499'][0].datavalue.value, 10) -
-      parseInt(b.qualifiers['P499'][0].datavalue.value, 10)
+    const withOrder = statements.filter((s) => s.qualifiers && s.qualifiers['P499']);
+    const withoutOrder = statements.filter((s) => !s.qualifiers || !s.qualifiers['P499']);
+    withOrder.sort(
+      (a, b) =>
+        parseInt(a.qualifiers['P499'][0].datavalue.value, 10) -
+        parseInt(b.qualifiers['P499'][0].datavalue.value, 10)
     );
     return [...withOrder, ...withoutOrder];
   }

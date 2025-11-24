@@ -7,5 +7,3 @@ export interface WikibaseEntity {
   aliases?: string[];
   description?: string;
 }
-
-

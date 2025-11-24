@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SetLanguageService {
-
-  constructor() { }
+  constructor() {}
 
   lang: string;
 
@@ -18,7 +17,6 @@ export class SetLanguageService {
     if (!obj) return undefined;
 
     // Si la langue demandée est "zh", privilégier zh puis zh-hans, puis zh-hant
-
 
     // Si la langue demandée est "zh", privilégier zh puis zh-cn
     if (lang === 'zh') {
@@ -50,17 +48,20 @@ export class SetLanguageService {
     return keys.length > 0 ? obj[keys[0]] : undefined;
   }
 
-
   /** Utility: get aliases as array of strings for the preferred language */
-  private getAliases(obj: any, lang: string, fallbackOrder: string[] = ['en', 'fr', 'de', 'es', 'it', 'hu', 'zh']) {
+  private getAliases(
+    obj: any,
+    lang: string,
+    fallbackOrder: string[] = ['en', 'fr', 'de', 'es', 'it', 'hu', 'zh']
+  ) {
     const aliasesObj = obj && obj[lang];
-    return Array.isArray(aliasesObj) ? aliasesObj.map(a => a.value) : [];
+    return Array.isArray(aliasesObj) ? aliasesObj.map((a) => a.value) : [];
   }
 
   /** Returns an array of items with id, label, description, aliases, claims, sitelinks, datatype */
   item(res, lang) {
     if (!Array.isArray(res)) return [];
-    return res.map(item => {
+    return res.map((item) => {
       const labelObj = this.getLangValue(item.labels, lang);
       const descObj = this.getLangValue(item.descriptions, lang);
       const aliases = this.getAliases(item.aliases, lang);
@@ -74,7 +75,7 @@ export class SetLanguageService {
         label,
         claims: item.claims ?? {},
         sitelinks: item.sitelinks,
-        datatype: item.datatype
+        datatype: item.datatype,
       };
       if (description) result.description = description;
       if (aliases.length > 0) result.aliases = aliases;
@@ -85,7 +86,7 @@ export class SetLanguageService {
   /** Returns an array of items with id, label, description, aliases, externalLink */
   item2(res, lang) {
     if (!Array.isArray(res)) return [];
-    return res.map(item => {
+    return res.map((item) => {
       const labelObj = this.getLangValue(item.labels, lang);
       const descObj = this.getLangValue(item.descriptions, lang);
       const aliases = this.getAliases(item.aliases, lang);
@@ -93,22 +94,19 @@ export class SetLanguageService {
       let label = labelObj?.value ?? undefined;
       const description = descObj?.value ?? undefined;
 
-      
-
       let externalLink: string | undefined;
-      if (item.datatype === "external-id" && item.claims?.P236?.[0]?.mainsnak?.datavalue?.value) {
+      if (item.datatype === 'external-id' && item.claims?.P236?.[0]?.mainsnak?.datavalue?.value) {
         externalLink = item.claims.P236[0].mainsnak.datavalue.value;
       }
 
       const result: any = {
         id: item.id,
         label,
-        externalLink
+        externalLink,
       };
       if (description) result.description = description;
       if (aliases.length > 0) result.aliases = aliases;
       return result;
     });
   }
-
 }

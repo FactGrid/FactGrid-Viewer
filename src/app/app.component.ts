@@ -39,8 +39,8 @@ export interface Lang {
     MatTooltipModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
-    MatDividerModule
-  ]
+    MatDividerModule,
+  ],
 })
 export class AppComponent implements OnInit {
   private router = inject(Router);
@@ -56,20 +56,22 @@ export class AppComponent implements OnInit {
     { name: '中文', code: 'zh' },
     { name: 'Italiano', code: 'it' },
     { name: 'Magyar', code: 'hu' },
-    { name: 'Svenska', code: 'se' }
+    { name: 'Svenska', code: 'se' },
   ];
 
   specialPages = [
     { name: 'Harmonia Universalis', address: 'harmonia_universalis' },
-    { name: 'Paris', address: 'paris' }
+    { name: 'Paris', address: 'paris' },
   ];
 
   researchFields: any[] = [];
 
-  selectedLang: string = (localStorage['selectedLang'] === undefined) ? 'en' : localStorage['selectedLang'];
-  selectedPage = (sessionStorage['selectedPage'] === undefined)
-    ? JSON.stringify([{ name: 'FactGrid', address: '' }])
-    : sessionStorage['selectedPage'];
+  selectedLang: string =
+    localStorage['selectedLang'] === undefined ? 'en' : localStorage['selectedLang'];
+  selectedPage =
+    sessionStorage['selectedPage'] === undefined
+      ? JSON.stringify([{ name: 'FactGrid', address: '' }])
+      : sessionStorage['selectedPage'];
   selectedItems: any[] = [];
   selectedParisItems: any[] = [];
   selectedResearchField: string = localStorage['selectedResearchField'];
@@ -87,31 +89,37 @@ export class AppComponent implements OnInit {
 
   showResearchField = false;
 
-  projectSearch: string = "Search a project";
-  projectName: string = "Project name";
+  projectSearch: string = 'Search a project';
+  projectName: string = 'Project name';
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     if (localStorage['selectedLang'] === undefined) {
       localStorage.setItem('selectedLang', 'en');
     }
     if (localStorage['selectedItems'] === undefined) {
-      localStorage.setItem('selectedItems', JSON.stringify([{ value: { id: 'Q152233' }, label: 'FactGrid' }]));
+      localStorage.setItem(
+        'selectedItems',
+        JSON.stringify([{ value: { id: 'Q152233' }, label: 'FactGrid' }])
+      );
     }
     if (localStorage['selectedResearchField'] === undefined) {
       localStorage.setItem('selectedResearchField', 'all');
     }
     if (localStorage['selectedParisItems'] === undefined) {
-      localStorage.setItem('selectedParisItems', JSON.stringify([{ value: { id: 'Q152233' }, label: 'FactGrid' }]));
+      localStorage.setItem(
+        'selectedParisItems',
+        JSON.stringify([{ value: { id: 'Q152233' }, label: 'FactGrid' }])
+      );
     }
 
     this.projectSearch = this.lang.getTranslation('projectSearch', this.lang.selectedLang);
     this.projectName = this.lang.getTranslation('projectName', this.lang.selectedLang);
 
-    this.selectedResearchFieldService.showResearchField$.subscribe(show => {
+    this.selectedResearchFieldService.showResearchField$.subscribe((show) => {
       this.showResearchField = show;
-    })
+    });
   }
 
   langSetting(lang) {

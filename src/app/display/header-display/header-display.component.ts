@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -11,9 +11,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   standalone: true,
   imports: [CommonModule, MatIconModule, MatCardModule, RouterLink, UnitPipe, MatTooltipModule],
   templateUrl: './header-display.component.html',
-  styleUrl: './header-display.component.scss'
+  styleUrl: './header-display.component.scss',
 })
-export class HeaderDisplayComponent {
+export class HeaderDisplayComponent implements OnChanges {
   @Input() headerDetail;
   @Input() id: string;
   @Input() factGridUrl: string;
@@ -55,7 +55,7 @@ export class HeaderDisplayComponent {
         id: claimsArr.id || '',
         label: claimsArr.label || claimsArr.id || '', // Use the label from the array properties
         description: claimsArr.description || '',
-        claims: Array.isArray(claims) ? claims : []
+        claims: Array.isArray(claims) ? claims : [],
       };
     });
   }

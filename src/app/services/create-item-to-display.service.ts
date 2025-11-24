@@ -3,12 +3,12 @@ import { SetLanguageService } from './set-language.service';
 import { DetailsService } from './details.service';
 import { PropertyDetailsService } from './property-details.service';
 import { ItemDetailsService } from './item-details.service';
-import { RoleOfObjectRenderingService } from './role-of-object-rendering.service'; 
+import { RoleOfObjectRenderingService } from './role-of-object-rendering.service';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CreateItemToDisplayService {
   private setLanguage = inject(SetLanguageService);
@@ -22,9 +22,9 @@ export class CreateItemToDisplayService {
 
     return forkJoin({
       properties: this.details.setPropertiesList(re),
-      items: this.details.setItemsList(re)
+      items: this.details.setItemsList(re),
     }).pipe(
-      map(res => {
+      map((res) => {
         // Prepare property and item metadata in the selected language
         const propertiesDetails = this.setLanguage.item2(res.properties, selectedLang);
         const itemsDetails = this.setLanguage.item2(res.items, selectedLang);
@@ -40,11 +40,19 @@ export class CreateItemToDisplayService {
         const updatedItemProperties = Object.keys(re.claims);
 
         // Retrieve qualifier and reference property lists
-        const qualifierProperties = this.addPropertyDetails.addQualifierPropertyDetails(propertiesDetails, re, updatedItemProperties)[1];
+        const qualifierProperties = this.addPropertyDetails.addQualifierPropertyDetails(
+          propertiesDetails,
+          re,
+          updatedItemProperties
+        )[1];
         const referenceProperties = this.details.getReferenceProperties(re);
 
         // Build the final item structure
-        const item = this.addItemDetails.addReference2ItemDetails(itemsDetails, re, updatedItemProperties);
+        const item = this.addItemDetails.addReference2ItemDetails(
+          itemsDetails,
+          re,
+          updatedItemProperties
+        );
 
         return [item, updatedItemProperties, qualifierProperties, referenceProperties];
       })
@@ -52,8 +60,7 @@ export class CreateItemToDisplayService {
   }
 
   /** Groups all claim enrichment steps for clarity */
-  private enrichClaims(re, propertiesDetails, itemsDetails,
-    itemProperties, selectedLang) {
+  private enrichClaims(re, propertiesDetails, itemsDetails, itemProperties, selectedLang) {
     const updatedItemProperties = Object.keys(re.claims);
     this.addItemDetails.addSitelinksDetails(re);
     this.addPropertyDetails.addClaimPropertyDetails(propertiesDetails, re, itemProperties);
@@ -79,12 +86,12 @@ export class CreateItemToDisplayService {
         const statement = claims[prop][i];
         if (!statement.qualifiers2 || !statement.qualifiers) continue;
 
-        const p820Qualifier2 = statement.qualifiers2.find(q => q.id === 'P820');
+        const p820Qualifier2 = statement.qualifiers2.find((q) => q.id === 'P820');
         if (p820Qualifier2 && p820Qualifier2.display && p820Qualifier2.display.length > 0) {
           // Ajout du label du rôle
           const roleLabels = p820Qualifier2.display
-            .map(d => d.label ? d.label.charAt(0).toLowerCase() + d.label.slice(1) : '')
-            .filter(label => !!label)
+            .map((d) => (d.label ? d.label.charAt(0).toLowerCase() + d.label.slice(1) : ''))
+            .filter((label) => !!label)
             .join(', ');
 
           if (roleLabels && statement.mainsnak.label) {
@@ -103,5 +110,4 @@ export class CreateItemToDisplayService {
       }
     }
   }
-
 }

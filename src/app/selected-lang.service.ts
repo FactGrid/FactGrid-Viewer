@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { TRANSLATIONS } from './config/translations.config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SelectedLangService {
   /**
@@ -35,7 +35,11 @@ export class SelectedLangService {
    * Récupère la traduction pour une clé et la langue courante.
    * Utilise le fallback si la traduction n'existe pas dans la langue demandée.
    */
-  getTranslation(key: string, lang?: string, fallbackOrder: string[] = this.fallbackOrder): string | undefined {
+  getTranslation(
+    key: string,
+    lang?: string,
+    fallbackOrder: string[] = this.fallbackOrder
+  ): string | undefined {
     const language = lang ?? this.selectedLang;
     const entry = TRANSLATIONS[key];
     if (!entry) return undefined;

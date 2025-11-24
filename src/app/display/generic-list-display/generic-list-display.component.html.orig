@@ -1,0 +1,219 @@
+<div class="cardBackground">
+  @for (P of items; track (P.id + '-' + pidx); let pidx = $index) {
+    <div class="listStyle">
+      @if (P.label) {
+        <span class="propertyStyle hover-bg-light">
+          <span matTooltip="[{{P.id}}] {{P.description || ''}}"
+                matTooltipPosition="right"
+                style="text-decoration: none; color: inherit; cursor: default;">{{P.label}}</span>:
+        </span>
+      }
+      @for (M of P; track (M.id + '-' + idx); let idx = $index) {
+        <div class="statementStyle">
+          <div [ngStyle]="{'background-color': (M?.rank=='deprecated') ? '#f1f1f1' : '#ffffff'}">
+            @if (M && M.mainsnak && M.mainsnak.datatype ==='time') {
+              <span>{{M.mainsnak.datavalue.value.date}}</span>
+              @if (M.mainsnak.datavalue.value.calendarmodel === "http://www.wikidata.org/entity/Q1985727") {
+                <a class="calendarStyle linkedItemText" [routerLink]="['/item','Q220486']">greg.</a>
+              }
+              @if (M.mainsnak.datavalue.value.calendarmodel === "http://www.wikidata.org/entity/Q1985786") {
+                <a class="calendarStyle linkedItemText" [routerLink]="['/item','Q505980']">jul.</a>
+              }
+            }
+            @if (M && M.mainsnak && M.mainsnak.datatype==='monolingualtext') {
+              <span>{{M.mainsnak.datavalue.value.text}}, {{M.mainsnak.datavalue.value.language}}</span>
+            }
+            @if (M && M.mainsnak && M.mainsnak.datatype === 'string') {
+              <span class="displayLayout">{{M.mainsnak.datavalue.value }}</span>
+            }
+            @if (M && M.mainsnak && M.mainsnak.datatype === 'url') {
+              <span class="displayLayout">
+                <a href="{{M.mainsnak.datavalue.value}}" target="_blank">{{M.mainsnak.datavalue.value}}</a>
+              </span>
+            }
+            @if (M && M.mainsnak) {
+              <span>{{M.mainsnak.datavalue.value.amount}}</span>
+            }
+            @if (M && M.mainsnak && M.mainsnak.datatype === 'globe-coordinate') {
+              <span>latitude: {{M.mainsnak.datavalue.value.latitude}}, longitude: {{M.mainsnak.datavalue.value.longitude}}</span>
+            }
+            @if (M && M.mainsnak && M.mainsnak.datatype==='commonsMedia') {
+              <div>
+                <span>
+                  <img class="cover" src={{M.picture}} (click)="openImage(M.picture)">
+                </span>
+              </div>
+            }
+            @if (M && M.mainsnak && (M.mainsnak.datatype==='wikibase-item' || M.mainsnak.datatype==='wikibase-property')) {
+              <span>
+                <a class="linkedItemText factgrid-link" [routerLink]="['/item', M.mainsnak.datavalue.value.id]">{{M.mainsnak.label}}</a>{{M.mainsnak.datavalue.value.separator}}<span *ngIf="M.mainsnak.datavalue.value.description" class="description-text">{{M.mainsnak.datavalue.value.description}}</span>
+              </span>
+            }
+            @if (M && M.rank=='deprecated') {
+              <span class="warningDeprecated"> &nbsp;({{M.rank}})</span>
+            }
+          </div>
+          @if (M['qualifiers-order']) {
+            <div class="qualifierStyle">
+              <span>
+                @for (Q of M.qualifiers2; track (Q.id + '-' + idx); let idx = $index) {
+                  <div>
+                    <span class="qualifierProperty hover-bg-light"
+                          matTooltip="[{{Q.id}}] {{Q.description || ''}}"
+                          matTooltipPosition="right">
+                      <em>{{Q.label}}:&nbsp;</em>
+                    </span>
+                    @for (D of Q.display; track (D.id + '-' + idx); let idx = $index; let isLast = $last) {
+                      <span>
+                        @if (D.datatype === 'time') {
+                          <span>
+                            {{D.date}}
+                            @if (D.calendar === "http://www.wikidata.org/entity/Q1985727") {
+                              <a class="calendarStyle linkedItemText" [routerLink]="['/item','Q220486']">greg.</a>
+                            }
+                            @if (D.calendar === "http://www.wikidata.org/entity/Q1985786") {
+                              <a class="calendarStyle linkedItemText" [routerLink]="['/item','Q505980']">jul.</a>
+                            }
+                          </span>
+                        }
+                        @if (D.datatype==='string') {
+                          <span>
+                            {{D.string}}
+                            @if (!isLast) {
+                              <span>,&nbsp;</span>
+                            }
+                          </span>
+                        }
+                        @if (D.datatype==='monolingualtext') {
+                          <span>
+                            {{D.string.text}}
+                            @if (!isLast) {
+                              <span>,&nbsp;</span>
+                            }
+                          </span>
+                        }
+                        <span>{{D.amount}}</span>
+                        @if (D.unit) {
+                          <span><em>&nbsp;({{D.unit | unit |async}})</em>&nbsp;</span>
+                        }
+                        @if (D.datatype === 'external-id') {
+                          <span>
+                            <a href="{{D.link}}" target="_blank">{{D.string}}</a>
+                          </span>
+                          @if (!isLast) {
+                            <span>,&nbsp;</span>
+                          }
+                        }
+                        @if (D.datatype === 'url') {
+                          <span class="displayLayout">
+                            <a href="{{D.value}}" target="_blank">{{D.value}}</a>
+                          </span>
+                          @if (!isLast) {
+                            <span>,&nbsp;</span>
+                          }
+                        }
+                        @if (D.datatype==='wikibase-item') {
+                          <span>
+                            <a class="linkedItemText" [routerLink]="['/item', D.id]">{{D.label}}</a>
+                            @if(D.description){
+                              {{D.separator}}<span class="description-text">{{D.description}}</span>
+                            }
+                          </span>
+                        }
+                        @if (D.datatype==='commonsMedia') {
+                          <div>
+                            <span>
+                              <img src={{D.commons}} (click)="openImage(D.commons)">
+                            </span>
+                          </div>
+                        }
+                      </span>
+                      @if (!isLast) {
+                        <span>,&nbsp;</span>
+                      }
+                    }
+                  </div>
+                }
+              </span>
+            </div>
+          }
+          <!-- References: toujours sur une nouvelle ligne -->
+          @if (M['references2'] && M['references2'].length > 0) {
+            <div class="reference-block">
+              <div class="reference-indent">
+                <button mat-button
+                  class="references-toggle-btn"
+                  (click)="toggleReferences(pidx + '-' + idx)">
+                  <span class="triangle-icon" [class.open]="openReferences.has(pidx + '-' + idx)"></span>
+                  <span class="references-label">Références</span>
+                </button>
+              </div>
+              @if (openReferences.has(pidx + '-' + idx) && M['references2']) {
+                @for (Ma of M['references2']; track (Ma.id + '-' + idx); let idx = $index; let isLast = $last) {
+                  <div class="referenceStyle">
+                    @for (N of Ma; track (N.id + '-' + idx); let idx = $index; let isLast = $last) {
+                      <div class="inlineStyle">
+                        <span class="referenceProperty hover-bg-light"
+                              matTooltip="[{{ N.id }}] {{ N.description ? N.description + ' ' : '' }}"
+                              matTooltipPosition="right">
+                          {{N.label}}:
+                        </span>
+                        <span>
+                          @for (P of N.display; track (P.id + '-' + idx); let idx = $index; let isLast = $last) {
+                            @if (N.datatype === 'wikibase-item') {
+                              <span>
+                                <a class="linkedItemText" [routerLink]="['/item', P.id]">{{P.label}}</a>{{P.separator}}<span class="description-text">{{P.description}}</span>
+                              </span>
+                              @if (!isLast) {
+                                <span>,&nbsp;</span>
+                              }
+                            }
+                            @if (N.datatype==='time') {
+                              <span>
+                                {{P}}
+                                @if (!isLast) {
+                                  <span>,&nbsp;</span>
+                                }
+                              </span>
+                            }
+                            @if (N.datatype==='string') {
+                              <span>
+                                {{P}}
+                                @if (!isLast) {
+                                  <span>,&nbsp;</span>
+                                }
+                              </span>
+                            }
+                            @if (N.datatype === 'url') {
+                              <span class="displayLayout">
+                                <a href="{{P}}" target="_blank">{{P}}</a>
+                              </span>
+                              @if (!isLast) {
+                                <span>,&nbsp;</span>
+                              }
+                            }
+                            @if (N.datatype === 'external-id') {
+                              <span>
+                                <a href="{{P.link}}" target="_blank">{{P.value}}</a>
+                              </span>
+                              @if (!isLast) {
+                                <span>,&nbsp;</span>
+                              }
+                            }
+                          }
+                        </span>
+                        @if (!isLast) {
+                          <span>,&nbsp;</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

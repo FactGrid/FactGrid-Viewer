@@ -15,10 +15,9 @@ export interface IframeGroup {
   standalone: true,
   imports: [CommonModule, MatIconModule, MatCardModule],
   templateUrl: './iframes-display.component.html',
-  styleUrl: './iframes-display.component.scss'
+  styleUrl: './iframes-display.component.scss',
 })
 export class IframesDisplayComponent {
-
   @Input() iframeGroups: IframeGroup[] = [];
 
   constructor(private sanitizer: DomSanitizer) {}

@@ -32,24 +32,44 @@ if (environment.production) {
 }
 
 bootstrapApplication(AppComponent, {
-    providers: [
-        importProvidersFrom(BrowserModule, FormsModule, ReactiveFormsModule, MatToolbarModule, MatSelectModule, MatInputModule, MatButtonModule, MatCardModule, MatListModule, MatDatepickerModule, MatMomentDateModule, MatGridListModule, MatIconModule, MatMenuModule, MatFormFieldModule, MatTooltipModule, MatDividerModule, MatSidenavModule, MatProgressSpinnerModule, AppRoutingModule, RouterModule),
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: SparqlInterceptor,
-            multi: true
+  providers: [
+    importProvidersFrom(
+      BrowserModule,
+      FormsModule,
+      ReactiveFormsModule,
+      MatToolbarModule,
+      MatSelectModule,
+      MatInputModule,
+      MatButtonModule,
+      MatCardModule,
+      MatListModule,
+      MatDatepickerModule,
+      MatMomentDateModule,
+      MatGridListModule,
+      MatIconModule,
+      MatMenuModule,
+      MatFormFieldModule,
+      MatTooltipModule,
+      MatDividerModule,
+      MatSidenavModule,
+      MatProgressSpinnerModule,
+      AppRoutingModule,
+      RouterModule
+    ),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: SparqlInterceptor,
+      multi: true,
+    },
+    {
+      provide: MAT_DATE_FORMATS,
+      useValue: {
+        display: {
+          dateInput: 'YYYY-MM-DD',
         },
-        {
-            provide: MAT_DATE_FORMATS,
-            useValue: {
-                display: {
-                    dateInput: 'YYYY-MM-DD',
-                },
-            }
-        },
-        provideHttpClient(withInterceptorsFromDi()),
-        provideAnimations(),
-        
-    ]
-})
-  .catch(err => console.error(err));
+      },
+    },
+    provideHttpClient(withInterceptorsFromDi()),
+    provideAnimations(),
+  ],
+}).catch((err) => console.error(err));

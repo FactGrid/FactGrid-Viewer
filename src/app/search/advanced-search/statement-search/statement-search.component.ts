@@ -1,6 +1,28 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, effect, inject, input, AfterViewInit } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  effect,
+  inject,
+  input,
+  AfterViewInit,
+} from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -11,7 +33,24 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelect, MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
-import { Observable, ReplaySubject, Subject, BehaviorSubject, map, tap, takeUntil, switchMap, debounceTime, combineLatest, forkJoin, filter, iif, of, delay, startWith } from 'rxjs';
+import {
+  Observable,
+  ReplaySubject,
+  Subject,
+  BehaviorSubject,
+  map,
+  tap,
+  takeUntil,
+  switchMap,
+  debounceTime,
+  combineLatest,
+  forkJoin,
+  filter,
+  iif,
+  of,
+  delay,
+  startWith,
+} from 'rxjs';
 //import { takeUntil } from 'rxjs/operators';
 import { SelectedLangService } from '../../../selected-lang.service';
 import { PropertiesListService } from '../../../services/properties-list.service';
@@ -23,16 +62,16 @@ import { StatementsControlsService } from '../services/statements-controls.servi
 import { ITEMTYPES, MUTATOR, QUALIFIERTYPES, Selection, Variable } from '../variable';
 
 export interface Statement {
-  itemType: FormControl<string>,
-  properties: FormControl<string[]>,
-  value?: FormGroup,
-  optional: FormControl<boolean>,
-  qualifiers?: FormArray<FormGroup>
+  itemType: FormControl<string>;
+  properties: FormControl<string[]>;
+  value?: FormGroup;
+  optional: FormControl<boolean>;
+  qualifiers?: FormArray<FormGroup>;
 }
 
 export interface Qualifier {
-  qualifierProperty: FormControl<string>,
-  value?: FormGroup
+  qualifierProperty: FormControl<string>;
+  value?: FormGroup;
 }
 
 @Component({
@@ -54,12 +93,9 @@ export interface Qualifier {
     MatSlideToggleModule,
   ],
   templateUrl: './statement-search.component.html',
-  styleUrl: './statement-search.component.scss'
+  styleUrl: './statement-search.component.scss',
 })
-
-export class StatementSearchComponent
-  implements OnInit, OnDestroy, AfterViewInit {
-
+export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewInit {
   private changeDetector = inject(ChangeDetectorRef);
   private request = inject(RequestService);
   private setLanguage = inject(SetLanguageService);
@@ -71,18 +107,17 @@ export class StatementSearchComponent
   private controls = inject(StatementsControlsService);
   //  private data = inject(DataService);
 
-
   @Input() set literalVariables(literalVariables: any[]) {
     this._literalVariables = literalVariables;
     if (this.literalVariables) {
-      this.filteredLiteralVariables.next(this.literalVariables.slice())
+      this.filteredLiteralVariables.next(this.literalVariables.slice());
     }
   }
 
   @Input() set qualifierLiteralVariables(qualifierLiteralVariables: any[]) {
     this._qualifierLiteralVariables = qualifierLiteralVariables;
     if (this.qualifierLiteralVariables) {
-      this.filteredQualifierLiteralVariables.next(this.qualifierLiteralVariables.slice())
+      this.filteredQualifierLiteralVariables.next(this.qualifierLiteralVariables.slice());
     }
   }
   get literalVariables(): any[] {
@@ -95,22 +130,18 @@ export class StatementSearchComponent
 
   @Output() datatype;
 
-
   @Output() selectedItemType: EventEmitter<string[]> = new EventEmitter();
-
 
   protected currentItemTypes: any[] = [];
   protected currentItemTypesArray: any[][] = [];
 
   public statementOptions: BehaviorSubject<any[]>[] = [];
 
-
   private _propertiesList: any[];
   private propertiesToSelect: any[];
   private _literalVariables: any[];
   private _qualifierLiteralVariables: any[];
   propertiesList: any[];
-
 
   private qualifierPropertiesToSelect: any[];
 
@@ -122,7 +153,6 @@ export class StatementSearchComponent
   isWikibaseItemOnStatement: boolean = true;
   isLiteralOnStatement: boolean = false;
   isLiteralStringOnStatement: boolean = false;
-
 
   isWikibaseItemOnQualifier: boolean = true;
   isLiteralOnQualifier: boolean = false;
@@ -138,25 +168,25 @@ export class StatementSearchComponent
 
   isItemValue: boolean = true;
 
-
   isLiteralVariableSelected: boolean = true;
 
   selectedItemTypes: any[] = [];
 
-
-
-  placeholderForLiteralValue: string = "literal value?"
-  placeholderForLiteralString: string = "write string? | date? | number?";
+  placeholderForLiteralValue: string = 'literal value?';
+  placeholderForLiteralString: string = 'write string? | date? | number?';
 
   query = this.fb.group({
-    statements: this.fb.array([this.statement])
+    statements: this.fb.array([this.statement]),
   });
 
-  get statements(): FormArray<FormGroup> { return this.query.get('statements') as FormArray; } // getter for statements as form array
-
+  get statements(): FormArray<FormGroup> {
+    return this.query.get('statements') as FormArray;
+  } // getter for statements as form array
 
   // on pourrait aussi bien écrire : get statements() { return this.query.controls['statements'] as FormArray; }
-  qualifiers(i: number): FormArray<FormGroup> { return this.statements.at(i).get('qualifiers') as FormArray; }
+  qualifiers(i: number): FormArray<FormGroup> {
+    return this.statements.at(i).get('qualifiers') as FormArray;
+  }
 
   get lastStatementIndex(): number {
     const index = this.statements.length > 0 ? this.statements.length - 1 : 0;
@@ -164,50 +194,47 @@ export class StatementSearchComponent
     return index;
   }
 
-
   get statement(): FormGroup<Statement> {
-    return this.fb.group<Statement>(
-      {
-        itemType: new FormControl({ value: "", disabled: false }),
-        properties: new FormControl({ value: [], disabled: true }, [Validators.required, this.datatypeValidator]),
-        value: this.value,
-        optional: new FormControl({ value: false, disabled: false }),
-        qualifiers: this.fb.array([this.qualifier])
-      }
-    );
+    return this.fb.group<Statement>({
+      itemType: new FormControl({ value: '', disabled: false }),
+      properties: new FormControl({ value: [], disabled: true }, [
+        Validators.required,
+        this.datatypeValidator,
+      ]),
+      value: this.value,
+      optional: new FormControl({ value: false, disabled: false }),
+      qualifiers: this.fb.array([this.qualifier]),
+    });
   }
 
   get value(): FormGroup {
     return this.fb.group({
-      itemValue: new FormControl({ value: "", disabled: true }),
-      literalValue: new FormControl({ value: "", disabled: true }),
-      literalString: new FormControl({ value: "", disabled: true })
-    }
-    );
+      itemValue: new FormControl({ value: '', disabled: true }),
+      literalValue: new FormControl({ value: '', disabled: true }),
+      literalString: new FormControl({ value: '', disabled: true }),
+    });
   }
 
   get qualifier(): FormGroup {
     return this.fb.group({
-      qualifierProperty: new FormControl({ value: "", disabled: false }),
+      qualifierProperty: new FormControl({ value: '', disabled: false }),
       value: this.qualifierValue,
       optional: new FormControl({ value: false, disabled: false }),
-    }
-    );
+    });
   }
 
   get qualifierValue(): FormGroup {
     return this.fb.group({
-      qualifierValue: new FormControl({ value: "", disabled: true }),
-      qualifierLiteralValue: new FormControl({ value: "", disabled: true }),
-      qualifierLiteralString: new FormControl({ value: "", disabled: true })
-    }
-    );
+      qualifierValue: new FormControl({ value: '', disabled: true }),
+      qualifierLiteralValue: new FormControl({ value: '', disabled: true }),
+      qualifierLiteralString: new FormControl({ value: '', disabled: true }),
+    });
   }
 
   isPropertiesInvalid(index: number): boolean {
     const statementGroup = this.statements.at(index) as FormGroup;
     const propertiesControl = statementGroup.get('properties') as FormControl;
-    return propertiesControl.invalid
+    return propertiesControl.invalid;
     //      && (propertiesControl.dirty || propertiesControl.touched);
   }
 
@@ -215,13 +242,10 @@ export class StatementSearchComponent
 
   public filteredItemTypesArray: ReplaySubject<any[]>[] = [];
 
-
-
   /** control for the MatSelect filter keyword multi-selection */
   public propertytMultiFilterCtrl: FormControl<string> = new FormControl<string>('');
 
   public filteredPropertyMultiArray: ReplaySubject<any[]>[] = [];
-
 
   //  public valueSearchInput: FormControl = new FormControl();
   /** control for the MatSelect filter keyword single-selection */
@@ -254,7 +278,6 @@ export class StatementSearchComponent
   /** value filtered by search keyword */
   public filteredQualifierLiteralVariables: ReplaySubject<any> = new ReplaySubject<any>(1);
 
-
   addStatements() {
     this.statements.push(this.statement);
     console.log('Added statement, new statements length:', this.statements.length);
@@ -264,19 +287,16 @@ export class StatementSearchComponent
     this.filteredPropertyMultiArray.push(new ReplaySubject<any[]>(1)); // Initialiser un nouveau ReplaySubject pour la nouvelle déclaration
     this.statementOptions.push(new BehaviorSubject<any[]>([])); // Initialiser un nouveau BehaviorSubject pour la nouvelle déclaration
 
-
     // Initialiser les valeurs des nouveaux ReplaySubject avec une liste vide pour filterItemTypes et un observable de liste vide pour filterPropertyMulti
     this.filteredItemTypesArray[this.lastStatementIndex].next([]);
     this.filteredItemValuesArray[this.lastStatementIndex].next([]);
     this.filteredPropertyMultiArray[this.lastStatementIndex].next([]);
-
 
     this.setCurrentItemTypes(this.lastStatementIndex);
     this.filterItemTypes(this.lastStatementIndex);
     this.filterItemValues(this.lastStatementIndex);
     this.filterPropertyMulti(this.lastStatementIndex, of([]));
   }
-
 
   removeStatements(i: number) {
     this.statements.removeAt(i);
@@ -288,18 +308,21 @@ export class StatementSearchComponent
   }
 
   addQualifiers(i: number) {
-    let m = this.qualifiers(i).controls.length - 1
-    if (this.qualifiers(i).pristine) { this.qualifiers(i).removeAt(m) };
+    let m = this.qualifiers(i).controls.length - 1;
+    if (this.qualifiers(i).pristine) {
+      this.qualifiers(i).removeAt(m);
+    }
     this.isQualifier = true;
     this.qualifiers(i).push(this.qualifier);
     let qual = this.controls.qualifiers(this.statements, i);
     this.isQualifier = true;
-
   }
 
   addFirstQualifier(i) {
     this.controls.qualifiers(this.statements, i).enable();
-    if (i === 0) { this.isQualifier = true; }
+    if (i === 0) {
+      this.isQualifier = true;
+    }
   }
 
   removeQualifiers(i: number, j: number) {
@@ -310,14 +333,14 @@ export class StatementSearchComponent
     const statement = this.statements.at(i) as FormGroup;
     const itemValueControl = statement.get('value.itemValue') as FormControl;
 
-    if (u === "WikibaseItem") {
+    if (u === 'WikibaseItem') {
       this.isWikibaseItemOnStatement = true;
       this.isLiteralOnStatement = false;
       itemValueControl.enable();
       statement.get('value.literalValue').disable();
       statement.get('value.literalString').disable();
     } else {
-      if (u === "String" || u === "MonolingualText" || u === "Time" || u === "Quantity") {
+      if (u === 'String' || u === 'MonolingualText' || u === 'Time' || u === 'Quantity') {
         console.log(u);
         itemValueControl.disable();
         statement.get('value.literalValue').enable();
@@ -329,26 +352,29 @@ export class StatementSearchComponent
     }
   }
 
-
   literalControllerDisplay(label, i) {
-    if (label === "write literal string" || label === "write date : YYYY-MM-DD" || label === "write number") {
-      this.controls.literalValue(this.statements, i).enable(); this.controls.literalString(this.statements, i).enable();
-      this.controls.literalValue(this.statements, i).patchValue("");
+    if (
+      label === 'write literal string' ||
+      label === 'write date : YYYY-MM-DD' ||
+      label === 'write number'
+    ) {
+      this.controls.literalValue(this.statements, i).enable();
+      this.controls.literalString(this.statements, i).enable();
+      this.controls.literalValue(this.statements, i).patchValue('');
       this.isLiteralStringOnStatement = true;
-      this.placeholderForLiteralString = "write below";
-    }
-    else {
+      this.placeholderForLiteralString = 'write below';
+    } else {
       this.controls.literalValue(this.statements, i).enable();
       this.controls.literalString(this.statements, i).disable();
       this.isLiteralStringOnStatement = false;
-      this.placeholderForLiteralString = "disabled";
+      this.placeholderForLiteralString = 'disabled';
     }
   }
 
   qualifierControllerDisplay(u, i, j) {
     console.log(u);
     let qual = this.controls.qualifiers(this.statements, i);
-    if (u === "WikibaseItem") {
+    if (u === 'WikibaseItem') {
       let value = this.controls.qualifierValue(qual, j);
       console.log(value);
       this.isWikibaseItemOnQualifier = true;
@@ -358,7 +384,7 @@ export class StatementSearchComponent
       this.controls.qualifierLiteralString(qual, j).disable();
       //  this.controls.qualifierValue(qual, j).patchvalue(value);
     } else {
-      if (u === "String" || u === "MonolingualText" || u === "Time" || u === "Quantity") {
+      if (u === 'String' || u === 'MonolingualText' || u === 'Time' || u === 'Quantity') {
         this.controls.qualifierLiteralValue(qual, j).enable();
         this.controls.qualifierLiteralString(qual, j).enable();
         this.isWikibaseItemOnQualifier = false;
@@ -369,12 +395,16 @@ export class StatementSearchComponent
 
   qualifierLiteralControllerDisplay(label, i, j) {
     let qual = this.controls.qualifiers(this.statements, i);
-    if (label === "write literal string" || label === "write date : YYYY-MM-DD" || label === "write number") {
-      this.controls.qualifierLiteralValue(qual, j).enable(); this.controls.qualifierLiteralString(qual, j).enable();
+    if (
+      label === 'write literal string' ||
+      label === 'write date : YYYY-MM-DD' ||
+      label === 'write number'
+    ) {
+      this.controls.qualifierLiteralValue(qual, j).enable();
+      this.controls.qualifierLiteralString(qual, j).enable();
       //    this.controls.qualifierLiteralValue(qual, j).patchValue("");
       this.isLiteralStringOnQualifier = true;
-    }
-    else {
+    } else {
       this.controls.literalValue(qual, j).enable();
       this.controls.literalString(qual, j).disable();
       this.isLiteralStringOnQualifier = false;
@@ -382,8 +412,7 @@ export class StatementSearchComponent
   }
 
   onItemTypeSelect(event: MatSelectChange): void {
-    console.log(event.value),
-      console.log('Selected itemType:', event.value);
+    (console.log(event.value), console.log('Selected itemType:', event.value));
     let i = event.value[0]; // name of the statement "i" in the form array "statements"
     this.controls.propertyValues(this.statements, i).enable();
     const options$ = this.propertyList.propertiesListBuilding(event.value[3]); // create the list of properties; useless?
@@ -393,7 +422,6 @@ export class StatementSearchComponent
     console.log('Updated itemType control value:', this.statements.at(i).get('itemType').value);
     this.changeDetector.detectChanges(); // Forcer la détection des changements
   }
-
 
   onPropertySelect(event: MatSelectChange): void {
     let propertyValue = [];
@@ -418,10 +446,8 @@ export class StatementSearchComponent
     }
   }
 
- 
-
-
-  onValueSelect(event: MatSelectChange): void {  // to update the mutator and add the selected value type to the current itemTypes
+  onValueSelect(event: MatSelectChange): void {
+    // to update the mutator and add the selected value type to the current itemTypes
     let i = event.value[0];
     let label = event.value[1];
     let dataType = event.value[2];
@@ -429,29 +455,27 @@ export class StatementSearchComponent
 
     // Mettre à jour la valeur du contrôle itemValue
     const itemValueControl = this.statements.at(i).get('value.itemValue') as FormControl;
-  //  itemValueControl.setValue(label, { emitEvent: false });
+    //  itemValueControl.setValue(label, { emitEvent: false });
 
     // Déclencher la détection des changements pour mettre à jour le template
     this.changeDetector.detectChanges();
 
-
-
-    if (label.charAt(0) === "?") {
- //    this.selectedValue.emit(event.value); // output to advanced-search-component (see selectedValue(itemType))
+    if (label.charAt(0) === '?') {
+      //    this.selectedValue.emit(event.value); // output to advanced-search-component (see selectedValue(itemType))
     }
     this.isAddQualifier = true;
     this.isAddStatement = true;
     // Appeler resetPreviousItemValues après la mise à jour du contrôle itemValue
     this.resetPreviousItemValues(i);
-    console.log(this.resetPreviousItemValues(i))
-  };
+    console.log(this.resetPreviousItemValues(i));
+  }
 
   onLiteralValueSelect(event: MatSelectChange): void {
     let i = event.value[0];
     let label = event.value[1];
     this.placeholderForLiteralString = label;
     this.literalControllerDisplay(label, i); // to display and enable the right controls
-    if (label.charAt(0) === "?") {
+    if (label.charAt(0) === '?') {
       console.log(label);
       //    this.selectedValue.emit(event.value); // output to advanced-search-component (see selectedValueType(itemType)). ?string is not an itemType
     }
@@ -466,7 +490,6 @@ export class StatementSearchComponent
     let datatype = event.value[3];
     //   this.qualifierPropertyDatatype.emit([i, j, datatype]);
     this.qualifierControllerDisplay(datatype, i, j); // to display the right controls
-
   }
 
   onQualifierValueSelect(event: MatSelectChange): void {
@@ -477,27 +500,27 @@ export class StatementSearchComponent
     let col = event.value[3];
     let id = event.value[4];
     let u = [i, dataType, col, id];
-    if (dataType.charAt(0) === "?") {
+    if (dataType.charAt(0) === '?') {
       //      this.selectedQualifierValue.emit(u);
     }
     this.isRemoveQualifier = true;
     let qual = this.controls.qualifiers(this.statements, i);
     let value = this.controls.qualifierValue(qual, j);
     console.log(value);
-    this.controls.patchQualifierValue(value, qual, j)
-  };
+    this.controls.patchQualifierValue(value, qual, j);
+  }
 
   onQualifierLiteralValueSelect(event: MatSelectChange): void {
     console.log(event.value);
     let i = event.value[0];
     let label = event.value[2];
     // let dataType = event.value[2];
-    if (label.charAt(0) === "?") {
+    if (label.charAt(0) === '?') {
       //     this.selectedQualifierValue.emit(event.value);
       this.isLiteralStringOnQualifier = false;
     } else this.isLiteralStringOnQualifier = true;
     this.isRemoveQualifier = true;
-  };
+  }
 
   public items = [];
 
@@ -506,13 +529,11 @@ export class StatementSearchComponent
   //propertiesList: any[];
   selectedPropertiesList: string[];
 
-
   @ViewChild('matRef') matRef: MatSelect;
 
   clear() {
     this.matRef.options.forEach((data: MatOption) => data.deselect());
   }
-
 
   @ViewChild('singleSelect', { static: true }) singleSelect: MatSelect;
 
@@ -521,70 +542,55 @@ export class StatementSearchComponent
   //  @Output() typeSelectionChange: EventEmitter<MatSelectChange> = new EventEmitter<MatSelectChange>();
   @Output() selectionChange: EventEmitter<MatSelectChange> = new EventEmitter<MatSelectChange>();
 
-  @Output() propertySelectionChange: EventEmitter<MatSelectChange> = new EventEmitter<MatSelectChange>();
+  @Output() propertySelectionChange: EventEmitter<MatSelectChange> =
+    new EventEmitter<MatSelectChange>();
 
   protected _onDestroy = new Subject<void>();
-
-
 
   ngOnInit(): void {
     console.log('Initial statements length:', this.statements.length);
 
-    this.propertyList.qualifierPropertiesListBuilding.subscribe(res => this.qualifierPropertiesToSelect = res);
+    this.propertyList.qualifierPropertiesListBuilding.subscribe(
+      (res) => (this.qualifierPropertiesToSelect = res)
+    );
 
-    this.itemTypeFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterItemTypes(this.lastStatementIndex);
-      });
+    this.itemTypeFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterItemTypes(this.lastStatementIndex);
+    });
 
-    this.propertytMultiFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterPropertyMulti(this.lastStatementIndex, of([]));
-      });
+    this.propertytMultiFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterPropertyMulti(this.lastStatementIndex, of([]));
+    });
 
-    this.itemValueFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterItemValues(this.lastStatementIndex);
-      });
+    this.itemValueFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterItemValues(this.lastStatementIndex);
+    });
 
-    this.literalFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterLiteralVariables();
-      });
+    this.literalFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterLiteralVariables();
+    });
 
-    this.qualifierPropertyFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterQualifierProperties();
-      });
+    this.qualifierPropertyFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterQualifierProperties();
+    });
 
-    this.qualifierValueFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterQualifierValues();
-      });
+    this.qualifierValueFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterQualifierValues();
+    });
 
-    this.qualifierLiteralFilterCtrl.valueChanges
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe(() => {
-        this.filterQualifierValues();
-      });
+    this.qualifierLiteralFilterCtrl.valueChanges.pipe(takeUntil(this._onDestroy)).subscribe(() => {
+      this.filterQualifierValues();
+    });
 
     // Initialiser statementOptions pour l'index 0
     this.statementOptions[0] = new BehaviorSubject<any[]>([]);
 
     // Problème 1 et 2: Ajouter le deuxième argument manquant pour filterPropertyMulti
-    
 
     // Problème 3, 4 et 5: Corriger l'initialisation des ReplaySubject
     this.filteredItemTypesArray.push(new ReplaySubject<any[]>(1));
-   this.filteredItemValuesArray.push(new ReplaySubject<any[]>(1));
+    this.filteredItemValuesArray.push(new ReplaySubject<any[]>(1));
     this.filteredPropertyMultiArray.push(new ReplaySubject<any[]>(1));
-   
 
     this.setCurrentItemTypes(this.lastStatementIndex);
     this.filterItemTypes(this.lastStatementIndex);
@@ -592,25 +598,20 @@ export class StatementSearchComponent
     this.filterPropertyMulti(this.lastStatementIndex, of([]));
   }
 
-
-
   ngAfterViewInit() {
-
     console.log('Statements length after view init:', this.statements.length);
 
- //   this.setInitialItemTypeValue();
- //   this.setInitialPropertyValue();
-//    this.setInitialItemValue();
+    //   this.setInitialItemTypeValue();
+    //   this.setInitialPropertyValue();
+    //    this.setInitialItemValue();
     this.setInitialLiteralVariable();
     this.setInitialQualifierPropertyValue();
     this.setInitialQualifierValueValue();
     this.setInitialQualifierLiteralVariable();
-
   }
 
-
   protected setInitialItemTypeValue() {
-    this.data.itemTypes$.subscribe(res => {
+    this.data.itemTypes$.subscribe((res) => {
       this.filteredItemTypesArray.forEach((filteredItemTypes, index) => {
         console.log(res);
         filteredItemTypes.next(res);
@@ -621,16 +622,15 @@ export class StatementSearchComponent
 
   protected setInitialPropertyValue() {
     this.filteredPropertyMultiArray.forEach((filteredProperties, index) => {
-      filteredProperties
+      filteredProperties;
     });
-}
-
+  }
 
   protected setInitialItemValue() {
     this.filteredItemValuesArray.forEach((filteredItemValues, index) => {
       filteredItemValues;
-  });
-}
+    });
+  }
 
   protected setInitialLiteralVariable() {
     this.filteredLiteralVariables;
@@ -648,7 +648,6 @@ export class StatementSearchComponent
     this.filterQualifierLiteralVariables;
   }
 
-
   protected filterItemTypes(index: number) {
     console.log('Calling setCurrentItemTypes with index:', index);
     this.setCurrentItemTypes(index);
@@ -660,22 +659,22 @@ export class StatementSearchComponent
     } else {
       search = search.toLowerCase();
       this.filteredItemTypesArray[index].next(
-        this.currentItemTypesArray[index].filter(itemType => itemType.label.toLowerCase().indexOf(search) > -1)
+        this.currentItemTypesArray[index].filter(
+          (itemType) => itemType.label.toLowerCase().indexOf(search) > -1
+        )
       );
     }
 
     this.changeDetector.detectChanges();
   }
 
-
-
   /**
- * Initialise et met à jour la liste des types d'éléments disponibles pour chaque déclaration.
- * Cette fonction est appelée chaque fois qu'une nouvelle déclaration est ajoutée ou qu'une déclaration existante est modifiée.
- * Elle s'assure que la liste des types d'éléments est toujours à jour et reflète les sélections actuelles.
- * 
- * @param index L'index de la déclaration pour laquelle les types d'éléments doivent être mis à jour.
- */
+   * Initialise et met à jour la liste des types d'éléments disponibles pour chaque déclaration.
+   * Cette fonction est appelée chaque fois qu'une nouvelle déclaration est ajoutée ou qu'une déclaration existante est modifiée.
+   * Elle s'assure que la liste des types d'éléments est toujours à jour et reflète les sélections actuelles.
+   *
+   * @param index L'index de la déclaration pour laquelle les types d'éléments doivent être mis à jour.
+   */
   protected setCurrentItemTypes(index: number): void {
     console.log('setCurrentItemTypes called with index:', index);
     if (index === 0) {
@@ -711,23 +710,24 @@ export class StatementSearchComponent
       }
 
       // Supprimer les doublons en comparant les propriétés des objets
-      const uniqueLabels = Array.from(new Set(labels.map(label => JSON.stringify(label))))
-        .map(str => JSON.parse(str));
+      const uniqueLabels = Array.from(new Set(labels.map((label) => JSON.stringify(label)))).map(
+        (str) => JSON.parse(str)
+      );
 
       // Trier les objets par ordre alphabétique selon leurs propriétés
-      this.currentItemTypesArray[index] = uniqueLabels.sort((a, b) => a.label.localeCompare(b.label));
+      this.currentItemTypesArray[index] = uniqueLabels.sort((a, b) =>
+        a.label.localeCompare(b.label)
+      );
       console.log('Updated currentItemTypes:', this.currentItemTypesArray[index]);
     }
   }
 
-
-
   protected filterPropertyMulti(index: number, options$: Observable<any[]>): void {
     options$
       .pipe(
-        switchMap(options => {
+        switchMap((options) => {
           if (!options || options.length === 0) {
-            console.error("Les données ne sont pas correctement chargées dans options.");
+            console.error('Les données ne sont pas correctement chargées dans options.');
             return of([]);
           }
           console.log(options);
@@ -738,17 +738,16 @@ export class StatementSearchComponent
           } else {
             search = search.toLowerCase();
             // filter the projects
-            return of(options.filter(entity => entity.value.toLowerCase().indexOf(search) > -1));
+            return of(options.filter((entity) => entity.value.toLowerCase().indexOf(search) > -1));
           }
         })
       )
-      .subscribe(filteredOptions => {
+      .subscribe((filteredOptions) => {
         this.filteredPropertyMultiArray[index].next(filteredOptions);
       });
   }
 
-
-/*  protected filterItemValues(index: number) {
+  /*  protected filterItemValues(index: number) {
     const initialSearch = this.itemValueFilterCtrl.value ? this.itemValueFilterCtrl.value.toLowerCase() : '';
     this.itemValueFilterCtrl.valueChanges
       .pipe(
@@ -800,7 +799,6 @@ export class StatementSearchComponent
     }
   } */
 
-
   protected filterItemValues(index: number) {
     // Obtenir les options sélectionnées jusqu'à l'index actuel
     const selectedOptions = this.getSelectedOptionsUpToIndex(index);
@@ -809,9 +807,14 @@ export class StatementSearchComponent
     const selectedLabels = this.getLabelsFromSelectedOptions(selectedOptions);
 
     // Créer les éléments augmentés à partir des labels sélectionnés
-    const augmentedItems = selectedLabels.map(label => ({ label, col: null, id: null, separator: '' }));
+    const augmentedItems = selectedLabels.map((label) => ({
+      label,
+      col: null,
+      id: null,
+      separator: '',
+    }));
 
-    console.log(augmentedItems)
+    console.log(augmentedItems);
 
     // Mettre à jour le BehaviorSubject avec les éléments augmentés
     if (!this.statementOptions[index]) {
@@ -826,11 +829,8 @@ export class StatementSearchComponent
     this.filteredItemValuesArray[index].next(augmentedItems);
 
     // Réinitialiser les valeurs des statements précédents
-   this.resetPreviousItemValues(index);
+    this.resetPreviousItemValues(index);
   }
-
-
-
 
   protected resetPreviousItemValues(currentIndex: number): void {
     for (let i = 0; i < currentIndex; i++) {
@@ -840,8 +840,6 @@ export class StatementSearchComponent
       }
     }
   }
-
-
 
   getSelectedOptionsUpToIndex(i: number): any[] {
     let selectedOptions = [];
@@ -892,7 +890,7 @@ export class StatementSearchComponent
             const baseValue = match[1];
             const number = parseInt(match[2]);
             const newLabel = baseValue + (number + 1);
-            if (!selectedOptions.some(option => option[1] === newLabel)) {
+            if (!selectedOptions.some((option) => option[1] === newLabel)) {
               selectedOptions.push([itemTypeControl.value[0], newLabel]);
             }
           }
@@ -905,27 +903,24 @@ export class StatementSearchComponent
   }
 
   getLabelsFromSelectedOptions(options: any[]): string[] {
-    return options.map(option => option[1]); // Supposons que le label soit à l'index 1
+    return options.map((option) => option[1]); // Supposons que le label soit à l'index 1
   }
 
-
-  itemValuesList1(label) { 
-    return  this.data.mutator$.pipe(map(re => re[0]))
-      }
-
+  itemValuesList1(label) {
+    return this.data.mutator$.pipe(map((re) => re[0]));
+  }
 
   itemValuesList2(label, lang, number) {
-   let entityValues:any[] = [];
-    return  this.request.searchItem(label, lang).pipe(
-      map(res => this.createList(res)),
-      switchMap(url => this.request.getItem(url)),
-      filter(res => res !== undefined && res !== null),
-      filter(res => res.entities !== undefined && res.entities !== null),
-      map(res => Object.values(res.entities)),
-      map(res => this.setLanguage.item(res, this.lang.selectedLang))
-    )
-} 
-
+    let entityValues: any[] = [];
+    return this.request.searchItem(label, lang).pipe(
+      map((res) => this.createList(res)),
+      switchMap((url) => this.request.getItem(url)),
+      filter((res) => res !== undefined && res !== null),
+      filter((res) => res.entities !== undefined && res.entities !== null),
+      map((res) => Object.values(res.entities)),
+      map((res) => this.setLanguage.item(res, this.lang.selectedLang))
+    );
+  }
 
   protected filterLiteralVariables() {
     if (this.literalVariables === undefined) {
@@ -940,12 +935,11 @@ export class StatementSearchComponent
       search = search.toLowerCase();
     }
     this.filteredLiteralVariables.next(
-      this.literalVariables.filter(variable => variable.label.toLowerCase().indexOf(search) > -1)
+      this.literalVariables.filter((variable) => variable.label.toLowerCase().indexOf(search) > -1)
     );
   }
 
   protected filterQualifierProperties() {
-
     if (!this.qualifierPropertiesToSelect) {
       return;
     }
@@ -956,9 +950,11 @@ export class StatementSearchComponent
     } else {
       search = search.toLowerCase();
     }
-    // filter the 
+    // filter the
     this.filteredQualifierProperties.next(
-      this.qualifierPropertiesToSelect.filter(entity => entity.itemLabel.label.toLowerCase().indexOf(search) > -1)
+      this.qualifierPropertiesToSelect.filter(
+        (entity) => entity.itemLabel.label.toLowerCase().indexOf(search) > -1
+      )
     );
   }
 
@@ -969,39 +965,45 @@ export class StatementSearchComponent
       this.filteredQualifierValues.next(this.entityValues.slice());
       return;
     } else {
-      if (firstCharacter !== "?") {
+      if (firstCharacter !== '?') {
         search = search.toLowerCase();
         this.qualifierValueFilterCtrl.valueChanges //search engine
           .pipe(
             debounceTime(400),
-            switchMap(label => this.request.searchItem(label, this.lang.selectedLang)),
-            map(res => this.createList(res)),
+            switchMap((label) => this.request.searchItem(label, this.lang.selectedLang)),
+            map((res) => this.createList(res)),
             debounceTime(400),
-            switchMap(url => this.request.getItem(url)),
-            filter(res => res !== undefined && res !== null),
-            filter(res => res.entities !== undefined && res.entities !== null),
-            map(res => Object.values(res.entities))
-          ).subscribe(re => {
+            switchMap((url) => this.request.getItem(url)),
+            filter((res) => res !== undefined && res !== null),
+            filter((res) => res.entities !== undefined && res.entities !== null),
+            map((res) => Object.values(res.entities))
+          )
+          .subscribe((re) => {
             this.entityValues = this.setLanguage.item(re, this.lang.selectedLang);
             this.setSeparator(this.entityValues);
-            this.filteredQualifierValues.next(this.entityValues.filter(value => value.label.toLowerCase().indexOf(search) > -1));
-          }
-          );
-      }
-      else {
-        this.data.mutator$.subscribe(re => {
+            this.filteredQualifierValues.next(
+              this.entityValues.filter((value) => value.label.toLowerCase().indexOf(search) > -1)
+            );
+          });
+      } else {
+        this.data.mutator$.subscribe((re) => {
           this.entityValues = re[0];
           let qualifierEntityValues = [];
-      //    let qualifierTypes: number[] = [1, 5, 6, 8, 10, 13, 16, 17, 19, 20, 21, 23];
-          qualifierEntityValues = this.entityValues.filter(entityValue => QUALIFIERTYPES.includes(entityValue.col))  // filter the options for the qualifier values
+          //    let qualifierTypes: number[] = [1, 5, 6, 8, 10, 13, 16, 17, 19, 20, 21, 23];
+          qualifierEntityValues = this.entityValues.filter((entityValue) =>
+            QUALIFIERTYPES.includes(entityValue.col)
+          ); // filter the options for the qualifier values
           if (search === '?*') {
             this.filteredQualifierValues.next(qualifierEntityValues);
           } else {
             search = search.slice(1);
-            this.filteredQualifierValues.next(qualifierEntityValues.filter(value => value.label.toLowerCase().indexOf(search) > -1));
+            this.filteredQualifierValues.next(
+              qualifierEntityValues.filter(
+                (value) => value.label.toLowerCase().indexOf(search) > -1
+              )
+            );
           }
-        }
-        );
+        });
       }
     }
   }
@@ -1022,67 +1024,63 @@ export class StatementSearchComponent
       search = search.toLowerCase();
     }
     this.filteredQualifierLiteralVariables.next(
-      this.qualifierLiteralVariables.filter(variable => variable.label.toLowerCase().indexOf(search) > -1)
+      this.qualifierLiteralVariables.filter(
+        (variable) => variable.label.toLowerCase().indexOf(search) > -1
+      )
     );
   }
 
-
-
   setSeparator(entityValues: any[]) {
     for (let i = 0; i < entityValues.length; i++) {
-      if (entityValues[i].description) { entityValues[i].separator = ", "; };
-    };
+      if (entityValues[i].description) {
+        entityValues[i].separator = ', ';
+      }
+    }
   }
 
   selectedProperties(property) {
     this.selectedPropertiesList = property.value;
   }
 
-
-
-  datatypeValidator(control: AbstractControl): { [key: string]: boolean; } | null {
+  datatypeValidator(control: AbstractControl): { [key: string]: boolean } | null {
     if (control.value && control.value.length > 1) {
       const firstType = control.value[0][3]; // Supposons que le type soit à l'index 3
       const allSameType = control.value.every((val: any) => val[3] === firstType);
       if (!allSameType) {
-        return { 'differentDatatype': true };
+        return { differentDatatype: true };
       }
     }
     return null;
   }
 
-
-
   notFound(res) {
-    res == "https://database.factgrid.de//w/api.php?action=wbgetentities&ids=&format=json&origin=*" ?
-      res = "https://database.factgrid.de//w/api.php?action=wbgetentities&ids=Q220375&format=json&origin=*" : res;
+    res == 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=&format=json&origin=*'
+      ? (res =
+          'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=Q220375&format=json&origin=*')
+      : res;
     return res;
   }
 
   createList(re) {
     let baseGetURL = 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=';
     let getUrlSuffix = '&format=json&origin=*';
-    let list: string = "";
-    let url: string = "";
+    let list: string = '';
+    let url: string = '';
     let arr = re.search;
-    if (arr === undefined) { arr = []; }
-    else { arr = arr; };
+    if (arr === undefined) {
+      arr = [];
+    } else {
+      arr = arr;
+    }
     for (let i = 0; i < arr.length; i++) {
-      list = list + "|" + arr[i].id;
-    };
+      list = list + '|' + arr[i].id;
+    }
     list = list.slice(1);
     url = baseGetURL + list + getUrlSuffix;
     return url;
   }
 
- 
-
-
   ngOnDestroy(): void {
-    this._onDestroy.next(),
-      this._onDestroy.complete();
+    (this._onDestroy.next(), this._onDestroy.complete());
   }
-
 }
-
-

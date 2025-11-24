@@ -32,7 +32,7 @@ interface Entity {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DetailsService {
   private requestService = inject(RequestService);
@@ -43,9 +43,9 @@ export class DetailsService {
    */
   getReferenceProperties(u: Entity): string[] {
     const referenceProperties = Object.values(u.claims)
-      .flatMap(val => val)
-      .flatMap(claim => claim.references ?? [])
-      .flatMap(ref => ref['snaks-order'] ?? []);
+      .flatMap((val) => val)
+      .flatMap((claim) => claim.references ?? [])
+      .flatMap((ref) => ref['snaks-order'] ?? []);
     return this.uniq(referenceProperties);
   }
 
@@ -56,12 +56,14 @@ export class DetailsService {
   setPropertiesList(u: Entity): Observable<any[]> {
     const claimsArray = Object.values(u.claims);
 
-    let properties = claimsArray.flatMap(val => val.map(claim => claim.mainsnak.property));
-    let qualifierProperties = claimsArray.flatMap(val => val.flatMap(claim => claim['qualifiers-order'] ?? []));
+    let properties = claimsArray.flatMap((val) => val.map((claim) => claim.mainsnak.property));
+    let qualifierProperties = claimsArray.flatMap((val) =>
+      val.flatMap((claim) => claim['qualifiers-order'] ?? [])
+    );
     let referenceProperties = claimsArray
-      .flatMap(val => val)
-      .flatMap(claim => claim.references ?? [])
-      .flatMap(ref => ref['snaks-order'] ?? []);
+      .flatMap((val) => val)
+      .flatMap((claim) => claim.references ?? [])
+      .flatMap((ref) => ref['snaks-order'] ?? []);
 
     qualifierProperties = this.uniq(qualifierProperties);
     referenceProperties = this.uniq(referenceProperties);
@@ -73,15 +75,13 @@ export class DetailsService {
       return throwError(() => new Error('Trop de statements (plus de 8 groupes de 50 propriétés)'));
     }
 
-    const propertiesLists = propertiesChunks.map(list => this.createList(list).slice(1));
+    const propertiesLists = propertiesChunks.map((list) => this.createList(list).slice(1));
     while (propertiesLists.length < 8) propertiesLists.push('');
 
-    return this.requestService.requestProperties(propertiesLists)
-      .pipe(
-        map(res => this.mergeObjects(res as any[])), // <--- cast ici
-        map(res => Object.values(res))
-      );
-
+    return this.requestService.requestProperties(propertiesLists).pipe(
+      map((res) => this.mergeObjects(res as any[])), // <--- cast ici
+      map((res) => Object.values(res))
+    );
   }
 
   /**
@@ -91,17 +91,19 @@ export class DetailsService {
   setItemsList(u: Entity): Observable<any[]> {
     const claimsArray = Object.values(u.claims);
 
-    let items = claimsArray.flatMap(val =>
+    let items = claimsArray.flatMap((val) =>
       val
-        .filter(claim => claim.mainsnak.datavalue?.value?.id !== undefined)
-        .map(claim => claim.mainsnak.datavalue.value.id)
+        .filter((claim) => claim.mainsnak.datavalue?.value?.id !== undefined)
+        .map((claim) => claim.mainsnak.datavalue.value.id)
     );
 
-    let qualifierProperties = claimsArray.flatMap(val => val.flatMap(claim => claim['qualifiers-order'] ?? []));
+    let qualifierProperties = claimsArray.flatMap((val) =>
+      val.flatMap((claim) => claim['qualifiers-order'] ?? [])
+    );
     let referenceProperties = claimsArray
-      .flatMap(val => val)
-      .flatMap(claim => claim.references ?? [])
-      .flatMap(ref => ref['snaks-order'] ?? []);
+      .flatMap((val) => val)
+      .flatMap((claim) => claim.references ?? [])
+      .flatMap((ref) => ref['snaks-order'] ?? []);
 
     qualifierProperties = this.uniq(qualifierProperties);
     referenceProperties = this.uniq(referenceProperties);
@@ -116,22 +118,20 @@ export class DetailsService {
       return throwError(() => new Error('Trop de statements (plus de 8 groupes de 50 items)'));
     }
 
-    const itemsLists = itemsChunks.map(list => this.createList(list).slice(1));
+    const itemsLists = itemsChunks.map((list) => this.createList(list).slice(1));
     while (itemsLists.length < 8) itemsLists.push('');
 
-    return this.requestService.requestItems(itemsLists)
-      .pipe(
-        map(res => this.mergeObjects(res as any[])), // <--- cast ici
-        map(res => Object.values(res))
-      );
-
+    return this.requestService.requestItems(itemsLists).pipe(
+      map((res) => this.mergeObjects(res as any[])), // <--- cast ici
+      map((res) => Object.values(res))
+    );
   }
 
   /**
    * Retourne la liste unique des propriétés dans les qualifiers et références.
    */
   setProperties(arr: any[]): string[] {
-    return arr.flatMap(obj => Object.keys(obj));
+    return arr.flatMap((obj) => Object.keys(obj));
   }
 
   /**
@@ -139,14 +139,13 @@ export class DetailsService {
    */
   mergeObjects(res: any[]): any {
     // Filtrer les objets valides qui possèdent la propriété 'entities'
-    const validObjects = (res ?? []).filter(obj => obj && obj.entities);
+    const validObjects = (res ?? []).filter((obj) => obj && obj.entities);
     let u = validObjects.length > 0 ? validObjects[0].entities : {};
     for (const obj of validObjects.slice(1)) {
       u = { ...u, ...obj.entities };
     }
     return u;
   }
-
 
   /**
    * Retourne la liste des items dans les qualifiers.

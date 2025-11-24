@@ -14,4 +14,3 @@ describe('SetItemToDisplayService', () => {
     expect(service).toBeTruthy();
   });
 });
-

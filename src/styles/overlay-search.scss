@@ -1,0 +1,97 @@
+/* Global styles for the search overlay panel
+   This file centralizes rules that must apply to the CDK overlay pane
+   which is attached to document.body. Keep selectors simple and use
+   the `search-items_panel` panelClass applied when creating the overlay.
+*/
+:root {
+  --panel-bg: #fafbfc;
+  --panel-border: rgba(31,45,64,0.12);
+  --panel-shadow: 0 6px 20px rgba(31,45,64,0.12);
+  --panel-padding: 8px 12px;
+  --panel-maxw: 700px;
+  --panel-gap-mobile: 24px;
+}
+
+.cdk-overlay-pane.search-items_panel {
+  position: fixed; /* explicit fixed positioning when we adjust via script */
+  z-index: 1300;
+  left: auto;
+  right: auto;
+  max-width: calc(100vw - 32px);
+  width: min(var(--panel-maxw), 92vw);
+  box-sizing: border-box;
+}
+
+.cdk-overlay-pane.search-items_panel .search-items_inner {
+  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  padding: var(--panel-padding);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.cdk-overlay-pane.search-items_panel .search-items_row {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.cdk-overlay-pane.search-items_panel .search-items_row:hover {
+  background: rgba(31,45,64,0.04);
+}
+.cdk-overlay-pane.search-items_panel .search-items_row.clicked {
+  background: rgba(31,45,64,0.06);
+}
+.cdk-overlay-pane.search-items_panel .search-items_row.clicked:hover {
+  background: rgba(31,45,64,0.09);
+}
+
+.cdk-overlay-pane.search-items_panel .search-items_label {
+  font-weight: 600;
+  color: #1f2d40;
+}
+
+/* Ensure panel never overflows on small screens; center it */
+@media (max-width: 700px) {
+  /* Stronger selector to override any inline CDK transforms/positions on small viewports */
+  .cdk-overlay-container .cdk-overlay-pane.search-items_panel {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - var(--panel-gap-mobile)) !important;
+    max-width: none !important;
+    right: auto !important;
+    top: auto !important;
+    position: fixed !important;
+    box-sizing: border-box !important;
+  }
+  .cdk-overlay-pane.search-items_panel .search-items_inner {
+    width: 100% !important;
+    max-width: none !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+/* Ensure project-panel variant inherits the same visual treatment as items panel
+   Use a more specific selector to override possible inline styles or other rules
+*/
+.cdk-overlay-pane.search-items_panel.project-panel {
+  position: fixed;
+  z-index: 1310;
+}
+.cdk-overlay-pane.search-items_panel.project-panel .search-items_inner,
+.cdk-overlay-pane.search-items_panel.project-panel .project-panel_inner {
+  background: var(--panel-bg) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--panel-border) !important;
+  box-shadow: var(--panel-shadow) !important;
+  padding: var(--panel-padding) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.cdk-overlay-pane.search-items_panel.project-panel .search-items_row,
+.cdk-overlay-pane.search-items_panel.project-panel .project-item {
+  padding: 8px 10px;
+}

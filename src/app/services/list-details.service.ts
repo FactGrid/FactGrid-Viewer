@@ -2,18 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { RequestService } from './request.service';
 import { map, tap } from 'rxjs/operators';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ListDetailsService {
   private request = inject(RequestService);
 
+  list: any[];
+  object: any[] = [];
 
-  list: any[] 
-  object:any[] = [];
-
- /* setListDetails(sparql){	
+  /* setListDetails(sparql){	
     let observedList = this.request.getList(sparql).pipe(
     map(res => {
       let selectToDisplay:string[] = res.head.vars,
@@ -51,10 +49,10 @@ export class ListDetailsService {
   }
   */
 
- setListDetails(list){	
-  list
-  console.log(typeof(list))
-   /*.pipe(
+  setListDetails(list) {
+    list;
+    console.log(typeof list);
+    /*.pipe(
   map(res => { console.log(res) })
   )
    let keys:string[] = res.head.vars,
@@ -77,7 +75,5 @@ export class ListDetailsService {
 observedList.subscribe(re => console.log(re));
 return observedList
 */
-
-}
-
+  }
 }

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ResearchProjectService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getResearchProjects(): Observable<any[]> {
     const sparql = `
@@ -14,13 +14,17 @@ export class ResearchProjectService {
         SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
       }
     `;
-    const url = 'https://database.factgrid.de/query/sparql?query=' + encodeURIComponent(sparql) + '&format=json';
+    const url =
+      'https://database.factgrid.de/query/sparql?query=' +
+      encodeURIComponent(sparql) +
+      '&format=json';
     return this.http.get<any>(url).pipe(
-      map(res => res.results.bindings.map(b => ({
-        id: b.item.value.split('/').pop(),
-        name: b.itemLabel.value
-      })))
+      map((res) =>
+        res.results.bindings.map((b) => ({
+          id: b.item.value.split('/').pop(),
+          name: b.itemLabel.value,
+        }))
+      )
     );
   }
 }
-

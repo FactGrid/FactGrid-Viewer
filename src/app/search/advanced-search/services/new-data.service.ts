@@ -4,23 +4,26 @@ import { Variable, ITEMTYPES, LITERALS, MUTATOR } from './../variable';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataService {
-  constructor() { }
+  constructor() {}
 
-  mutator:BehaviorSubject<Variable[][]> = new BehaviorSubject(MUTATOR);
+  mutator: BehaviorSubject<Variable[][]> = new BehaviorSubject(MUTATOR);
 
-  mutator$:Observable<Variable[][]> = this.mutator.asObservable();
+  mutator$: Observable<Variable[][]> = this.mutator.asObservable();
 
-  mutatorForItemValue:BehaviorSubject<Variable[][]> = new BehaviorSubject(MUTATOR);
+  mutatorForItemValue: BehaviorSubject<Variable[][]> = new BehaviorSubject(MUTATOR);
 
-  $mutatorForItemValue:Observable<Variable[][]> = this.mutatorForItemValue.asObservable();
+  $mutatorForItemValue: Observable<Variable[][]> = this.mutatorForItemValue.asObservable();
 
+  updateMutator(mutator: Variable[][]) {
+    this.mutator.next(mutator);
+  }
 
-  updateMutator(mutator:Variable[][]) { this.mutator.next(mutator) };
-
-  updateMutatorForItemValue(mutator: Variable[][]) { this.mutatorForItemValue.next(mutator) };
+  updateMutatorForItemValue(mutator: Variable[][]) {
+    this.mutatorForItemValue.next(mutator);
+  }
 
   //  itemTypes: BehaviorSubject<Variable[][]> = new BehaviorSubject([ITEMTYPES]);
 
@@ -30,48 +33,51 @@ export class DataService {
 
   subjectOptions$: Observable<Variable[]> = this.subjectOptions.asObservable();
 
-  updateSujectOptions(item) { this.subjectOptions.next(item) };
-
+  updateSujectOptions(item) {
+    this.subjectOptions.next(item);
+  }
 
   objectOptions: BehaviorSubject<Variable[]> = new BehaviorSubject([]);
 
   objectOptions$: Observable<Variable[]> = this.objectOptions.asObservable();
 
-  updateObjectOptions(item) { this.objectOptions.next(item) };
-
+  updateObjectOptions(item) {
+    this.objectOptions.next(item);
+  }
 
   newOptions: BehaviorSubject<Variable[]> = new BehaviorSubject([]);
 
   newOptions$: Observable<Variable[]> = this.newOptions.asObservable();
 
-  updateNewOptions(item) { this.newOptions.next(item) };
+  updateNewOptions(item) {
+    this.newOptions.next(item);
+  }
 
-
-  updateFormerItemTypes(itemTypes) { this.formerItemTypes.next(itemTypes) };
+  updateFormerItemTypes(itemTypes) {
+    this.formerItemTypes.next(itemTypes);
+  }
 
   formerItemTypes: BehaviorSubject<Variable[][]> = new BehaviorSubject([ITEMTYPES]);
 
   formerItemTypes$: Observable<Variable[][]> = this.formerItemTypes.asObservable();
 
- 
-
-  lastItemTypes$(u$:Observable<Variable[][]>) {
-    return u$.pipe(map(res => res[res.length - 1]))
+  lastItemTypes$(u$: Observable<Variable[][]>) {
+    return u$.pipe(map((res) => res[res.length - 1]));
   }
 
-
-  
-
-  propertiesList:BehaviorSubject<any[]> = new BehaviorSubject([]);
+  propertiesList: BehaviorSubject<any[]> = new BehaviorSubject([]);
 
   $propertiesList = this.propertiesList.asObservable();
 
-  updatePropertiesList(list) { this.propertiesList.next(list) }
+  updatePropertiesList(list) {
+    this.propertiesList.next(list);
+  }
 
   currentStatement: BehaviorSubject<number> = new BehaviorSubject(0);
 
   $currentStatement: Observable<number> = this.currentStatement.asObservable();
 
-  updateCurrentStatement(i) { this.currentStatement.next(i) };
-
+  updateCurrentStatement(i) {
+    this.currentStatement.next(i);
+  }
 }

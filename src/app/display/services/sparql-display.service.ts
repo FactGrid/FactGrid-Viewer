@@ -78,7 +78,7 @@ export class SparqlDisplayService {
    */
   transformData(type: SparqlDisplayType, data: any[]): any[] {
     if (!data) return [];
-    const result = data.map(el => {
+    const result = data.map((el) => {
       if (el.itemDescription === undefined) {
         el.itemText = el.itemLabel?.value || '';
       } else {
@@ -94,15 +94,17 @@ export class SparqlDisplayService {
    */
   removeDuplicates(data: any[]): any[] {
     if (!data) return [];
-    return [...new Map(data.reverse().map(v => [JSON.stringify([v.itemText]), v])).values()].reverse();
+    return [
+      ...new Map(data.reverse().map((v) => [JSON.stringify([v.itemText]), v])).values(),
+    ].reverse();
   }
 
   /**
    * Prépare les données pour l'export CSV selon le type
    */
   prepareCsv(type: SparqlDisplayType, data: any[]): any[][] {
-    const header = ["item.id", "item.label", "item.description"];
-    const rows = data.map(el => {
+    const header = ['item.id', 'item.label', 'item.description'];
+    const rows = data.map((el) => {
       if (type === 'sparql2' || type === 'sparql3') {
         return [el.item?.value, el.itemLabel?.value, el.itemDescription?.value];
       } else {
@@ -117,7 +119,10 @@ export class SparqlDisplayService {
    * calcule pour toutes les cartes SPARQL les sujets, listes transformées
    * (sans doublons) et titres associés.
    */
-  buildAllCardsState(sparql$: Observable<any[][]>, langService: any): Observable<SparqlAllCardsState> {
+  buildAllCardsState(
+    sparql$: Observable<any[][]>,
+    langService: any
+  ): Observable<SparqlAllCardsState> {
     return sparql$.pipe(
       map((data: any[][]) => {
         const buildCard = (index: number, type: SparqlDisplayType): SparqlCardState => {
@@ -139,7 +144,7 @@ export class SparqlDisplayService {
           sparql2: buildCard(2, 'sparql2'),
           sparql3: buildCard(3, 'sparql3'),
           // sparql4 ne dépend pas du type pour le moment, on réutilise 'sparql3' par défaut
-          sparql4: buildCard(4, 'sparql3')
+          sparql4: buildCard(4, 'sparql3'),
         };
       })
     );

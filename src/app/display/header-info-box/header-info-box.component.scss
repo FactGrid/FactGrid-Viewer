@@ -1,0 +1,83 @@
+.header-info-box-card {
+  max-width: 520px;
+  width: 50%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-primary, #3F51B5);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(31,45,64,0.04);
+  margin-top: 8px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.98);
+  overflow: visible;
+}
+
+@media (max-width: 992px) {
+  .header-info-box-card {
+    width: 100% !important;
+    max-width: none !important;
+    border-left: 4px solid var(--color-primary, #3F51B5);
+  }
+}
+
+/* Ensure inner generic-list content uses normal wrapping inside this card */
+.header-info-box-card .linkedItemText {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+/* Override child component styles (pierce view encapsulation) to ensure
+   wrapping even when the child CSS enforces `white-space: nowrap`. */
+:host ::ng-deep .header-info-box-card .linkedItemText,
+:host ::ng-deep .header-info-box-card .displayLayout,
+:host ::ng-deep .header-info-box-card .description-text,
+:host ::ng-deep .header-info-box-card .inlineStyle,
+:host ::ng-deep .header-info-box-card a,
+:host ::ng-deep .header-info-box-card .factgrid-link {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  display: inline !important;
+  max-width: 100% !important;
+}
+
+:host ::ng-deep .header-info-box-card .linkedItemText {
+  display: inline !important;
+}
+
+/* Strong wrapping rules to avoid any overflow inside the header info box.
+   These target the generic-list internals projected into the card and
+   force all inline elements to wrap and respect the card's width. */
+.header-info-box-card,
+.header-info-box-card * {
+  box-sizing: border-box !important;
+}
+
+.header-info-box-card .cardBackground,
+.header-info-box-card .listStyle,
+.header-info-box-card .statementStyle,
+.header-info-box-card .value-row,
+.header-info-box-card .value-info-box,
+.header-info-box-card .displayLayout {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+.header-info-box-card .value-row {
+  margin: 0 0 6px 0;
+}
+
+.header-info-box-card img,
+.header-info-box-card .cover {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Ensure mat-card-content inside the header card doesn't allow overflow */
+.header-info-box-card .mat-card-content {
+  overflow: hidden;
+}

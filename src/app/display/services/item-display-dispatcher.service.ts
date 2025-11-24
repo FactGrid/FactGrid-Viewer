@@ -3,7 +3,6 @@ import { BlockDisplayService } from './block-display.service';
 //import { IframesDisplayService } from './iframes-display.service';
 import { WikiDisplayService } from './wiki-display.service';
 
-
 export interface DisplayFlags {
   isPlace: boolean;
   isCareer: boolean;
@@ -24,10 +23,9 @@ export interface DisplayFlags {
 
 @Injectable({ providedIn: 'root' })
 export class ItemDisplayDispatcherService {
-  
   private blockDisplay = inject(BlockDisplayService);
   private wikiDisplay = inject(WikiDisplayService);
- // private iframesDisplay = inject(IframesDisplayService);
+  // private iframesDisplay = inject(IframesDisplayService);
 
   dispatch(item: any, target: any): DisplayFlags {
     const claims = item[0].claims;
@@ -89,7 +87,6 @@ export class ItemDisplayDispatcherService {
       isOrg = target.locationAndContext.length > 0;
     }
 
-
     // InfoList (remplie entièrement par setInfoDisplay)
     this.blockDisplay.setInfoDisplay(item, target);
     target.infoList = {
@@ -98,7 +95,7 @@ export class ItemDisplayDispatcherService {
       classesList: target.classesList,
       natureOfList: target.natureOfList,
       technicalities: target.infoProperties, // alias pour compatibilité
-      infoProperties: target.infoProperties
+      infoProperties: target.infoProperties,
     };
     // isInfoList sera défini plus bas, une seule fois
 
@@ -133,13 +130,12 @@ export class ItemDisplayDispatcherService {
 
     // Item info
 
-  // MainList
-  target.mainList = [];
-  let isMain = false;
-  let isActivity = false;
-  let isDocument = false;
-  let isEvent = false;
-
+    // MainList
+    target.mainList = [];
+    let isMain = false;
+    let isActivity = false;
+    let isDocument = false;
+    let isEvent = false;
 
     if (claims.P2 === undefined) {
       if (claims.P3 !== undefined) {
@@ -147,15 +143,14 @@ export class ItemDisplayDispatcherService {
       }
     } else {
       // Concaténer toutes les sections sauf lifeAndFamily
-      let allSections = []
-        .concat(
-          target.locationAndContext || [],
-          target.locationAndSituation || [],
-          target.activityDetail || [],
-          target.eventDetail || [],
-          target.documentDetail || [],
-          target.otherClaims || []
-        );
+      let allSections = [].concat(
+        target.locationAndContext || [],
+        target.locationAndSituation || [],
+        target.activityDetail || [],
+        target.eventDetail || [],
+        target.documentDetail || [],
+        target.otherClaims || []
+      );
       // Exclure les propriétés qui sont dans technicalities (par propertyId)
       this.blockDisplay.setInfoDisplay(item, target); // S'assurer que infoList est à jour
       let technicalityProps = [];
@@ -165,9 +160,14 @@ export class ItemDisplayDispatcherService {
       //    technicalityProps = tempTechnicalities.map(t => t.propertyId);
       //  }
       // Filtrer chaque entrée de allSections pour retirer celles dont la propriété est dans technicalityProps
-      target.mainList = allSections.filter(section => {
+      target.mainList = allSections.filter((section) => {
         // section peut être un tableau de claims, on vérifie le propertyId
-        if (Array.isArray(section) && section.length > 0 && section[0].mainsnak && section[0].mainsnak.property) {
+        if (
+          Array.isArray(section) &&
+          section.length > 0 &&
+          section[0].mainsnak &&
+          section[0].mainsnak.property
+        ) {
           return !technicalityProps.includes(section[0].mainsnak.property);
         }
         return true;
@@ -179,7 +179,6 @@ export class ItemDisplayDispatcherService {
     }
 
     // ... après la construction de target.mainList
-
 
     let isFrames = false;
 
@@ -198,13 +197,11 @@ export class ItemDisplayDispatcherService {
       (target.infoList.natureOfList && target.infoList.natureOfList.length > 0) ||
       (target.infoList.technicalities && target.infoList.technicalities.length > 0);
 
-
     // Wikis
     target.wikis = [];
     let isWikis = false;
     this.wikiDisplay.setWikiDisplay(item, target.wikis);
     isWikis = target.wikis.length > 0;
-
 
     // ... (autres propriétés comme dans votre code)
 
@@ -224,7 +221,7 @@ export class ItemDisplayDispatcherService {
       isMain,
       isWikis,
       isFrames,
-      isExternalLinks
+      isExternalLinks,
     };
   }
 }

@@ -8,9 +8,8 @@ describe('TextDisplayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [TextDisplayComponent]
-})
-    .compileComponents();
+      imports: [TextDisplayComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

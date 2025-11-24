@@ -23,7 +23,7 @@ export class SelectedResearchFieldService {
         initial = {
           id: parsed.id,
           name: parsed.name,
-          description: parsed.description ?? ''
+          description: parsed.description ?? '',
         };
       } catch {
         // fallback
@@ -37,7 +37,7 @@ export class SelectedResearchFieldService {
     const safeField: ResearchField = {
       id: field.id,
       name: field.name,
-      description: field.description ?? ''
+      description: field.description ?? '',
     };
     localStorage['selectedResearchField'] = JSON.stringify(safeField);
     this.subject.next(safeField);
@@ -55,4 +55,3 @@ export class SelectedResearchFieldService {
     return this.showResearchFieldSubject.getValue();
   }
 }
-

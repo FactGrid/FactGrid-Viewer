@@ -1,8 +1,6 @@
 export interface Bank {
-
   id: string;
   name: string;
-
 }
 
 export const BANKS: Bank[] = [
@@ -23,5 +21,5 @@ export const BANKS: Bank[] = [
   { name: 'Bank O (Germany)', id: 'O' },
   { name: 'Bank P (Germany)', id: 'P' },
   { name: 'Bank Q (Germany)', id: 'Q' },
-  { name: 'Bank R (Germany)', id: 'R' }
+  { name: 'Bank R (Germany)', id: 'R' },
 ];

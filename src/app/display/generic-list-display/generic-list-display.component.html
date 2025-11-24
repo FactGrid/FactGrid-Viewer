@@ -10,7 +10,7 @@
       }
       @for (M of P; track (M.id + '-' + idx); let idx = $index) {
         <div class="statementStyle">
-          <div [ngStyle]="{'background-color': (M?.rank=='deprecated') ? '#f1f1f1' : '#ffffff'}">
+          <div [ngStyle]="{'background-color': (M?.rank==='deprecated') ? '#f1f1f1' : '#ffffff'}">
             @if (M && M.mainsnak && M.mainsnak.datatype ==='time') {
               <span>{{M.mainsnak.datavalue.value.date}}</span>
               @if (M.mainsnak.datavalue.value.calendarmodel === "http://www.wikidata.org/entity/Q1985727") {
@@ -49,7 +49,7 @@
                 <a class="linkedItemText factgrid-link" [routerLink]="['/item', M.mainsnak.datavalue.value.id]">{{M.mainsnak.label}}</a>{{M.mainsnak.datavalue.value.separator}}<span *ngIf="M.mainsnak.datavalue.value.description" class="description-text">{{M.mainsnak.datavalue.value.description}}</span>
               </span>
             }
-            @if (M && M.rank=='deprecated') {
+            @if (M && M.rank==='deprecated') {
               <span class="warningDeprecated"> &nbsp;({{M.rank}})</span>
             }
           </div>

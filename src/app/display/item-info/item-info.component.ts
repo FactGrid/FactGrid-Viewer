@@ -8,21 +8,22 @@ import { SelectedLangService } from '../../selected-lang.service';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
-    selector: 'app-item-info',
-    templateUrl: './item-info.component.html',
-    styleUrls: ['./item-info.component.scss'],
-    standalone: true,
-  imports: [CommonModule, NgClass, MatCardModule, RouterLink, MatIconModule, ScrollingModule]
+  selector: 'app-item-info',
+  templateUrl: './item-info.component.html',
+  styleUrls: ['./item-info.component.scss'],
+  standalone: true,
+  imports: [CommonModule, NgClass, MatCardModule, RouterLink, MatIconModule, ScrollingModule],
 })
 export class ItemInfoComponent implements OnChanges {
   private lang = inject(SelectedLangService);
 
   @Input() infoList;
-  
-  selectedLang: string = (localStorage['selectedLang'] === undefined) ? "en" : localStorage['selectedLang'];
-  list1:any[] = [];
-  list2:any[] = [];
-  list3:any[] = [];
+
+  selectedLang: string =
+    localStorage['selectedLang'] === undefined ? 'en' : localStorage['selectedLang'];
+  list1: any[] = [];
+  list2: any[] = [];
+  list3: any[] = [];
   list4: any[] = [];
   technicalities: any[] = [];
   infoProperties: any[] = [];
@@ -31,19 +32,19 @@ export class ItemInfoComponent implements OnChanges {
   list3Number;
   list4Number;
   technicalitiesNumber;
-  isList1:boolean = false;
-  isList2:boolean = false;
-  isList3:boolean = false;
-  isList4:boolean = false;
-  isInfo:boolean = false;
-  instancesListTitle = "instances of the Q-item:";
-  subclassesListTitle = "subclasses of the Q-item:"
-  subInfoTitle:string = "Information on the Q-item";
-  classesListTitle:string = "classes of the Q-item:"
-  natureOfListTitle:string = "instance of";
-  prefix1:string = "class hierarchy: class depending on ";
-  prefix2:string = "class hierarchy: class with ";
-  suffix1: string = "classes:";
+  isList1: boolean = false;
+  isList2: boolean = false;
+  isList3: boolean = false;
+  isList4: boolean = false;
+  isInfo: boolean = false;
+  instancesListTitle = 'instances of the Q-item:';
+  subclassesListTitle = 'subclasses of the Q-item:';
+  subInfoTitle: string = 'Information on the Q-item';
+  classesListTitle: string = 'classes of the Q-item:';
+  natureOfListTitle: string = 'instance of';
+  prefix1: string = 'class hierarchy: class depending on ';
+  prefix2: string = 'class hierarchy: class with ';
+  suffix1: string = 'classes:';
 
   // Virtual scroll
   readonly virtualThreshold = 20;
@@ -57,8 +58,8 @@ export class ItemInfoComponent implements OnChanges {
     return `${h}px`;
   }
 
-
-  openImage(image) { //handling click for picture (open in new tab) 
+  openImage(image) {
+    //handling click for picture (open in new tab)
     window.open(image);
   }
 
@@ -66,7 +67,7 @@ export class ItemInfoComponent implements OnChanges {
     // Traductions avec fallback si la clé est introuvable
     const tr = (key: string, fallback: string) => {
       const v = this.lang.getTranslation(key, this.lang.selectedLang);
-      return (v === undefined || v === null || v === '' || v === key) ? fallback : v;
+      return v === undefined || v === null || v === '' || v === key ? fallback : v;
     };
 
     this.instancesListTitle = tr('instancesListTitle', 'instances of the Q-item:');
@@ -83,8 +84,8 @@ export class ItemInfoComponent implements OnChanges {
     this.list2 = this.infoList?.instancesList ?? [];
     this.list3 = this.infoList?.classesList ?? [];
     this.list4 = this.infoList?.natureOfList ?? [];
-  this.technicalities = this.infoList?.technicalities ?? [];
-  this.infoProperties = this.infoList?.infoProperties ?? [];
+    this.technicalities = this.infoList?.technicalities ?? [];
+    this.infoProperties = this.infoList?.infoProperties ?? [];
 
     this.list1Number = this.list1.length;
     this.list2Number = this.list2.length;
@@ -93,20 +94,16 @@ export class ItemInfoComponent implements OnChanges {
     this.technicalitiesNumber = this.technicalities.length;
 
     this.isInfo =
-      this.list1Number + this.list2Number + this.list3Number + this.list4Number + this.technicalitiesNumber > 0;
+      this.list1Number +
+        this.list2Number +
+        this.list3Number +
+        this.list4Number +
+        this.technicalitiesNumber >
+      0;
 
     this.isList1 = this.list1.length > 0;
     this.isList2 = this.list2.length > 0;
     this.isList3 = this.list3.length > 0;
     this.isList4 = this.list4.length > 0;
   }
-
-    } 
-
-
-
-
-
-  
-
-
+}

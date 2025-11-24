@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  inject,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -32,7 +39,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { SelectedLangService } from '../selected-lang.service';
-import { SelectedResearchFieldService, ResearchField } from '../services/selected-research-field.service';
+import {
+  SelectedResearchFieldService,
+  ResearchField,
+} from '../services/selected-research-field.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { ItemDisplayDispatcherService } from './services/item-display-dispatcher.service';
@@ -45,14 +55,34 @@ import { SearchComponent } from '../search/search.component';
   styleUrls: ['./display.component.scss'],
   standalone: true,
   imports: [
-  CommonModule, MatTabsModule, MatButtonModule, RouterModule, NgIf, MatProgressSpinnerModule, MatSidenavModule, MatToolbarModule, MatBadgeModule, MatListModule, MatTooltipModule,
-    MatIconModule, MatCardModule, NgFor, NgClass, TextDisplayComponent, SparqlDisplayComponent,
-    ItemInfoComponent, HeaderDisplayComponent, SearchComponent,
-  IframesDisplayComponent, ThematicCardComponent, JoinPipe, GenericListDisplayComponent
-  ]
+    CommonModule,
+    MatTabsModule,
+    MatButtonModule,
+    RouterModule,
+    NgIf,
+    MatProgressSpinnerModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatBadgeModule,
+    MatListModule,
+    MatTooltipModule,
+    MatIconModule,
+    MatCardModule,
+    NgFor,
+    NgClass,
+    TextDisplayComponent,
+    SparqlDisplayComponent,
+    ItemInfoComponent,
+    HeaderDisplayComponent,
+    SearchComponent,
+    IframesDisplayComponent,
+    ThematicCardComponent,
+    JoinPipe,
+    GenericListDisplayComponent,
+  ],
 })
 export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
-    subtitle: string;
+  subtitle: string;
   private sparqlDisplayService = inject(SparqlDisplayService);
   constructor(private cdr: ChangeDetectorRef) {}
 
@@ -94,7 +124,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   urlId: string;
   linkedItems: any[];
   linkedItems2: any[];
-  factGridUrl: string = "https://database.factgrid.de/entity/";
+  factGridUrl: string = 'https://database.factgrid.de/entity/';
   sources: any;
   mainList: any[] = [];
   list: any[] = [];
@@ -202,16 +232,16 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedResearchFieldSubscription: Subscription;
 
   // Textes d’interface
-  newSearch: string = "new search";
-  linkedPagesTitle: string = "linked pages";
-  mainPage: string = "main page";
-  externalLinksTitle: string = "External links";
-  formerVisitsTitle: string = "you have visited:";
+  newSearch: string = 'new search';
+  linkedPagesTitle: string = 'linked pages';
+  mainPage: string = 'main page';
+  externalLinksTitle: string = 'External links';
+  formerVisitsTitle: string = 'you have visited:';
   careerTitle: string;
-  factGridQuery: string = "FactGrid query";
-  clickToDisplay: string = "click to display";
-  clickToDownload: string = "click to download";
-  stemma: string = "stemma";
+  factGridQuery: string = 'FactGrid query';
+  clickToDisplay: string = 'click to display';
+  clickToDownload: string = 'click to download';
+  stemma: string = 'stemma';
   factGridLogo: string = 'https://upload.wikimedia.org/wikipedia/commons/b/b6/FactGrid-Logo4.png';
   currentProject: ResearchField | null = null;
 
@@ -229,23 +259,26 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         researchFieldId = 'all';
       }
     }
-    this.from = (researchFieldId === 'Q10441') ? 'paris' : 'search';
+    this.from = researchFieldId === 'Q10441' ? 'paris' : 'search';
 
     // Projet sélectionné (pour l'affichage sur la page d'accueil)
     this.currentProject = this.selectedResearchFieldService.getSelectedResearchField();
-    this.selectedResearchFieldSubscription = this.selectedResearchFieldService.selectedResearchField$
-      .subscribe(field => {
+    this.selectedResearchFieldSubscription =
+      this.selectedResearchFieldService.selectedResearchField$.subscribe((field) => {
         this.currentProject = field;
       });
 
-  this.isSpinner = true;
-  this.isInfo = false;
-  this.drawerOpened = false;
+    this.isSpinner = true;
+    this.isInfo = false;
+    this.drawerOpened = false;
     this.newSearch = this.lang.getTranslation('newSearch', this.lang.selectedLang);
     this.linkedPagesTitle = this.lang.getTranslation('linkedPagesTitle', this.lang.selectedLang);
     this.mainPage = this.lang.getTranslation('mainPage', this.lang.selectedLang);
     this.factGridQuery = this.lang.getTranslation('factGridQuery', this.lang.selectedLang);
-    this.externalLinksTitle = this.lang.getTranslation('externalLinksTitle', this.lang.selectedLang);
+    this.externalLinksTitle = this.lang.getTranslation(
+      'externalLinksTitle',
+      this.lang.selectedLang
+    );
     this.formerVisitsTitle = this.lang.getTranslation('formerVisitsTitle', this.lang.selectedLang);
     // Titre pour la carte "Carrière" avec repli du header si absent dans la i18n
     this.careerTitle =
@@ -257,7 +290,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clickToDisplay = this.lang.getTranslation('clickToDisplay', this.lang.selectedLang);
     this.stemma = this.lang.getTranslation('stemma', this.lang.selectedLang);
 
-    this.subscription0 = this.route.paramMap.subscribe(params => {
+    this.subscription0 = this.route.paramMap.subscribe((params) => {
       this.itemId = params.get('id');
       this.drawerOpened = false; // Fermer le drawer à chaque changement d'item
       if (this.itemId) {
@@ -274,35 +307,58 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadBackList() {
-    this.subscription1 = this.backList.backList(this.itemId)
-      .pipe(map(res => {
-        if (res[0].query !== undefined) {
-          this.linkedItems = this.backListDetails.setBackList(res[0].query.pages);
-        } else {
-          this.linkedItems = [{ id: "Q21898", label: this.lang.getTranslation('$1', this.lang.selectedLang) }];
-        }
-      }))
+    this.subscription1 = this.backList
+      .backList(this.itemId)
+      .pipe(
+        map((res) => {
+          if (res[0].query !== undefined) {
+            this.linkedItems = this.backListDetails.setBackList(res[0].query.pages);
+          } else {
+            this.linkedItems = [
+              { id: 'Q21898', label: this.lang.getTranslation('$1', this.lang.selectedLang) },
+            ];
+          }
+        })
+      )
       .subscribe();
   }
 
   private getNoneLabel(lang: string): string {
     switch (lang) {
-      case "de": return "keine";
-      case "fr": return "aucune";
-      case "en": return "none";
-      case "es": return "ninguno";
-      case "hu": return "nincs";
-      case "it": return "nessuno";
-      case "zh": return "无";
-      default: return "none";
+      case 'de':
+        return 'keine';
+      case 'fr':
+        return 'aucune';
+      case 'en':
+        return 'none';
+      case 'es':
+        return 'ninguno';
+      case 'hu':
+        return 'nincs';
+      case 'it':
+        return 'nessuno';
+      case 'zh':
+        return '无';
+      default:
+        return 'none';
     }
   }
 
   private loadItem() {
-    this.subscription2 = this.setData.itemToDisplay(this.itemId).subscribe(item => {
-      this.isMain = this.isOther = this.isPicture = this.isSource = this.isTraining = this.isCareer =
-        this.isFamilyTree = this.isIframes = this.isActivity = this.isWikis =
-        this.isExternalLinks = this.isInfo = false;
+    this.subscription2 = this.setData.itemToDisplay(this.itemId).subscribe((item) => {
+      this.isMain =
+        this.isOther =
+        this.isPicture =
+        this.isSource =
+        this.isTraining =
+        this.isCareer =
+        this.isFamilyTree =
+        this.isIframes =
+        this.isActivity =
+        this.isWikis =
+        this.isExternalLinks =
+        this.isInfo =
+          false;
 
       if (!item || !Array.isArray(item) || item.length === 0) {
         this.item = null;
@@ -312,14 +368,21 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('Item loaded:', this.item);
       this.setList.addToSelectedItemsList(item[0]);
       this.claims = item[0].claims;
-      if (!this.claims.P2) { alert("property P2 undefined"); return; }
-      if (!this.claims.P320) { this.hideList(); }
+      if (!this.claims.P2) {
+        alert('property P2 undefined');
+        return;
+      }
+      if (!this.claims.P320) {
+        this.hideList();
+      }
       this.natureOf = this.claims.P2[0].mainsnak.datavalue.value.id;
       this.event = this.claims.P2.event;
       this.listTitle = this.claims.P2.listTitle;
       this.main = this.claims.P2.main;
-      if (this.mainTitle == "Humain") { this.mainTitle = "Personne"; }
-      if (["Q37073", "Q257052"].includes(this.claims.P2[0].mainsnak.datavalue.value.id)) {
+      if (this.mainTitle == 'Humain') {
+        this.mainTitle = 'Personne';
+      }
+      if (['Q37073', 'Q257052'].includes(this.claims.P2[0].mainsnak.datavalue.value.id)) {
         this.mainTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
       }
       this.urlId = this.factGridUrl + this.id;
@@ -328,7 +391,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.label = this.item[0].label;
       this.description = this.item[0].description;
       this.aliases = this.item[0].aliases;
-      if (this.aliases) { this.isAliases === true; }
+      if (this.aliases) {
+        this.isAliases === true;
+      }
 
       // Flags d'affichage
       const flags = this.itemDisplayDispatcher.dispatch(this.item, this);
@@ -338,15 +403,30 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.claims.P48) {
         this.zoom = 12;
         let xy = this.claims.P2[0].mainsnak.datavalue.value.id;
-        if (xy == "Q176131") this.zoom = 3;
-        if (xy == "Q21925") this.zoom = 4;
-        if (xy == "Q21876") this.zoom = 6;
-        if (xy == "Q16200") this.zoom = 18;
-        if (["Q266101", "Q469609", "Q172249", "Q36239", "Q164328", "Q36251", "Q141472", "Q395380", "Q375357"].includes(xy)) this.zoom = 16;
+        if (xy == 'Q176131') this.zoom = 3;
+        if (xy == 'Q21925') this.zoom = 4;
+        if (xy == 'Q21876') this.zoom = 6;
+        if (xy == 'Q16200') this.zoom = 18;
+        if (
+          [
+            'Q266101',
+            'Q469609',
+            'Q172249',
+            'Q36239',
+            'Q164328',
+            'Q36251',
+            'Q141472',
+            'Q395380',
+            'Q375357',
+          ].includes(xy)
+        )
+          this.zoom = 16;
         this.coords = this.claims.P48[0].mainsnak.datavalue.value;
         this.latitude = this.coords.latitude;
         this.longitude = this.coords.longitude;
-        this.router.navigate([this.latitude, this.longitude, this.zoom], { relativeTo: this.route });
+        this.router.navigate([this.latitude, this.longitude, this.zoom], {
+          relativeTo: this.route,
+        });
       }
 
       // Selected Items
@@ -355,20 +435,20 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       // Images
       this.pictures = this.claims.P189
         ? this.claims.P189.map((picture, index) => {
-          const imageUrl = picture.picture;
-          const thumbnailUrl = `${imageUrl}?width=300`;
-          this.preloadImage(thumbnailUrl);
-          this.preloadImage(imageUrl);
-          return {
-            thumbnail: thumbnailUrl,
-            full: imageUrl,
-            uniqueKey: imageUrl || `picture-${index}`
-          };
-        })
+            const imageUrl = picture.picture;
+            const thumbnailUrl = `${imageUrl}?width=300`;
+            this.preloadImage(thumbnailUrl);
+            this.preloadImage(imageUrl);
+            return {
+              thumbnail: thumbnailUrl,
+              full: imageUrl,
+              uniqueKey: imageUrl || `picture-${index}`,
+            };
+          })
         : [];
       this.isPicture = this.pictures.length > 0;
       if (this.isPicture) {
-        this.observer.observe([Breakpoints.HandsetPortrait]).subscribe(result => {
+        this.observer.observe([Breakpoints.HandsetPortrait]).subscribe((result) => {
           if (result.matches) {
             this.isMobile = true;
             this.isTopPicture = true;
@@ -388,23 +468,23 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Extraction des URLs brutes pour les iframes
 
- this.iframeGroups = [
-  { property: 'P309', label: this.claims.P309?.label, claims: this.claims.P309 || [] },
-  { property: 'P320', label: this.claims.P320?.label, claims: this.claims.P320 || [] },
-  { property: 'P679', label: this.claims.P679?.label, claims: this.claims.P679 || [] },
-  { property: 'P693', label: this.claims.P693?.label, claims: this.claims.P693 || [] },
-  { property: 'P720', label: this.claims.P720?.label, claims: this.claims.P720 || [] }
-].filter(g => g.label && g.claims.length > 0);
+      this.iframeGroups = [
+        { property: 'P309', label: this.claims.P309?.label, claims: this.claims.P309 || [] },
+        { property: 'P320', label: this.claims.P320?.label, claims: this.claims.P320 || [] },
+        { property: 'P679', label: this.claims.P679?.label, claims: this.claims.P679 || [] },
+        { property: 'P693', label: this.claims.P693?.label, claims: this.claims.P693 || [] },
+        { property: 'P720', label: this.claims.P720?.label, claims: this.claims.P720 || [] },
+      ].filter((g) => g.label && g.claims.length > 0);
 
       // Transcription
       if (this.claims.P251 && this.claims.P251[0].mainsnak.datavalue.value) {
         let a = this.transcript.transcript(this.claims.P251[0].mainsnak.datavalue.value);
-        this.subscription3 = a.subscribe(res => {
-          this.trans = Object.keys(res)[0] == "error" ? "no transcription" : res.parse.text;
+        this.subscription3 = a.subscribe((res) => {
+          this.trans = Object.keys(res)[0] == 'error' ? 'no transcription' : res.parse.text;
           this.trans = this.changeTranscript.cleaning(this.trans);
         });
       } else {
-        this.trans = "";
+        this.trans = '';
       }
 
       // Info lists (préserver l'objet déjà construit par le dispatcher, et fusionner dès que les listes arrivent)
@@ -414,7 +494,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         const rawSub = Array.isArray(raw?.[1]) ? raw![1] : [];
         const rawCls = Array.isArray(raw?.[2]) ? raw![2] : [];
         const rawNat = Array.isArray(raw?.[3]) ? raw![3] : [];
-        const rawHasAny = (rawInst.length + rawSub.length + rawCls.length + rawNat.length) > 0;
+        const rawHasAny = rawInst.length + rawSub.length + rawCls.length + rawNat.length > 0;
 
         // Si un infoList existe déjà (créé par le dispatcher) mais vide, on n'arrête PAS tant que les données brutes ne sont pas arrivées
         if (this.infoList && this.infoList.instancesList !== undefined) {
@@ -437,7 +517,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               classesList: this.classesList,
               natureOfList: this.natureOfList,
               technicalities: existingTech,
-              infoProperties: existingInfoProps
+              infoProperties: existingInfoProps,
             };
           } else {
             // Pas encore de données brutes: conserver l'état actuel (techniques visibles) mais continuer à poller
@@ -461,7 +541,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
             classesList: this.classesList,
             natureOfList: this.natureOfList,
             technicalities: existingTech,
-            infoProperties: existingInfoProps
+            infoProperties: existingInfoProps,
           };
         } else {
           // Rien à appliquer pour le moment => poursuivre le polling
@@ -500,7 +580,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       // Trees
       this.isFamilyTree = !!(this.claims.P150 || this.claims.P141 || this.claims.P142);
       this.isStemma = !!this.claims.P233;
-
     });
   }
 
@@ -512,7 +591,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     document.head.appendChild(link);
   }
 
-  onThumbnailLoad(picture: any): void { }
+  onThumbnailLoad(picture: any): void {}
 
   openImage(url: string): void {
     if (url) {
@@ -525,7 +604,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   hideList() {
-    const el = document.getElementById("listing");
+    const el = document.getElementById('listing');
     if (el) el.style.visibility = 'hidden';
   }
 
@@ -533,7 +612,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustUrl(u);
   }
 
-  ngAfterViewInit(): void { }
+  ngAfterViewInit(): void {}
 
   // Réception de la sélection d'un item depuis le composant de recherche embarqué
   onSearchItemSelected(itemId: string): void {
@@ -551,6 +630,4 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sparqlSubscription?.unsubscribe();
     this.selectedResearchFieldSubscription?.unsubscribe();
   }
-
-  
 }

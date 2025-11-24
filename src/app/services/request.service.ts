@@ -4,9 +4,8 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { saveAs } from 'file-saver-es';
 import { expand, map, reduce, catchError } from 'rxjs/operators';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RequestService {
   private http = inject(HttpClient);
@@ -23,11 +22,11 @@ export class RequestService {
     const lists = [...propertiesLists];
     while (lists.length < 8) lists.push(undefined);
 
-    const requests = lists.map(list =>
+    const requests = lists.map((list) =>
       list
-        ? this.http.get(this.baseGetURL + list + this.getUrlSuffix).pipe(
-          catchError(() => of(undefined))
-        )
+        ? this.http
+            .get(this.baseGetURL + list + this.getUrlSuffix)
+            .pipe(catchError(() => of(undefined)))
         : of(undefined)
     );
 
@@ -41,11 +40,11 @@ export class RequestService {
     const lists = [...itemsLists];
     while (lists.length < 8) lists.push(undefined);
 
-    const requests = lists.map(list =>
+    const requests = lists.map((list) =>
       list
-        ? this.http.get(this.baseGetURL + list + this.getUrlSuffix).pipe(
-          catchError(() => of(undefined))
-        )
+        ? this.http
+            .get(this.baseGetURL + list + this.getUrlSuffix)
+            .pipe(catchError(() => of(undefined)))
         : of(undefined)
     );
 
@@ -62,7 +61,6 @@ export class RequestService {
       .set('format', 'json')
       .set('origin', '*')
       .set('offset', offset.toString());
-      ;
     return this.http.get('https://database.factgrid.de//w/api.php', { params });
   }
 
@@ -99,8 +97,9 @@ export class RequestService {
     if (sparql !== undefined) {
       const headers = new HttpHeaders().set('Accept', 'text/csv');
       const params = new HttpParams();
-      this.http.get(sparql, { headers, responseType: 'arraybuffer', params })
-        .subscribe(response => this.downLoadFile(response));
+      this.http
+        .get(sparql, { headers, responseType: 'arraybuffer', params })
+        .subscribe((response) => this.downLoadFile(response));
     }
   }
 
@@ -151,8 +150,9 @@ export class RequestService {
     if (url !== undefined) {
       const headers = new HttpHeaders().set('Accept', 'text/csv');
       const params = new HttpParams();
-      this.http.get(url, { headers, responseType: 'arraybuffer', params })
-        .subscribe(response => this.downLoadFile(response));
+      this.http
+        .get(url, { headers, responseType: 'arraybuffer', params })
+        .subscribe((response) => this.downLoadFile(response));
     }
   }
 
@@ -181,7 +181,6 @@ export class RequestService {
     return forkJoin([u1, u2]);
   }
 
-
   getResearchProjects(): Observable<any[]> {
     const sparql = `
       SELECT ?item ?itemLabel WHERE {
@@ -189,12 +188,17 @@ export class RequestService {
         SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
       }
     `;
-    const url = 'https://database.factgrid.de/query/sparql?query=' + encodeURIComponent(sparql) + '&format=json';
+    const url =
+      'https://database.factgrid.de/query/sparql?query=' +
+      encodeURIComponent(sparql) +
+      '&format=json';
     return this.http.get<any>(url).pipe(
-      map(res => res.results.bindings.map(b => ({
-        id: b.item.value.split('/').pop(),
-        name: b.itemLabel.value
-      })))
+      map((res) =>
+        res.results.bindings.map((b) => ({
+          id: b.item.value.split('/').pop(),
+          name: b.itemLabel.value,
+        }))
+      )
     );
   }
 
@@ -216,17 +220,14 @@ export class RequestService {
     };
 
     return fetch().pipe(
-      expand(response => {
+      expand((response) => {
         if (response.continue && response.continue.sroffset !== undefined) {
           return fetch(response.continue.sroffset);
         }
         return of();
       }),
-      map(response => response.query?.search.map(item => item.title) ?? []),
+      map((response) => response.query?.search.map((item) => item.title) ?? []),
       reduce((acc, value) => acc.concat(value), [])
     );
   }
 }
-
-
-

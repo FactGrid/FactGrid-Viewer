@@ -12,19 +12,19 @@ import { trigger, transition, style, animate } from '@angular/animations';
   templateUrl: './thematic-card.component.html',
   styleUrls: ['./thematic-card.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  host: { 'class': 'thematic-card' },
+  host: { class: 'thematic-card' },
   animations: [
     trigger('collapseExpand', [
       transition(':enter', [
         style({ height: 0, opacity: 0 }),
-        animate('180ms ease', style({ height: '*', opacity: 1 }))
+        animate('180ms ease', style({ height: '*', opacity: 1 })),
       ]),
       transition(':leave', [
         style({ height: '*', opacity: 1 }),
-        animate('160ms ease', style({ height: 0, opacity: 0 }))
-      ])
-    ])
-  ]
+        animate('160ms ease', style({ height: 0, opacity: 0 })),
+      ]),
+    ]),
+  ],
 })
 export class ThematicCardComponent implements AfterContentInit {
   @Input() title?: string;

@@ -8,10 +8,9 @@ describe('AdvancedSearchListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdvancedSearchListComponent]
-    })
-    .compileComponents();
-    
+      imports: [AdvancedSearchListComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(AdvancedSearchListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

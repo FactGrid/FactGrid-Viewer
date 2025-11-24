@@ -7,25 +7,28 @@ export const PLACE_DISPLAY_PROPERTIES = [
   { property: 'P461', comment: 'named after' },
   { property: 'P140', comment: 'Illuminati code name (ng ser)' },
   { property: 'P139', comment: 'Illuminati code name of' },
-  { property: 'P267', comment: 'organisational context' }
+  { property: 'P267', comment: 'organisational context' },
 ];
 
-export const CAREER_DISPLAY_PROPERTIES = [ //by display order
+export const CAREER_DISPLAY_PROPERTIES = [
+  //by display order
   { property: 'P164', comment: 'position' },
   { property: 'P165', comment: 'activities' },
   { property: 'P865', comment: 'professional address' },
   { property: 'P315', comment: 'employer' },
   { property: 'P673', comment: 'income' },
- 
+
   { property: 'P119', comment: 'active participant to' },
   { property: 'P776', comment: 'business partner' },
 ];
 
-export const ACTIVITY_DISPLAY_PROPERTIES = [ //by display order
+export const ACTIVITY_DISPLAY_PROPERTIES = [
+  //by display order
   { property: 'P267', comment: 'organisational context' },
 ];
 
-export const DOCUMENT_DISPLAY_PROPERTIES = [ //by display order
+export const DOCUMENT_DISPLAY_PROPERTIES = [
+  //by display order
   { property: 'P21', comment: 'author' },
   { property: 'P20', comment: 'author as (misleadingly) stated' },
   { property: 'P561', comment: 'quality of author identification' },
@@ -81,20 +84,20 @@ export const EDUCATION_DISPLAY_PROPERTIES = [
   { property: 'P160', comment: 'educating institutions' },
   { property: 'P304', comment: 'subjects studied at university' },
   { property: 'P170', comment: 'academic degree' },
-  { property: 'P161', comment: 'teachers' }
+  { property: 'P161', comment: 'teachers' },
 ];
 
 export const EVENT_DISPLAY_PROPERTIES = [
   { property: 'P47', comment: 'localisation' },
   { property: 'P106', comment: 'date' },
   { property: 'P66', comment: 'institution signing responsible' },
-  { property: 'P133', comment: 'participants' }
+  { property: 'P133', comment: 'participants' },
 ];
 
 export const EXCLUDED_DISPLAY_PROPERTIES = [
-  { property: 'P899', comment: "object type properties" }, // Ajoutez ici les identifiants des propriétés à ne pas afficher
-  { property: 'P679', comment: "FactGrid map" }, 
-  { property: 'P720', comment: "FactGrid list" } 
+  { property: 'P899', comment: 'object type properties' }, // Ajoutez ici les identifiants des propriétés à ne pas afficher
+  { property: 'P679', comment: 'FactGrid map' },
+  { property: 'P720', comment: 'FactGrid list' },
   // ...
 ];
 
@@ -123,15 +126,15 @@ export const ORG_DISPLAY_PROPERTIES = [
   { property: 'P319', comment: 'organisational roof' },
   { property: 'P267', comment: 'organisational context' },
   { property: 'P430', comment: 'grand lodge (masonic lodge)' },
-  { property: 'P422', comment: 'subclass' }
+  { property: 'P422', comment: 'subclass' },
 ];
 
 export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P154', comment: 'sex' },
   { property: 'P247', comment: 'name' },
-  { property: "Q266694", comment: 'birth name' },
-  { property: "Q468366", comment: 'married name' },
-  { property: "Q10387", comment: 'name replacement'},
+  { property: 'Q266694', comment: 'birth name' },
+  { property: 'Q468366', comment: 'married name' },
+  { property: 'Q10387', comment: 'name replacement' },
   { property: 'P248', comment: 'forenames' },
   { property: 'P248_aligned', comment: 'aligned forenames' },
   { property: 'P140', comment: 'Illuminati code name' },
@@ -167,7 +170,7 @@ export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P242', comment: 'events witness' },
   { property: 'P208', comment: 'address' },
   { property: 'P460', comment: 'language skills' },
-  { property: 'P171', comment: 'public awards and titles' }  
+  { property: 'P171', comment: 'public awards and titles' },
 ];
 
 export const EXTERNAL_LINKS_DISPLAY_PROPERTIES = [
@@ -201,7 +204,7 @@ export const SOCIABILITY_DISPLAY_PROPERTIES = [
   { property: 'P167', comment: 'contributor to' },
   { property: 'P278', comment: 'subscriptions signed' },
   { property: 'P513', comment: 'patients' },
-  { property: 'P447', comment: 'masonic degree' }
+  { property: 'P447', comment: 'masonic degree' },
 ];
 
 export const HEADER_DISPLAY_PROPERTIES = [
@@ -209,7 +212,7 @@ export const HEADER_DISPLAY_PROPERTIES = [
   { property: 'P3', comment: 'subclass of' },
   { property: 'P8', comment: 'part of' },
   { property: 'P97', comment: 'field of research' },
-  { property: 'P131', comment: 'research projects that contributed to this data set' }
+  { property: 'P131', comment: 'research projects that contributed to this data set' },
 ];
 
 export const SOURCES_DISPLAY_PROPERTIES = [
@@ -218,12 +221,10 @@ export const SOURCES_DISPLAY_PROPERTIES = [
   { property: 'P143', comment: 'mentioned in' },
   { property: 'P185', comment: 'archives at' },
   { property: 'P146', comment: 'on line information' },
-  { property: 'P1275', comment: 'has works in the collection' }
+  { property: 'P1275', comment: 'has works in the collection' },
 ];
 
 export const TECHNICALITIES_DISPLAY_PROPERTIES = [
   { property: 'P994', comment: 'PhiloBiblon vocabulary term' },
   { property: 'P1132', comment: 'FactGrid keyword' },
 ];
-
-

@@ -8,10 +8,9 @@ describe('HarmoniaUniversalisComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HarmoniaUniversalisComponent]
-    })
-    .compileComponents();
-    
+      imports: [HarmoniaUniversalisComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(HarmoniaUniversalisComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

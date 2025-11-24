@@ -1,4 +1,13 @@
-import { Component, Input, OnChanges, OnDestroy, ChangeDetectionStrategy, SimpleChanges, inject, TemplateRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  SimpleChanges,
+  inject,
+  TemplateRef,
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,10 +23,24 @@ import { SparqlDisplayService, SparqlDisplayType } from '../services/sparql-disp
 @Component({
   selector: 'app-sparql-display',
   standalone: true,
-  imports: [CommonModule, MatCardModule, NgClass, RouterLink, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, FormsModule, ScrollingModule, NgIf, NgFor, NgTemplateOutlet],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    NgClass,
+    RouterLink,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
+    ScrollingModule,
+    NgIf,
+    NgFor,
+    NgTemplateOutlet,
+  ],
   templateUrl: './sparql-display.component.html',
   styleUrls: ['./sparql-display.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   constructor() {}
@@ -65,12 +88,16 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
     // Titre dynamique: si le parent fournit un titre, on le privilégie, sinon on calcule ici.
     const newTitle = this.parentTitle
       ? this.parentTitle
-      : this.sparqlDisplayService.getTitle(this.sparqlType, this.sparqlSubject, this.langService, this.list);
+      : this.sparqlDisplayService.getTitle(
+          this.sparqlType,
+          this.sparqlSubject,
+          this.langService,
+          this.list
+        );
     this.subTitleSubject.next(newTitle);
     this.isWorks = !!newTitle;
   }
 
-  
   trackByFn(index: number, item: any): any {
     return item && item.item && item.item.id ? item.item.id + '_' + index : index;
   }

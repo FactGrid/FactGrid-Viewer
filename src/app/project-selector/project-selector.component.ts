@@ -5,7 +5,10 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { BehaviorSubject, Observable, map, startWith } from 'rxjs';
-import { SelectedResearchFieldService, ResearchField } from '../services/selected-research-field.service';
+import {
+  SelectedResearchFieldService,
+  ResearchField,
+} from '../services/selected-research-field.service';
 import { RequestService } from '../services/request.service';
 import { SelectedLangService } from '../selected-lang.service';
 
@@ -17,10 +20,10 @@ import { SelectedLangService } from '../selected-lang.service';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
   ],
   templateUrl: './project-selector.component.html',
-  styleUrls: ['./project-selector.component.scss']
+  styleUrls: ['./project-selector.component.scss'],
 })
 export class ProjectSelectorComponent {
   private request = inject(RequestService);
@@ -43,9 +46,9 @@ export class ProjectSelectorComponent {
 
     this.filteredResearchFields$ = this.searchResearchField.valueChanges.pipe(
       startWith(''),
-      map(value => {
+      map((value) => {
         const search = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
-        return this.researchFields.filter(f => f.name.toLowerCase().includes(search));
+        return this.researchFields.filter((f) => f.name.toLowerCase().includes(search));
       })
     );
 
@@ -61,19 +64,20 @@ export class ProjectSelectorComponent {
   }
 
   private loadProjects(): void {
-    this.request.getList(this.getResearchFieldQuery(this.lang.selectedLang))
+    this.request
+      .getList(this.getResearchFieldQuery(this.lang.selectedLang))
       .pipe(
-        map(res => this.listFromSparql(res)),
-        map(res => [
+        map((res) => this.listFromSparql(res)),
+        map((res) => [
           { name: '-', id: '-', description: '' },
-          ...res.results.bindings.map(b => ({
+          ...res.results.bindings.map((b) => ({
             name: b.itemLabel.value,
             id: b.item.id,
-            description: b.itemDescription?.value ?? ''
-          }))
+            description: b.itemDescription?.value ?? '',
+          })),
         ])
       )
-      .subscribe(projects => {
+      .subscribe((projects) => {
         projects.sort((a, b) => a.name.localeCompare(b.name));
         this.researchFields = projects;
         this.researchFields$.next(projects);
@@ -84,7 +88,8 @@ export class ProjectSelectorComponent {
     if (res && res.results) {
       for (let i = 0; i < res.results.bindings.length; i++) {
         res.results.bindings[i]['item'].id = res.results.bindings[i]['item'].value.replace(
-          'https://database.factgrid.de/entity/', ''
+          'https://database.factgrid.de/entity/',
+          ''
         );
       }
     }

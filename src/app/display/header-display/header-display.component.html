@@ -14,7 +14,7 @@
           {{P.label}}:
         </span>
         <ng-container *ngFor="let M of P.claims; let idx = index">
-          <div class="statementStyle value-info-box" [ngClass]="{'deprecated': M.rank=='deprecated'}">
+          <div class="statementStyle value-info-box" [ngClass]="{'deprecated': M.rank==='deprecated'}">
             <ng-container *ngIf="M.mainsnak.datatype === 'time'">
               <span>{{M.mainsnak.datavalue.value.date}}</span>
               <ng-container *ngIf="M.mainsnak.datavalue.value.calendarmodel === 'http://www.wikidata.org/entity/Q1985727'">
@@ -51,7 +51,7 @@
                 <a class="linkedItemText" [routerLink]="['/item', M.mainsnak.datavalue.value.id]" (click)="$event.stopPropagation()">{{M.mainsnak.label}}</a>{{M.mainsnak.separator}}<span class="description-text">{{M.mainsnak.description}}</span>
               </span>
             </ng-container>
-            <ng-container *ngIf="M.rank=='deprecated'">
+            <ng-container *ngIf="M.rank==='deprecated'">
               <span class="warningDeprecated"> &nbsp;({{M.rank}})</span>
             </ng-container>
 

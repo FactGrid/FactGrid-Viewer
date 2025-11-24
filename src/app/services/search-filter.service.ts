@@ -6,14 +6,15 @@ import { WikibaseEntity } from '../models/wikibase-entity.model';
  */
 @Injectable({ providedIn: 'root' })
 export class SearchFilterService {
-
   /**
    * Normalize a string: lowercase, remove diacritics, trim, and collapse spaces.
    */
   normalizeString(s: string | undefined | null): string {
     if (!s) return '';
-    return s.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    return s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
   }
@@ -57,7 +58,7 @@ export class SearchFilterService {
     const normalizedDesc = this.normalizeString(item.description);
 
     if (normalizedLabel.includes(searchTerm)) return true;
-    if (normalizedAliases.some(alias => alias.includes(searchTerm))) return true;
+    if (normalizedAliases.some((alias) => alias.includes(searchTerm))) return true;
     if (showInDescription && normalizedDesc.includes(searchTerm)) return true;
     return false;
   }
@@ -74,9 +75,8 @@ export class SearchFilterService {
     showInDescription: boolean
   ): WikibaseEntity[] {
     const normalizedInput = this.normalizeString(searchTerm);
-    return entities.filter(item =>
+    return entities.filter((item) =>
       this.matchesSearchCriteria(item, normalizedInput, showInDescription)
     );
   }
 }
-

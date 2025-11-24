@@ -10,7 +10,7 @@ export class WikibaseSearchService {
   constructor(
     private request: RequestService,
     private lang: SelectedLangService
-  ) { }
+  ) {}
 
   /**
    * Fetch all entity IDs from a CirrusSearch query (up to 2000 results)
@@ -25,22 +25,19 @@ export class WikibaseSearchService {
         })
         .filter((qid: string | null) => !!qid);
 
-    const requests = offsets.map(offset =>
-      this.request.getItem(`${searchUrl}&sroffset=${offset}`).pipe(
-        map(extractQids)
-      )
+    const requests = offsets.map((offset) =>
+      this.request.getItem(`${searchUrl}&sroffset=${offset}`).pipe(map(extractQids))
     );
 
-    return forkJoin(requests).pipe(
-      map(results => Array.from(new Set(results.flat())))
-    );
+    return forkJoin(requests).pipe(map((results) => Array.from(new Set(results.flat()))));
   }
 
   /**
    * Fetch entities for autocompletion using wbsearchentities API
    */
   fetchAutocompleteEntities(searchTerm: string): Observable<WikibaseEntity[]> {
-    const url = 'https://database.factgrid.de/w/api.php' +
+    const url =
+      'https://database.factgrid.de/w/api.php' +
       '?action=wbsearchentities' +
       `&search=${encodeURIComponent(searchTerm)}` +
       `&language=${this.lang.selectedLang}` +
@@ -50,12 +47,14 @@ export class WikibaseSearchService {
       '&origin=*';
 
     return this.request.getItem(url).pipe(
-      map((res: any) => (res.search || []).map((e: any) => ({
-        id: e.id,
-        label: e.label,
-        aliases: e.aliases || [],
-        description: e.description || ''
-      })))
+      map((res: any) =>
+        (res.search || []).map((e: any) => ({
+          id: e.id,
+          label: e.label,
+          aliases: e.aliases || [],
+          description: e.description || '',
+        }))
+      )
     );
   }
 
@@ -72,7 +71,7 @@ export class WikibaseSearchService {
       return results;
     };
     const chunks = chunkArray(ids, 50);
-    const requests = chunks.map(chunk => {
+    const requests = chunks.map((chunk) => {
       const idsParam = chunk.join('|');
       const getEntitiesUrl =
         `https://database.factgrid.de/w/api.php?action=wbgetentities` +
@@ -87,18 +86,18 @@ export class WikibaseSearchService {
         })
       );
     });
-    return requests.length > 0 ? forkJoin(requests).pipe(map(results => results.flat())) : of([]);
+    return requests.length > 0 ? forkJoin(requests).pipe(map((results) => results.flat())) : of([]);
   }
 
   /**
    * Adapt raw API entities to WikibaseEntity interface
    */
   adaptEntities(entities: any[], lang: string): WikibaseEntity[] {
-    return entities.map(e => ({
+    return entities.map((e) => ({
       id: e.id,
       label: e.labels?.[lang]?.value || '',
       aliases: e.aliases?.[lang]?.map((a: any) => a.value) || [],
-      description: e.descriptions?.[lang]?.value || ''
+      description: e.descriptions?.[lang]?.value || '',
     }));
   }
 
@@ -106,13 +105,15 @@ export class WikibaseSearchService {
    * Build a CirrusSearch URL for the API
    */
   buildSearchUrl(searchQuery: string): string {
-    return 'https://database.factgrid.de/w/api.php' +
+    return (
+      'https://database.factgrid.de/w/api.php' +
       '?action=query' +
       '&list=search' +
       '&format=json' +
       '&origin=*' +
       `&srsearch=${encodeURIComponent(searchQuery)}` +
       '&srnamespace=120' +
-      '&srlimit=500';
+      '&srlimit=500'
+    );
   }
 }

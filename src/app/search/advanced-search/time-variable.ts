@@ -1,7 +1,7 @@
 export interface TimeVariable {
   id: string;
   label: string;
-},
+}
 
 export const TIMEVARIABLES: TimeVariable[] = [
   { label: '?date', id: 'Q77483' },
@@ -17,9 +17,5 @@ export const TIMEVARIABLES: TimeVariable[] = [
   { label: '?to', id: 'Q77483' },
   { label: '?to1', id: 'Q77483' },
   { label: '?to2', id: 'Q77483' },
-  { label: '?to3', id: 'Q77483' }
-]
-  
-  
-  
-  
+  { label: '?to3', id: 'Q77483' },
+];

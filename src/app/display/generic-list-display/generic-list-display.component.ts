@@ -12,14 +12,14 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./generic-list-display.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, UnitPipe, MatIconModule, MatButtonModule, MatTooltipModule, RouterModule]
+  imports: [CommonModule, UnitPipe, MatIconModule, MatButtonModule, MatTooltipModule, RouterModule],
 })
 export class GenericListDisplayComponent {
   @Input() title: string;
   @Input() items: any[];
-  
+
   openReferences = new Set<string>();
-  
+
   toggleReferences(key: string): void {
     if (this.openReferences.has(key)) {
       this.openReferences.delete(key);
@@ -27,7 +27,7 @@ export class GenericListDisplayComponent {
       this.openReferences.add(key);
     }
   }
-  
+
   openImage(url: string): void {
     if (url) {
       window.open(url, '_blank');

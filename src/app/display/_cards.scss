@@ -1,0 +1,1094 @@
+/* ========================================
+   CARTE D'INFORMATIONS GÉNÉRALES AVEC FOND TEINTÉ
+   ======================================== */
+
+:host ::ng-deep app-thematic-card.info-themed-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(179, 198, 224, 0.8);
+}
+
+:host ::ng-deep app-thematic-card.info-themed-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.info-themed-content {
+  padding: var(--thematic-card-padding);
+}
+
+.itemTitle {
+  padding-top: 0;
+  margin-bottom: 8px;
+  /* Responsive base title sizing: mobile-friendly default, scales up on wider viewports */
+  font-size: clamp(1.25rem, 3.2vw, 2.2rem);
+  font-weight: 600;
+  color: #111;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.info-themed-content .itemTitle {
+  /* Slightly larger when the title is shown in the info-themed header */
+  font-size: clamp(1.5rem, 4vw, 3.2rem);
+}
+
+.info-themed-content .aliases {
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: #5f6c7f;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.info-themed-content .itemDescription {
+  color: #5f6c7f;
+  font-size: 0.95rem;
+  /* Reduce line-height to improve compactness when description wraps (mobile/long texts) */
+  line-height: 1.25;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+/* Make line-height slightly tighter on small screens where wrapping is common */
+@media (max-width: 700px) {
+  .info-themed-content .itemDescription {
+    line-height: 1.12;
+    margin-bottom: 12px;
+  }
+}
+
+.header-container {
+  margin-top: 16px;
+}
+
+/* Appliquer le fond teinté seulement sur l'info-box à l'intérieur de l'header-display */
+:host ::ng-deep .header-container app-header-display .info-box,
+:host ::ng-deep .header-container app-header-display .header-info,
+:host ::ng-deep .header-container app-header-display .info-container {
+  background: linear-gradient(135deg, #f8fbff 0%, #f0f6fa 100%) !important;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* ========================================
+   CARTES THÉMATIQUES
+   ======================================== */
+
+:host ::ng-deep app-thematic-card {
+  display: block;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px) saturate(1.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  border-radius: var(--thematic-card-radius);
+  box-shadow:
+    0 4px 16px rgba(40, 53, 147, 0.12),
+    0 2px 4px rgba(40, 53, 147, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  margin: var(--thematic-card-margin);
+  padding: var(--thematic-card-padding);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(179, 198, 224, 0.8);
+  transition: all var(--transition-base, 250ms cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+:host ::ng-deep app-thematic-card:hover {
+  box-shadow:
+    0 8px 24px rgba(40, 53, 147, 0.12),
+    0 4px 8px rgba(40, 53, 147, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  border-color: rgba(179, 198, 224, 0.9);
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   CARTE D'INFORMATION
+   ======================================== */
+
+.info-card {
+  width: 50%;
+  min-width: 320px;
+  max-width: 600px;
+  margin-left: 0;
+  margin-right: auto;
+  display: block;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: all var(--transition-base);
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.info-card-header {
+  background: linear-gradient(135deg, var(--background-header-info) 0%, #d1d5db 100%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 0;
+  box-sizing: border-box;
+
+  .mat-button, button {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    color: var(--primary-color);
+    transition: transform var(--transition-fast);
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.info-card-content {
+  padding: var(--spacing-md) var(--spacing-lg) !important;
+  box-sizing: border-box;
+  background-color: var(--background-card);
+}
+
+.info-card-closed-spacer {
+  height: var(--spacing-sm);
+}
+
+/* ========================================
+   STYLES POUR GENERIC-LIST-DISPLAY
+   ======================================== */
+
+:host ::ng-deep app-generic-list-display {
+  .propertyStyle {
+    font-weight: 600;
+    color: #111;
+    font-size: 0.95rem;
+    display: block;
+    margin-right: 6px;
+    margin-bottom: 0px;
+    padding: 1px 4px; /* reduced padding to bring property label closer to value */
+    border-radius: 4px;
+    /* Allow long property labels to wrap and avoid horizontal overflow */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .propertyStyle > span {
+    /* ensure inner span (tooltip host) also wraps */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .hover-bg-light:hover {
+    background-color: rgba(63, 81, 181, 0.08);
+    cursor: help;
+  }
+
+  .statementStyle {
+    /* reduce vertical spacing between statement blocks */
+    padding: 4px 0 4px 0 !important;
+    font-size: 0.94rem;
+    color: #1f2d40;
+    line-height: 1.35;
+    margin: 2px 0 !important;
+  }
+
+  .statementStyle > div:first-child {
+    display: inline;
+    /* reduce left padding so mainsnak appears closer to the property label */
+    padding-left: 10px;
+  }
+
+  /* Allow wrapping/breaking for long labels/links inside the mainsnak
+     container only (the first child div of a statement). This prevents
+     qualifiers from being affected. */
+  .statementStyle > div:first-child,
+  .statementStyle > div:first-child span,
+  .statementStyle > div:first-child a,
+  .statementStyle > div:first-child .linkedItemText,
+  .statementStyle > div:first-child .displayLayout {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  /* Reduce spacing between inline values inside a statement (multiple values per property) */
+  .statementStyle > div:first-child > span,
+  .statementStyle > div:first-child > a,
+  .statementStyle > div:first-child .displayLayout,
+  .statementStyle > div:first-child .linkedItemText,
+  .statementStyle > div:first-child .calendarStyle {
+    display: inline;
+    margin-right: 6px; /* small gap between successive values */
+  }
+
+  /* Slightly tighter description spacing when used inline next to a value */
+  .description-text {
+    color: #5f6c7f;
+    font-size: 0.875rem;
+    margin-left: 2px; /* reduced from 4px */
+    font-style: italic;
+  }
+
+  @media (max-width: 700px) {
+    .statementStyle > div:first-child > span,
+    .statementStyle > div:first-child > a,
+    .statementStyle > div:first-child .displayLayout,
+    .statementStyle > div:first-child .linkedItemText,
+    .statementStyle > div:first-child .calendarStyle {
+      margin-right: 4px;
+    }
+  }
+
+  /* Reduce only vertical spacing between successive statements (M)
+     so multiple M entries appear closer vertically without changing
+     their block flow or qualifiers layout. */
+  .listStyle .statementStyle {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    margin: 1px 0 !important;
+  }
+
+  @media (max-width: 700px) {
+    .listStyle .statementStyle {
+      padding-top: 1px !important;
+      padding-bottom: 1px !important;
+      margin: 1px 0 !important;
+    }
+  }
+
+  /* Make sure very long inline elements inside mainsnak don't force horizontal scroll on small screens */
+  @media (max-width: 700px) {
+    .statementStyle > div:first-child .linkedItemText,
+    .statementStyle > div:first-child .displayLayout,
+    .statementStyle > div:first-child a {
+      display: inline !important;
+      max-width: 100% !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+      word-break: break-word !important;
+    }
+  }
+
+  /* Reduce line-height for mainsnaks and inline descriptions when they wrap
+     so wrapped labels and their description stay compact. Target only the
+     mainsnak container to avoid changing qualifiers/references. */
+  .statementStyle > div:first-child .linkedItemText,
+  .statementStyle > div:first-child .displayLayout,
+  .statementStyle > div:first-child a,
+  .statementStyle > div:first-child span,
+  .statementStyle > div:first-child .description-text {
+    line-height: 1.12 !important;
+    vertical-align: baseline;
+  }
+
+  /* Very specific overrides scoped to the generic-list display inside the
+     thematic cards to beat component-local selectors that set large
+     line-heights (useful when those selectors use !important). */
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child > span,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child .linkedItemText,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child .displayLayout,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child a,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child .description-text {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    line-height: 1.06 !important;
+  }
+
+  /* Specifically target the direct wrapper span for the mainsnak (the
+     span that contains the anchor and description — lines ~47-51 in the
+     template). Reduce its line-height so when it wraps the interline is
+     compact. */
+  .statementStyle > div:first-child > span {
+    line-height: 1.06 !important;
+    /* keep it inline but ensure line-height applies to the container */
+    display: inline !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  @media (max-width: 700px) {
+    .statementStyle > div:first-child .linkedItemText,
+    .statementStyle > div:first-child .displayLayout,
+    .statementStyle > div:first-child a,
+    .statementStyle > div:first-child span,
+    .statementStyle > div:first-child .description-text {
+      line-height: 1.04 !important;
+    }
+    .statementStyle > div:first-child > span {
+      line-height: 1.02 !important;
+    }
+  }
+
+  /* Also apply the tighter wrapping and reduced line-height to qualifier
+     values (D) which live under .qualifierStyle. These selectors are made
+     very specific and constrained to the generic-list-display inside the
+     thematic cards to avoid collateral effects elsewhere. */
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .linkedItemText,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle span,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .description-text {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    line-height: 1.06 !important;
+  }
+
+  @media (max-width: 700px) {
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .linkedItemText,
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle span,
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .description-text {
+      line-height: 1.02 !important;
+    }
+  }
+
+  .qualifierStyle {
+    margin-left: 32px;
+    margin-top: 1px;
+    font-size: 0.85rem;
+    color: #5f6c7f;
+    line-height: 1.4;
+    padding: 1px 0 1px 8px;
+    border-left: 2px solid var(--color-primary, #6699CC);
+  }
+
+  .qualifierProperty {
+    color: #111;
+    font-size: inherit;
+    font-style: italic;
+    margin-right: 4px;
+  }
+
+  .referenceStyle {
+    margin-left: 24px;
+    margin-top: 2px;
+    padding: 2px 8px;
+    font-size: 0.85rem;
+    color: #5f6c7f;
+    background-color: rgba(173, 20, 87, 0.02);
+    border-left: 3px solid var(--color-primary, #6699CC);
+    border-radius: 0 4px 4px 0;
+    line-height: 1.35;
+  }
+
+  .referenceProperty {
+    color: #AD1457;
+    font-size: inherit;
+    font-style: italic;
+    margin-right: 4px;
+    font-weight: 400;
+  }
+
+  .references-toggle-btn {
+    margin: 4px 0 2px 0;
+    padding: 2px 8px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--color-primary, #3F51B5) !important;
+    background-color: transparent; /* neutralisé */
+    border: none; /* neutralisé */
+    border-radius: 0;
+    min-height: 0;
+    line-height: 1.3;
+  }
+
+  .triangle-icon {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-right: 8px;
+    vertical-align: middle;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid var(--color-primary, #3F51B5);
+    transition: transform 150ms ease;
+  }
+
+  .triangle-icon.open {
+    transform: rotate(-90deg);
+  }
+
+  .listStyle {
+    margin: 0 0 2px 0;
+    padding: 0 0;
+    border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+  }
+
+  .listStyle:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .inlineStyle {
+    display: inline;
+    margin: 0;
+  }
+
+  .description-text {
+    color: #5f6c7f;
+    font-size: 0.875rem;
+    margin-left: 4px;
+    font-style: italic;
+  }
+
+  .calendarStyle {
+    font-size: 0.8rem;
+    color: #AD1457;
+    margin-left: 6px;
+    font-style: italic;
+  }
+
+  .warningDeprecated {
+    color: #d32f2f;
+    font-size: 0.85rem;
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .internalLink {
+    display: inline-flex;
+    align-items: center;
+    min-width: 14px;
+    min-height: 14px;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    margin: 0 0 0 1px;
+    vertical-align: baseline;
+    position: relative;
+    top: -2px;
+    line-height: 1;
+  }
+
+  .internalLink mat-icon {
+    font-size: 12px !important;
+    width: 12px !important;
+    height: 12px !important;
+    line-height: 12px !important;
+  }
+
+  .cover {
+    width: 120px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(40, 53, 147, 0.08);
+    cursor: pointer;
+    transition: all 200ms ease;
+  }
+
+  .cover:hover {
+    box-shadow: 0 4px 12px rgba(40, 53, 147, 0.12);
+    transform: scale(1.02);
+  }
+}
+
+/* ========================================
+   CONTENEUR DES CARTES THÉMATIQUES
+   ======================================== */
+
+.thematic-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px 12px 8px;
+  margin-top: 8px;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+/* Neutraliser marges externes des cartes */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card,
+:host ::ng-deep .thematic-cards-grid > .thematic-card {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Uniformiser les boîtes internes */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card .card-body {
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .thematic-cards-grid app-sparql-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid app-iframes-display .cardBackground {
+  margin: 0 !important;
+  display: block !important;
+  padding: 8px 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+}
+
+/* Harmonise l'indentation des statements entre SPARQL et Generic list */
+:host ::ng-deep .thematic-cards-grid app-sparql-display .statementStyle,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle {
+  padding: 3px 0 3px 12px !important;
+  width: auto !important;
+  max-width: 100% !important;
+  font-size: 0.95rem !important;
+  color: #1f2d40 !important;
+  line-height: 1.45 !important;
+  margin: 2px 0 !important;
+}
+
+/* Règle spécifique pour annuler max-width */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-sparql-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-generic-list-display .cardBackground,
+:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-iframes-display .cardBackground {
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  padding: 8px 12px !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* Forcer les wrappers Angular */
+:host ::ng-deep .thematic-cards-grid app-sparql-display > *,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display > *,
+:host ::ng-deep .thematic-cards-grid app-iframes-display > * {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Forcer les éléments show-division */
+:host ::ng-deep .thematic-cards-grid .show-division {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .thematic-cards-grid .cardBackground.show-division {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  padding: 8px 12px !important;
+}
+
+/* Annuler padding-left global */
+:host ::ng-deep .thematic-cards-grid app-thematic-card mat-card-content,
+:host ::ng-deep .thematic-cards-grid app-thematic-card .mat-card-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+}
+
+/* Forcer les hôtes des displays */
+:host ::ng-deep .thematic-cards-grid app-sparql-display,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display,
+:host ::ng-deep .thematic-cards-grid app-iframes-display {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+}
+
+/* Neutralise marges/paddings de mat-card internes */
+:host ::ng-deep .thematic-cards-grid app-sparql-display mat-card,
+:host ::ng-deep .thematic-cards-grid app-generic-list-display mat-card {
+  margin: 0;
+  padding: 0;
+}
+
+/* Add extra left white space for the info header on very large desktops */
+@media (min-width: 700px) {
+  .info-themed-content {
+    /* small additional left gutter on regular desktop */
+    padding-left: calc(var(--thematic-card-padding, 16px) + var(--spacing-md, 12px));
+  }
+}
+
+@media (min-width: 1400px) {
+  .info-themed-content {
+    /* increase left padding to create a visual left gutter on very big screens */
+    padding-left: calc(var(--thematic-card-padding, 16px) + var(--spacing-lg, 32px));
+  }
+}
+
+/* Tight paddings for the right column (child2) to align with compact layout */
+:host ::ng-deep .child2 app-thematic-card,
+:host ::ng-deep .child2 app-thematic-card .card-body,
+:host ::ng-deep .child2 .info-card-content,
+:host ::ng-deep .child2 .externalLinksPadding,
+:host ::ng-deep .child2 .externalLinksText,
+:host ::ng-deep .child2 .selectedListTitle {
+  padding: 4px !important;
+  margin: 2px 0 !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .child2 .externalLinksText {
+  padding: 2px 4px !important;
+}
+
+:host ::ng-deep .child2 .divisionTitle {
+  font-size: 1.25rem !important;
+  padding-top: 2px !important;
+  line-height: 1 !important;
+}
+
+:host ::ng-deep .child2 .visited-list,
+:host ::ng-deep .child2 .visited-list li {
+  margin: 0 !important;
+  padding: 2px 0 !important;
+}
+
+  /* Selected items in child2 should look like other child2 lists; link on label without underline */
+  :host ::ng-deep .child2 .visited-list .listStyle {
+    margin: 0 0 2px 0;
+    padding: 0 0;
+    border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+  }
+
+  :host ::ng-deep .child2 .visited-list .propertyStyle {
+    font-weight: 600;
+    color: #111;
+    font-size: 0.95rem;
+    display: inline;
+    margin-right: 4px;
+    padding: 0 1px;
+    white-space: normal;
+  }
+
+  :host ::ng-deep .child2 .visited-list .statementStyle {
+    padding: 2px 0 2px 0 !important;
+    font-size: 0.94rem;
+    color: #1f2d40;
+    line-height: 1.12;
+    margin: 1px 0 !important;
+    display: block;
+  }
+
+  /* Tighten vertical spacing and line-height for child2 lists (external, wikis, visited) */
+  :host ::ng-deep .child2 .listStyle .statementStyle,
+  :host ::ng-deep .child2 .visited-list .statementStyle,
+  :host ::ng-deep .child2 .wiki-themed-card .statementStyle,
+  :host ::ng-deep .child2 .external-themed-card .statementStyle {
+    line-height: 1.14 !important; /* increased interline for breathing room */
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    margin: 2px 0 !important;
+    font-size: 0.95rem;
+  }
+
+  /* Slightly increase separator space between successive list entries to avoid cramping */
+  :host ::ng-deep .child2 .listStyle {
+    margin: 0 0 6px 0 !important;
+    padding: 0 0 0 8px !important; /* add left inset so items are not flush with card edge */
+  }
+
+  /* Add a little top margin for the first list item to create breathing room under the header */
+  :host ::ng-deep .child2 .listStyle:first-child {
+    margin-top: 6px !important;
+  }
+
+  /* Ensure visited-list first element also gets top spacing when wrapped in visited-list container */
+  :host ::ng-deep .child2 .visited-list .listStyle:first-child {
+    margin-top: 6px !important;
+  }
+
+  /* selected item link: no underline on label, inherit color; subtle hover like external links */
+  :host ::ng-deep .child2 a.selectedItemLink {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: inline;
+    padding: 0 1px;
+    border-radius: 4px;
+  }
+
+  :host ::ng-deep .child2 a.selectedItemLink:hover {
+    color: var(--color-primary, #3F51B5) !important;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 9999px rgba(63, 81, 181, 0.06);
+  }
+
+/* Ensure child2 uses same inter-card gap as thematic-cards-grid in child1 */
+:host ::ng-deep .child2 {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important; /* same as .thematic-cards-grid */
+}
+
+:host ::ng-deep .child2 > app-thematic-card,
+:host ::ng-deep .child2 app-thematic-card {
+  margin: 0 !important; /* rely on gap for spacing */
+}
+
+/* Slightly colored headers for External Links and Wikis to match child1 thematic cards */
+:host ::ng-deep app-thematic-card.external-themed-card .card-header,
+:host ::ng-deep app-thematic-card.wiki-themed-card .card-header {
+  /* subtle primary-tinted gradient, non-intrusive */
+  background: linear-gradient(90deg, rgba(63,81,181,0.06) 0%, rgba(63,81,181,0.03) 100%) !important;
+  color: #111 !important;
+  border-bottom: 1px solid rgba(63,81,181,0.06) !important;
+  padding: 6px 10px !important;
+  border-radius: 6px 6px 0 0 !important;
+}
+
+/* Ensure title and icon use the same tint and spacing as other thematic cards */
+:host ::ng-deep app-thematic-card.external-themed-card .title-text,
+:host ::ng-deep app-thematic-card.wiki-themed-card .title-text,
+:host ::ng-deep app-thematic-card.external-themed-card .title-icon,
+:host ::ng-deep app-thematic-card.wiki-themed-card .title-icon {
+  color: #111 !important;
+  background: transparent !important;
+  margin-right: 8px !important;
+  padding: 0 !important;
+}
+
+/* Use default collapse button coloring (primary tint) */
+:host ::ng-deep app-thematic-card.external-themed-card .collapse-btn,
+:host ::ng-deep app-thematic-card.wiki-themed-card .collapse-btn {
+  color: #111 !important;
+}
+
+:host ::ng-deep app-thematic-card.external-themed-card .collapse-btn mat-icon,
+:host ::ng-deep app-thematic-card.wiki-themed-card .collapse-btn mat-icon {
+  color: #111 !important;
+}
+
+/* Apply generic-list-display visual rules to external links rendered in child2 */
+:host ::ng-deep .child2 .listStyle {
+  margin: 0 0 2px 0;
+  padding: 0 0;
+  border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+}
+
+:host ::ng-deep .child2 .propertyStyle {
+  font-weight: 600;
+  color: #111;
+  font-size: 0.95rem;
+  display: inline; /* allow the label to wrap naturally and let the value flow on the same line */
+  margin-right: 4px;
+  margin-bottom: 0px;
+  padding: 0 1px;
+  border-radius: 4px;
+  white-space: normal; /* allow wrapping for long property labels */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+:host ::ng-deep .child2 .statementStyle {
+  padding: 2px 0 2px 0 !important;
+  font-size: 0.94rem;
+  color: #1f2d40;
+  line-height: 1.12;
+  margin: 1px 0 !important;
+  display: block;
+}
+
+/* Ensure the first inline container inside a statement behaves like in generic-list-display
+   so a long property label can wrap and the value follows on the same last line. */
+:host ::ng-deep .child2 .statementStyle > div:first-child {
+  display: inline;
+  padding-left: 10px; /* keep mainsnak/values close to the property label */
+}
+
+:host ::ng-deep .child2 .displayLayout,
+:host ::ng-deep .child2 .linkedItemText,
+:host ::ng-deep .child2 .displayLayout a {
+  display: inline;
+}
+
+:host ::ng-deep .child2 .displayLayout a,
+:host ::ng-deep .child2 .linkedItemText,
+:host ::ng-deep .child2 .displayLayout {
+  color: inherit;
+  text-decoration: underline;
+}
+
+:host ::ng-deep .child2 .description-text {
+  color: #5f6c7f;
+  font-size: 0.875rem;
+  margin-left: 2px;
+  font-style: italic;
+}
+
+/* Mobile: make child2 cards match child1 thematic cards exactly
+   - same inner padding and card-body rules
+   - same max-width/box-sizing so they don't appear wider
+   - same statement line-height to align visually with cards above
+*/
+@media (max-width: 700px) {
+  :host ::ng-deep .child2,
+  :host ::ng-deep .child2 > app-thematic-card,
+  :host ::ng-deep .child2 app-thematic-card,
+  :host ::ng-deep .child2 .card-body,
+  :host ::ng-deep .child2 .cardBackground {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+  }
+
+  /* Make the internal card content use the same padding as child1 thematic cards */
+  :host ::ng-deep .child2 app-thematic-card .card-body,
+  :host ::ng-deep .child2 .cardBackground {
+    padding: 8px 12px !important;
+  }
+
+  /* Ensure the thematic-card outer element itself doesn't introduce extra
+     horizontal gutters on small viewports (some wrappers add padding/margin).
+     Make the card span the available viewport width inside the app container. */
+  :host ::ng-deep .child2 app-thematic-card,
+  :host ::ng-deep .child2 > app-thematic-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* If mat-card or mat-card-content are used inside the thematic card, ensure
+     they do not add extra left/right padding that differs from child1. */
+  :host ::ng-deep .child2 app-thematic-card mat-card,
+  :host ::ng-deep .child2 app-thematic-card .mat-card-content,
+  :host ::ng-deep .child2 app-thematic-card mat-card-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  /* Align statement spacing/line-height with child1 so vertical rhythm is consistent */
+  :host ::ng-deep .child2 .statementStyle,
+  :host ::ng-deep .child2 .listStyle .statementStyle {
+    line-height: 1.45 !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    margin: 2px 0 !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Ensure property labels and inline values wrap like in child1 */
+  :host ::ng-deep .child2 .propertyStyle,
+  :host ::ng-deep .child2 .displayLayout,
+  :host ::ng-deep .child2 .linkedItemText,
+  :host ::ng-deep .child2 .displayLayout a {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Force wrapping inside child2 lists to avoid overflow/nowrap issues */
+:host ::ng-deep .child2 .displayLayout,
+:host ::ng-deep .child2 .displayLayout a,
+:host ::ng-deep .child2 .linkedItemText,
+:host ::ng-deep .child2 .propertyStyle,
+:host ::ng-deep .child2 .statementStyle > div:first-child,
+:host ::ng-deep .child2 a {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+}
+
+/* Very specific overrides for the 'Vous avez visité' list in the right column
+   to ensure anchors wrap and do not overflow their container. These rules
+   deliberately use !important and a highly specific selector to beat other
+   competing styles (flex, nowrap) coming from other files. */
+:host ::ng-deep .child2 .visited-list .selectedItemLink {
+  display: block !important; /* allow the anchor to take the full width so its text can wrap */
+  min-width: 0 !important;   /* allow flex parents to shrink this element */
+  width: 100% !important;
+  padding: 2px 6px !important;
+  box-sizing: border-box !important;
+}
+
+:host ::ng-deep .child2 .visited-list .selectedItemLink .selectedItemText,
+:host ::ng-deep .child2 .visited-list .selectedItemLink.linkedItemText,
+:host ::ng-deep .child2 .visited-list a.selectedItemLink {
+  display: block !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  line-height: 1.18 !important;
+}
+
+
+/* Hover effect for external link values: subtle background and primary color */
+:host ::ng-deep .child2 .displayLayout a:hover {
+  color: var(--color-primary, #3F51B5);
+  text-decoration: underline;
+  cursor: pointer;
+  /* Use inset box-shadow to simulate background without changing layout/line-height */
+  box-shadow: inset 0 0 0 9999px rgba(63, 81, 181, 0.06);
+  border-radius: 4px;
+}
+
+/* Mobile: force exact parity between child2 thematic cards and child1
+   Ensure this block appears after other child2 rules to reliably override them. */
+@media (max-width: 700px) {
+  /* Make the right column collapse into the same vertical flow as thematic-cards-grid */
+  :host ::ng-deep .child2,
+  :host ::ng-deep .child2 > app-thematic-card,
+  :host ::ng-deep .child2 app-thematic-card,
+  :host ::ng-deep .child2 .card-body,
+  :host ::ng-deep .child2 .cardBackground,
+  :host ::ng-deep .child2 .cardBackground.show-division {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+  }
+
+  /* Internal card content must match child1 thematic cards (same padding and spacing) */
+  :host ::ng-deep .child2 app-thematic-card .card-body,
+  :host ::ng-deep .child2 .cardBackground {
+    padding: 8px 12px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+
+  /* Remove the extra vertical gap between the columns when they stack by
+     removing the parent gap on small viewports. The thematic card grid gap
+     will retain spacing between cards. */
+  :host ::ng-deep .parent {
+    gap: 0 !important;
+  }
+
+  /* Add the same left/right gutters that child1 receives so child2 cards
+     don't span the full viewport width on mobile. These gutters mirror
+     the horizontal padding used by .thematic-cards-grid. */
+  :host ::ng-deep .child2 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure thematic cards inside child2 respect the gutters and do not
+     expand beyond them. */
+  :host ::ng-deep .child2 > app-thematic-card,
+  :host ::ng-deep .child2 app-thematic-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure the inter-card gap inside child2 matches .thematic-cards-grid */
+  :host ::ng-deep .child2 {
+    gap: 8px !important;
+  }
+
+  /* When stacked on mobile, remove the extra bottom padding of the main
+     thematic container so the vertical rhythm between the last card of
+     child1 and the first card of child2 matches the inter-card spacing. */
+  :host ::ng-deep .thematic-cards-grid {
+    padding-bottom: 0 !important;
+  }
+
+  /* Ensure each card in child2 has no extra margin that would change
+     the visual rhythm compared to child1. */
+  :host ::ng-deep .child2 > app-thematic-card {
+    margin: 0 !important;
+  }
+
+  /* Ensure mat-card elements inside thematic cards don't add extra gutters */
+  :host ::ng-deep .child2 app-thematic-card mat-card,
+  :host ::ng-deep .child2 app-thematic-card .mat-card-content,
+  :host ::ng-deep .child2 app-thematic-card mat-card-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  /* Titles, icons and collapse controls must visually match child1 */
+  :host ::ng-deep .child2 app-thematic-card .card-header,
+  :host ::ng-deep .child2 app-thematic-card .title-text,
+  :host ::ng-deep .child2 app-thematic-card .title-icon,
+  :host ::ng-deep .child2 app-thematic-card .collapse-btn,
+  :host ::ng-deep .child2 app-thematic-card .collapse-btn mat-icon {
+    padding: 6px 10px !important;
+    color: inherit !important;
+    background: transparent !important;
+    margin: 0 !important;
+  }
+
+  /* Remove any left inset that made child2 lists appear indented */
+  :host ::ng-deep .child2 .listStyle {
+    padding-left: 0 !important;
+    margin: 0 0 6px 0 !important;
+  }
+
+  /* Ensure statements and inline containers follow the same spacing/line-height */
+  :host ::ng-deep .child2 .statementStyle,
+  :host ::ng-deep .child2 .listStyle .statementStyle {
+    line-height: 1.45 !important;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    margin: 2px 0 !important;
+    font-size: 0.95rem !important;
+  }
+
+  :host ::ng-deep .child2 .statementStyle > div:first-child {
+    display: inline !important;
+    padding-left: 10px !important;
+  }
+
+  /* Ensure anchors behave like in child1 (no forced underline, wrap allowed) */
+  :host ::ng-deep .child2 .displayLayout a,
+  :host ::ng-deep .child2 .linkedItemText {
+    text-decoration: none !important;
+    color: inherit !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  /* Make visited-list entries visually identical to child1 lists */
+  :host ::ng-deep .child2 .visited-list,
+  :host ::ng-deep .child2 .visited-list .listStyle,
+  :host ::ng-deep .child2 .listStyle {
+    margin: 0 0 8px 0 !important;
+    padding: 0 !important;
+    border-bottom: 1px solid rgba(227, 232, 239, 0.4) !important;
+  }
+
+  :host ::ng-deep .child2 .visited-list .selectedItemLink {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 6px 8px !important;
+    box-sizing: border-box !important;
+  }
+
+}
