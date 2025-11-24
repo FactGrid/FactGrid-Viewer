@@ -15,9 +15,9 @@
             noEntriesFoundLabel="Not found"
           ></ngx-mat-select-search>
         </mat-option>
-        <mat-option *ngFor="let project of filteredProjectMulti | async" [value]="project.item.id">
-          {{ project.itemLabel.value }}
-        </mat-option>
+        @for (project of filteredProjectMulti | async) {
+          <mat-option [value]="project.item.id">{{ project.itemLabel.value }}</mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>
