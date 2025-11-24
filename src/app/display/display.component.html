@@ -82,7 +82,7 @@
       <div class="parent">
         <div class="child1">
           <!-- Vue d'accueil lorsqu'aucun item n'est chargé -->
-          <ng-container *ngIf="item; else homeView">
+          @if (item) {
             <div class="thematic-cards-grid">
               <!-- Carte d'informations générales avec fond teinté -->
               <app-thematic-card [collapsible]="false" class="info-themed-card">
@@ -314,7 +314,7 @@
                 <app-item-info [infoList]="infoList"></app-item-info>
               </app-thematic-card>
             </div>
-          </ng-container>
+          }
 
           <ng-template #homeView>
             <div class="thematic-cards-grid">

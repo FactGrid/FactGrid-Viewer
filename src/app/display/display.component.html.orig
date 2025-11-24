@@ -1,3 +1,5 @@
+@@
+`(backup of display.component.html before automated conversion)`
 
 <!-- Spinner de chargement centré -->
 @if (isSpinner) {
