@@ -88,7 +88,7 @@
                       >
                         <em>{{ Q.label }}:&nbsp;</em>
                       </span>
-                      @for (D of Q.display; let isLast = last; track D) {
+                      @for (D of Q.display; let $last = last; track D) {
                         <span>
                           @if (D.datatype === 'time') {
                             <span>
@@ -104,13 +104,13 @@
                           @if (D.datatype === 'string') {
                             <span>
                               {{ D.string }}
-                              @if (!isLast) { <span>,&nbsp;</span> }
+                              @if (!$last) { <span>,&nbsp;</span> }
                             </span>
                           }
                           @if (D.datatype === 'monolingualtext') {
                             <span>
                               {{ D.string.text }}
-                              @if (!isLast) { <span>,&nbsp;</span> }
+                              @if (!$last) { <span>,&nbsp;</span> }
                             </span>
                           }
                           <span>{{ D.amount }}</span>
@@ -121,13 +121,13 @@
                             <span>
                               <a href="{{ D.link }}" target="_blank">{{ D.string }}</a>
                             </span>
-                            @if (!isLast) { <span>,&nbsp;</span> }
+                            @if (!$last) { <span>,&nbsp;</span> }
                           }
                           @if (D.datatype === 'url') {
                             <span class="displayLayout">
                               <a href="{{ D.value }}" target="_blank">{{ D.value }}</a>
                             </span>
-                            @if (!isLast) { <span>,&nbsp;</span> }
+                            @if (!$last) { <span>,&nbsp;</span> }
                           }
                           @if (D.datatype === 'wikibase-item') {
                             <span>
@@ -162,15 +162,15 @@
                 Références
               </button>
               @if (openReferences.has(pidx + '-' + idx) && M['references2']) {
-                @for (Ma of M['references2']; let maIsLast = last; track Ma) {
+                @for (Ma of M['references2']; let $last = last; track Ma) {
                   <div class="referenceStyle">
-                    @for (N of Ma; let nIsLast = last; track N) {
+                    @for (N of Ma; let $last = last; track N) {
                       <div class="inlineStyle">
                         <span class="referenceProperty hover-bg-light" matTooltip="[{{ N.id }}] {{ N.description ? N.description + ' ' : '' }}" matTooltipPosition="right">
                           {{ N.label }}:
                         </span>
                         <span>
-                          @for (P of N.display; let pIsLast = last; track P.id) {
+                          @for (P of N.display; let $last = last; track P.id) {
                             @if (N.datatype === 'wikibase-item') {
                               <span>
                                 {{ P.label }}
@@ -179,25 +179,25 @@
                                 </mat-icon-button>
                                 &nbsp;&nbsp;&nbsp; {{ P.separator }}<span class="description-text">{{ P.description }}</span>
                               </span>
-                              @if (!pIsLast) { <span>,&nbsp;</span> }
+                              @if (!$last) { <span>,&nbsp;</span> }
                             }
                             @if (N.datatype === 'time') {
                               <span>
                                 {{ P }}
-                                @if (!pIsLast) { <span>,&nbsp;</span> }
+                                @if (!$last) { <span>,&nbsp;</span> }
                               </span>
                             }
                             @if (N.datatype === 'string') {
                               <span>
                                 {{ P }}
-                                @if (!pIsLast) { <span>,&nbsp;</span> }
+                                @if (!$last) { <span>,&nbsp;</span> }
                               </span>
                             }
                             @if (N.datatype === 'url') {
                               <span class="displayLayout">
                                 <a href="{{ P }}" target="_blank">{{ P }}</a>
                               </span>
-                              @if (!pIsLast) { <span>,&nbsp;</span> }
+                              @if (!$last) { <span>,&nbsp;</span> }
                             }
                             @if (N.datatype === 'external-id') {
                               <span>
@@ -207,7 +207,7 @@
                             }
                           }
                         </span>
-                        @if (!nIsLast) { <span>,&nbsp;</span> }
+                        @if (!$last) { <span>,&nbsp;</span> }
                       </div>
                     }
                   </div>
