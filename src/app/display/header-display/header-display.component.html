@@ -1,14 +1,14 @@
 <mat-card class="header-info-box">
   <mat-card-content>
-    <div class="factgrid-id" *ngIf="id && factGridUrl">
-      <div class="factgrid-id-inner">
-        <span class="propertyStyle">FactGrid:</span>
-        <a [href]="factGridUrl + id" target="_blank" rel="noopener" class="factgrid-link">{{
-          id
-        }}</a>
+    @if (id && factGridUrl) {
+      <div class="factgrid-id">
+        <div class="factgrid-id-inner">
+          <span class="propertyStyle">FactGrid:</span>
+          <a [href]="factGridUrl + id" target="_blank" rel="noopener" class="factgrid-link">{{ id }}</a>
+        </div>
       </div>
-    </div>
-    <ng-container *ngFor="let P of headerDetailOptimized; let pidx = index">
+    }
+    @for (P of headerDetailOptimized; track P.id) {
       <div class="listStyle">
         <span
           class="propertyStyle hover-bg-light"
@@ -17,63 +17,51 @@
         >
           {{ P.label }}:
         </span>
-        <ng-container *ngFor="let M of P.claims; let idx = index">
+        @for (M of P.claims; let idx = $index; track idx) {
           <div
             class="statementStyle value-info-box"
             [ngClass]="{ deprecated: M.rank === 'deprecated' }"
           >
-            <ng-container *ngIf="M.mainsnak.datatype === 'time'">
+            @if (M.mainsnak.datatype === 'time') {
               <span>{{ M.mainsnak.datavalue.value.date }}</span>
-              <ng-container
-                *ngIf="
-                  M.mainsnak.datavalue.value.calendarmodel ===
-                  'http://www.wikidata.org/entity/Q1985727'
-                "
-              >
-                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q220486']"
-                  >greg.</a
-                >
-              </ng-container>
-              <ng-container
-                *ngIf="
-                  M.mainsnak.datavalue.value.calendarmodel ===
-                  'http://www.wikidata.org/entity/Q1985786'
-                "
-              >
+              @if (M.mainsnak.datavalue.value.calendarmodel === 'http://www.wikidata.org/entity/Q1985727') {
+                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q220486']">greg.</a>
+              }
+              @if (M.mainsnak.datavalue.value.calendarmodel === 'http://www.wikidata.org/entity/Q1985786') {
                 <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q505980']">jul.</a>
-              </ng-container>
-            </ng-container>
-            <ng-container *ngIf="M.mainsnak.datatype === 'monolingualtext'">
+              }
+            }
+            @if (M.mainsnak.datatype === 'monolingualtext') {
               <span
                 >{{ M.mainsnak.datavalue.value.text }},
                 {{ M.mainsnak.datavalue.value.language }}</span
               >
-            </ng-container>
-            <ng-container *ngIf="M.mainsnak.datatype === 'string'">
+            }
+            @if (M.mainsnak.datatype === 'string') {
               <span class="displayLayout">{{ M.mainsnak.datavalue.value }}</span>
-            </ng-container>
-            <ng-container *ngIf="M.mainsnak.datatype === 'url'">
+            }
+            @if (M.mainsnak.datatype === 'url') {
               <span class="displayLayout">
                 <a href="{{ M.mainsnak.datavalue.value }}" target="_blank">{{
                   M.mainsnak.datavalue.value
                 }}</a>
               </span>
-            </ng-container>
+            }
             <span>{{ M.mainsnak.datavalue.value.amount }}</span>
-            <ng-container *ngIf="M.mainsnak.datatype === 'globe-coordinate'">
+            @if (M.mainsnak.datatype === 'globe-coordinate') {
               <span
                 >latitude: {{ M.mainsnak.datavalue.value.latitude }}, longitude:
                 {{ M.mainsnak.datavalue.value.longitude }}</span
               >
-            </ng-container>
-            <ng-container *ngIf="M.mainsnak.datatype === 'commonsMedia'">
+            }
+            @if (M.mainsnak.datatype === 'commonsMedia') {
               <div>
                 <span>
                   <img class="cover" src="{{ M.picture }}" (click)="openImage(M.picture)" />
                 </span>
               </div>
-            </ng-container>
-            <ng-container *ngIf="M.mainsnak.datatype === 'wikibase-item'">
+            }
+            @if (M.mainsnak.datatype === 'wikibase-item') {
               <span>
                 <a
                   class="linkedItemText"
@@ -83,15 +71,15 @@
                 >{{ M.mainsnak.separator
                 }}<span class="description-text">{{ M.mainsnak.description }}</span>
               </span>
-            </ng-container>
-            <ng-container *ngIf="M.rank === 'deprecated'">
+            }
+            @if (M.rank === 'deprecated') {
               <span class="warningDeprecated"> &nbsp;({{ M.rank }})</span>
-            </ng-container>
+            }
 
             <div class="qualifierStyle">
-              <ng-container *ngIf="M['qualifiers-order']">
+              @if (M['qualifiers-order']) {
                 <span>
-                  <ng-container *ngFor="let Q of M.qualifiers2">
+                  @for (Q of M.qualifiers2; track Q.id) {
                     <div>
                       <span
                         class="qualifierProperty hover-bg-light"
@@ -100,167 +88,132 @@
                       >
                         <em>{{ Q.label }}:&nbsp;</em>
                       </span>
-                      <ng-container *ngFor="let D of Q.display; let isLast = last">
+                      @for (D of Q.display; let isLast = last; track D) {
                         <span>
-                          <ng-container *ngIf="D.datatype === 'time'">
+                          @if (D.datatype === 'time') {
                             <span>
                               {{ D.date }}
-                              <ng-container
-                                *ngIf="D.calendar === 'http://www.wikidata.org/entity/Q1985727'"
-                              >
-                                <a
-                                  class="calendarStyle linkedItemText"
-                                  [routerLink]="['/item', 'Q220486']"
-                                  >greg.</a
-                                >
-                              </ng-container>
-                              <ng-container
-                                *ngIf="D.calendar === 'http://www.wikidata.org/entity/Q1985786'"
-                              >
-                                <a
-                                  class="calendarStyle linkedItemText"
-                                  [routerLink]="['/item', 'Q505980']"
-                                  >jul.</a
-                                >
-                              </ng-container>
+                              @if (D.calendar === 'http://www.wikidata.org/entity/Q1985727') {
+                                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q220486']">greg.</a>
+                              }
+                              @if (D.calendar === 'http://www.wikidata.org/entity/Q1985786') {
+                                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q505980']">jul.</a>
+                              }
                             </span>
-                          </ng-container>
-                          <ng-container *ngIf="D.datatype === 'string'">
+                          }
+                          @if (D.datatype === 'string') {
                             <span>
                               {{ D.string }}
-                              <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
+                              @if (!isLast) { <span>,&nbsp;</span> }
                             </span>
-                          </ng-container>
-                          <ng-container *ngIf="D.datatype === 'monolingualtext'">
+                          }
+                          @if (D.datatype === 'monolingualtext') {
                             <span>
                               {{ D.string.text }}
-                              <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
+                              @if (!isLast) { <span>,&nbsp;</span> }
                             </span>
-                          </ng-container>
+                          }
                           <span>{{ D.amount }}</span>
-                          <ng-container *ngIf="D.unit">
-                            <span
-                              ><em>&nbsp;({{ D.unit | unit | async }})</em>&nbsp;</span
-                            >
-                          </ng-container>
-                          <ng-container *ngIf="D.datatype === 'external-id'">
+                          @if (D.unit) {
+                            <span><em>&nbsp;({{ D.unit | unit | async }})</em>&nbsp;</span>
+                          }
+                          @if (D.datatype === 'external-id') {
                             <span>
                               <a href="{{ D.link }}" target="_blank">{{ D.string }}</a>
                             </span>
-                            <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
-                          </ng-container>
-                          <ng-container *ngIf="D.datatype === 'url'">
+                            @if (!isLast) { <span>,&nbsp;</span> }
+                          }
+                          @if (D.datatype === 'url') {
                             <span class="displayLayout">
                               <a href="{{ D.value }}" target="_blank">{{ D.value }}</a>
                             </span>
-                            <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
-                          </ng-container>
-                          <ng-container *ngIf="D.datatype === 'wikibase-item'">
+                            @if (!isLast) { <span>,&nbsp;</span> }
+                          }
+                          @if (D.datatype === 'wikibase-item') {
                             <span>
                               {{ D.label }}
-                              <mat-icon-button
-                                class="internalLink"
-                                [routerLink]="['/item', D.id]"
-                                (click)="$event.stopPropagation()"
-                              >
+                              <mat-icon-button class="internalLink" [routerLink]="['/item', D.id]" (click)="$event.stopPropagation()">
                                 <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                               </mat-icon-button>
-                              <ng-container *ngIf="D.description">
-                                {{ D.separator
-                                }}<span class="description-text">{{ D.description }}</span>
-                              </ng-container>
+                              @if (D.description) {
+                                {{ D.separator }}<span class="description-text">{{ D.description }}</span>
+                              }
                             </span>
-                          </ng-container>
-                          <ng-container *ngIf="D.datatype === 'commonsMedia'">
+                          }
+                          @if (D.datatype === 'commonsMedia') {
                             <div>
                               <span>
                                 <img src="{{ D.commons }}" (click)="openImage(D.commons)" />
                               </span>
                             </div>
-                          </ng-container>
+                          }
                         </span>
-                        <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
-                      </ng-container>
+                        @if (!isLast) { <span>,&nbsp;</span> }
+                      }
                     </div>
-                  </ng-container>
+                  }
                 </span>
-              </ng-container>
+              }
             </div>
 
-            <ng-container *ngIf="M['references2'] && M['references2'].length > 0">
-              <button
-                mat-button
-                class="references-toggle-btn"
-                (click)="toggleReferences(pidx + '-' + idx)"
-              >
-                <span
-                  class="triangle-icon"
-                  [class.open]="openReferences.has(pidx + '-' + idx)"
-                ></span>
+            @if (M['references2'] && M['references2'].length > 0) {
+              <button mat-button class="references-toggle-btn" (click)="toggleReferences(pidx + '-' + idx)">
+                <span class="triangle-icon" [class.open]="openReferences.has(pidx + '-' + idx)"></span>
                 Références
               </button>
-              <ng-container *ngIf="openReferences.has(pidx + '-' + idx) && M['references2']">
-                <ng-container *ngFor="let Ma of M['references2']; let isLast = last">
+              @if (openReferences.has(pidx + '-' + idx) && M['references2']) {
+                @for (Ma of M['references2']; let maIsLast = last; track Ma) {
                   <div class="referenceStyle">
-                    <ng-container *ngFor="let N of Ma; let isLast = last">
+                    @for (N of Ma; let nIsLast = last; track N) {
                       <div class="inlineStyle">
-                        <span
-                          class="referenceProperty hover-bg-light"
-                          matTooltip="[{{ N.id }}] {{ N.description ? N.description + ' ' : '' }}"
-                          matTooltipPosition="right"
-                        >
+                        <span class="referenceProperty hover-bg-light" matTooltip="[{{ N.id }}] {{ N.description ? N.description + ' ' : '' }}" matTooltipPosition="right">
                           {{ N.label }}:
                         </span>
                         <span>
-                          <ng-container *ngFor="let P of N.display; let isLast = last">
-                            <ng-container *ngIf="N.datatype === 'wikibase-item'">
+                          @for (P of N.display; let pIsLast = last; track P.id) {
+                            @if (N.datatype === 'wikibase-item') {
                               <span>
                                 {{ P.label }}
-                                <mat-icon-button
-                                  class="internalLink"
-                                  [routerLink]="['/item', P.id]"
-                                >
-                                  <mat-icon color="primary" [inline]="true"
-                                    >open_in_new</mat-icon
-                                  > </mat-icon-button
-                                >&nbsp;&nbsp;&nbsp; {{ P.separator
-                                }}<span class="description-text">{{ P.description }}</span>
+                                <mat-icon-button class="internalLink" [routerLink]="['/item', P.id]">
+                                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+                                </mat-icon-button>
+                                &nbsp;&nbsp;&nbsp; {{ P.separator }}<span class="description-text">{{ P.description }}</span>
                               </span>
-                              <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
-                            </ng-container>
-                            <ng-container *ngIf="N.datatype === 'time'">
+                              @if (!pIsLast) { <span>,&nbsp;</span> }
+                            }
+                            @if (N.datatype === 'time') {
                               <span>
                                 {{ P }}
-                                <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
+                                @if (!pIsLast) { <span>,&nbsp;</span> }
                               </span>
-                            </ng-container>
-                            <ng-container *ngIf="N.datatype === 'string'">
+                            }
+                            @if (N.datatype === 'string') {
                               <span>
                                 {{ P }}
-                                <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
+                                @if (!pIsLast) { <span>,&nbsp;</span> }
                               </span>
-                            </ng-container>
-                            <ng-container *ngIf="N.datatype === 'url'">
+                            }
+                            @if (N.datatype === 'url') {
                               <span class="displayLayout">
                                 <a href="{{ P }}" target="_blank">{{ P }}</a>
                               </span>
-                              <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
-                            </ng-container>
-                            <ng-container *ngIf="N.datatype === 'external-id'">
+                              @if (!pIsLast) { <span>,&nbsp;</span> }
+                            }
+                            @if (N.datatype === 'external-id') {
                               <span>
                                 <a href="{{ P.link }}" target="_blank">{{ P.value }}</a>
                               </span>
-                              <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
-                            </ng-container>
-                          </ng-container>
+                              @if (!pIsLast) { <span>,&nbsp;</span> }
+                            }
+                          }
                         </span>
-                        <ng-container *ngIf="!isLast"> <span>,&nbsp;</span> </ng-container>
+                        @if (!nIsLast) { <span>,&nbsp;</span> }
                       </div>
-                    </ng-container>
+                    }
                   </div>
-                </ng-container>
-              </ng-container>
-            </ng-container>
+                }
+              }
+            }
           </div>
         </ng-container>
       </div>
