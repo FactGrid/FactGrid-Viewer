@@ -1,32 +1,42 @@
-<header class="card-header" *ngIf="title || hasProjectedHeader || collapsible" [class.has-custom]="hasProjectedHeader">
-	<ng-container *ngIf="hasProjectedHeader; else autoHeader">
-		<ng-content select="[card-header]"></ng-content>
-	</ng-container>
-	<ng-template #autoHeader>
-		<div class="title" *ngIf="title || icon">
-			<mat-icon *ngIf="icon && !title" class="title-icon">{{icon}}</mat-icon>
-			<span class="title-text" *ngIf="title">{{title}}</span>
-		</div>
-		<div class="header-actions">
-			<button mat-button *ngIf="collapsible" (click)="toggle()" class="collapse-btn" [attr.aria-expanded]="!isCollapsed">
-				<mat-icon>{{ isCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
-				<span>{{ isCollapsed ? 'Afficher' : 'Masquer' }}</span>
-			</button>
-			<ng-content select="[card-actions]"></ng-content>
-		</div>
-	</ng-template>
+<header
+  class="card-header"
+  *ngIf="title || hasProjectedHeader || collapsible"
+  [class.has-custom]="hasProjectedHeader"
+>
+  <ng-container *ngIf="hasProjectedHeader; else autoHeader">
+    <ng-content select="[card-header]"></ng-content>
+  </ng-container>
+  <ng-template #autoHeader>
+    <div class="title" *ngIf="title || icon">
+      <mat-icon *ngIf="icon && !title" class="title-icon">{{ icon }}</mat-icon>
+      <span class="title-text" *ngIf="title">{{ title }}</span>
+    </div>
+    <div class="header-actions">
+      <button
+        mat-button
+        *ngIf="collapsible"
+        (click)="toggle()"
+        class="collapse-btn"
+        [attr.aria-expanded]="!isCollapsed"
+      >
+        <mat-icon>{{ isCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+        <span>{{ isCollapsed ? 'Afficher' : 'Masquer' }}</span>
+      </button>
+      <ng-content select="[card-actions]"></ng-content>
+    </div>
+  </ng-template>
 </header>
 <section class="card-body" [class.collapsed]="isCollapsed">
-	<ng-container *ngIf="!loading; else loaderTpl">
-		<div [@collapseExpand] *ngIf="!isCollapsed" class="body-inner">
-			<ng-content></ng-content>
-		</div>
-	</ng-container>
-	<ng-template #loaderTpl>
-		<div class="skeleton" aria-label="Chargement" role="status">
-			<div class="line w60"></div>
-			<div class="line w40"></div>
-			<div class="line w80"></div>
-		</div>
-	</ng-template>
+  <ng-container *ngIf="!loading; else loaderTpl">
+    <div [@collapseExpand] *ngIf="!isCollapsed" class="body-inner">
+      <ng-content></ng-content>
+    </div>
+  </ng-container>
+  <ng-template #loaderTpl>
+    <div class="skeleton" aria-label="Chargement" role="status">
+      <div class="line w60"></div>
+      <div class="line w40"></div>
+      <div class="line w80"></div>
+    </div>
+  </ng-template>
 </section>

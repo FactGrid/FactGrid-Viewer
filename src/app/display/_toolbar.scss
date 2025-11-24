@@ -8,7 +8,8 @@
   background: black !important;
 }
 
-.top-toolbar, .side-toolbar {
+.top-toolbar,
+.side-toolbar {
   min-height: 64px !important;
   height: auto !important;
   background: white !important;
@@ -100,7 +101,8 @@
   border-radius: 6px !important;
   min-height: 40px !important;
 
-  .mat-icon, mat-icon {
+  .mat-icon,
+  mat-icon {
     color: white !important;
     font-size: 20px !important;
   }

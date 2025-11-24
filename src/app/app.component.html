@@ -1,33 +1,56 @@
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 <div class="app-container">
-
   <mat-toolbar class="custom-toolbar">
     <!-- Logo supprimé, fond d'image appliqué à la toolbar -->
 
     <span class="toolbar-spacer"></span>
 
-    <button mat-icon-button class="toolbar-btn" (click)="toggleResearchField()" aria-label="Sélection du projet de recherche">
+    <button
+      mat-icon-button
+      class="toolbar-btn"
+      (click)="toggleResearchField()"
+      aria-label="Sélection du projet de recherche"
+    >
       <mat-icon>settings</mat-icon>
     </button>
 
-    <button mat-icon-button class="toolbar-btn" onClick="window.open('https://blog.factgrid.de/archives/2684')" aria-label="Informations">
+    <button
+      mat-icon-button
+      class="toolbar-btn"
+      onClick="window.open('https://blog.factgrid.de/archives/2684')"
+      aria-label="Informations"
+    >
       <mat-icon>info</mat-icon>
     </button>
 
-    <button mat-icon-button class="toolbar-btn" [matMenuTriggerFor]="menuLanguage" aria-label="Sélection de la langue">
+    <button
+      mat-icon-button
+      class="toolbar-btn"
+      [matMenuTriggerFor]="menuLanguage"
+      aria-label="Sélection de la langue"
+    >
       <mat-icon>language</mat-icon>
     </button>
     <mat-menu #menuLanguage="matMenu" class="language-menu">
       @for (lang of langs; track lang) {
-      <button (click)="langSetting(lang)" mat-menu-item [class.selected-lang]="lang.code === this.selectedLang">
-        @if (lang.flag) {
-        <img [src]="lang.flag" width="24" height="16" style="margin-right:8px; border-radius:2px;">
-        }
-        <span style="flex:1; font-weight: 500;">{{lang.name}}</span>
-        @if (lang.code === this.selectedLang) {
-        <mat-icon color="primary">check_circle</mat-icon>
-        }
-      </button>
+        <button
+          (click)="langSetting(lang)"
+          mat-menu-item
+          [class.selected-lang]="lang.code === this.selectedLang"
+        >
+          @if (lang.flag) {
+            <img
+              [src]="lang.flag"
+              width="24"
+              height="16"
+              style="margin-right: 8px; border-radius: 2px"
+            />
+          }
+          <span style="flex: 1; font-weight: 500">{{ lang.name }}</span>
+          @if (lang.code === this.selectedLang) {
+            <mat-icon color="primary">check_circle</mat-icon>
+          }
+        </button>
       }
     </mat-menu>
   </mat-toolbar>

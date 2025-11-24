@@ -5,8 +5,8 @@
 */
 :root {
   --panel-bg: #fafbfc;
-  --panel-border: rgba(31,45,64,0.12);
-  --panel-shadow: 0 6px 20px rgba(31,45,64,0.12);
+  --panel-border: rgba(31, 45, 64, 0.12);
+  --panel-shadow: 0 6px 20px rgba(31, 45, 64, 0.12);
   --panel-padding: 8px 12px;
   --panel-maxw: 700px;
   --panel-gap-mobile: 24px;
@@ -38,13 +38,13 @@
   cursor: pointer;
 }
 .cdk-overlay-pane.search-items_panel .search-items_row:hover {
-  background: rgba(31,45,64,0.04);
+  background: rgba(31, 45, 64, 0.04);
 }
 .cdk-overlay-pane.search-items_panel .search-items_row.clicked {
-  background: rgba(31,45,64,0.06);
+  background: rgba(31, 45, 64, 0.06);
 }
 .cdk-overlay-pane.search-items_panel .search-items_row.clicked:hover {
-  background: rgba(31,45,64,0.09);
+  background: rgba(31, 45, 64, 0.09);
 }
 
 .cdk-overlay-pane.search-items_panel .search-items_label {

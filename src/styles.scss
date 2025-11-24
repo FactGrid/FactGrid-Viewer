@@ -1,4 +1,3 @@
-
 @use '@angular/material' as mat;
 
 @include mat.core();
@@ -17,8 +16,8 @@
   --sparql-display-margin: 12px;
   --sparql-display-width: 100%;
   --sparql-display-max-width: 900px;
-  --md-sys-color-primary: #6699CC; // bleu personnalisé
-  --color-primary: #6699CC;
+  --md-sys-color-primary: #6699cc; // bleu personnalisé
+  --color-primary: #6699cc;
   --md-sys-color-secondary: #cc5500; // accent orange personnalisé
   --color-accent: #cc5500;
   --spacing-xs: 4px;
@@ -34,7 +33,6 @@
   --font-subtitle-weight: 400;
 }
 /* You can add global styles to this file, and also import other style files */
-
 
 // src/styles.scss
 
@@ -65,27 +63,31 @@ $my-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
 //$my-typography: mat.define-typography-config();
 
-$my-typography: mat.m2-define-typography-config($font-family:"Oxygen",
-$headline-1: mat.m2-define-typography-level(112px, 112px, 300, $letter-spacing: -0.05em),
-$headline-2: mat.m2-define-typography-level(56px, 56px, 400, $letter-spacing: -0.02em),
-$headline-3: mat.m2-define-typography-level(45px, 48px, 400, $letter-spacing: -0.005em),
-$headline-4: mat.m2-define-typography-level(34px, 40px, 400),
-$headline-5: mat.m2-define-typography-level(24px, 32px, 400),
-$subtitle-1: mat.m2-define-typography-level(20px, 28px, 400),
-$body-1: mat.m2-define-typography-level(16px, 18px, 400),
-$body-2: mat.m2-define-typography-level(12px, 14px, 400)
-)
-;
+$my-typography: mat.m2-define-typography-config(
+  $font-family: 'Oxygen',
+  $headline-1: mat.m2-define-typography-level(112px, 112px, 300, $letter-spacing: -0.05em),
+  $headline-2: mat.m2-define-typography-level(56px, 56px, 400, $letter-spacing: -0.02em),
+  $headline-3: mat.m2-define-typography-level(45px, 48px, 400, $letter-spacing: -0.005em),
+  $headline-4: mat.m2-define-typography-level(34px, 40px, 400),
+  $headline-5: mat.m2-define-typography-level(24px, 32px, 400),
+  $subtitle-1: mat.m2-define-typography-level(20px, 28px, 400),
+  $body-1: mat.m2-define-typography-level(16px, 18px, 400),
+  $body-2: mat.m2-define-typography-level(12px, 14px, 400),
+);
 
 /*Create the theme object (a Sass map containing all of the palettes).*/
 
-$my-theme: mat.m2-define-light-theme(( color:(
-    primary: $my-primary,
-    accent: $my-accent,
-    warn: $my-warn ),
- //   typography: $my-typography,
-    density: 0
-));  
+$my-theme: mat.m2-define-light-theme(
+  (
+    color: (
+      primary: $my-primary,
+      accent: $my-accent,
+      warn: $my-warn,
+    ),
+    //   typography: $my-typography,
+    density: 0,
+  )
+);
 
 @include mat.all-component-themes($my-theme);
 
@@ -113,7 +115,7 @@ $my-theme: mat.m2-define-light-theme(( color:(
   &.mat-warn,
   &.mat-button-disabled {
     &.mat-button-disabled {
-      $palette: if($property == "color", $foreground, $background);
+      $palette: if($property == 'color', $foreground, $background);
       #{$property}: theming.get-color-from-palette($palette, disabled-button);
     }
   }
@@ -126,27 +128,23 @@ $my-theme: mat.m2-define-light-theme(( color:(
   .mat-button,
   .mat-icon-button,
   .mat-stroked-button {
-    @include _theme-property($config, "color", text);
+    @include _theme-property($config, 'color', text);
   }
 }
-
-
-
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 
-
 //@include mat.typography-hierarchy($my-theme);
-
 
 /* You can add global styles to this file, and also import other style files */
 
-@import "../node_modules/leaflet/dist/leaflet.css";
+@import '../node_modules/leaflet/dist/leaflet.css';
 
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
-.mat-form-field-appearance-legacy.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label:not(.mat-empty):not(.mat-form-field-empty) {
+.mat-form-field-appearance-legacy.mat-form-field-can-float.mat-form-field-should-float
+  .mat-form-field-label:not(.mat-empty):not(.mat-form-field-empty) {
   font-size: 12px;
   // scale or font-size
 }
@@ -157,12 +155,9 @@ $my-theme: mat.m2-define-light-theme(( color:(
 //  border-color: var(--border-color) !important;
 //}
 
-
-
 //@include mat.button-theme($my-theme);
 
 //@include mat.form-field-theme($my-theme);
-
 
 // Define a custom typography config that overrides the font-family as well as the
 // `headlines` and `body-1` levels.
@@ -180,8 +175,8 @@ $my-theme: mat.m2-define-light-theme(( color:(
 
 /// @include mat.core($custom-typography);
 
-
-html, body {
+html,
+body {
   font-family: 'Oxygen';
   height: 100%;
   margin: 0;
@@ -213,9 +208,9 @@ html, body {
   min-width: 100px;
 }
 
-
-.mat-mdc-progress-spinner circle, .mat-mdc-progress-spinner circle {
-  stroke: #AD1457;
+.mat-mdc-progress-spinner circle,
+.mat-mdc-progress-spinner circle {
+  stroke: #ad1457;
 }
 
 .mat-mdc-form-field-infix {
@@ -246,7 +241,6 @@ html, body {
   white-space: nowrap;
 }
 
-
 .mat-autocomplete-panel .mat-option {
   font-size: 1.25em;
   color: #222;
@@ -255,8 +249,6 @@ html, body {
   padding-top: 2px;
   padding-bottom: 2px;
 }
-
-
 
 .autocomplete-option-content {
   /* Consolidated autocomplete styling (avoid duplicates). */
@@ -278,7 +270,6 @@ html, body {
   color: #222;
 }
 
-
 .mat-autocomplete-panel .mat-option:last-child {
   border-bottom: none;
 }
@@ -288,16 +279,14 @@ html, body {
   background: #f5f5f5;
 }
 
-
-
 .mat-form-field input.mat-input-element.search-input-style {
   font-size: 0.6em !important;
 }
 
 //css for components
 
-@mixin font-size($sizeValue:16px) {
- font-size: $sizeValue;
+@mixin font-size($sizeValue: 16px) {
+  font-size: $sizeValue;
 }
 
 /* Base globale de typographie pour tout le projet */
@@ -312,27 +301,31 @@ body {
   max-width: 900px; /* ou la largeur souhaitée */
 }
 
-
-@media screen and (max-width: 959.98px) { //change the padding for small screen
-  .cardBackground { // for styling card
+@media screen and (max-width: 959.98px) {
+  //change the padding for small screen
+  .cardBackground {
+    // for styling card
     height: fit-content;
     margin-right: 2px;
     margin-left: 2px;
   }
-  }
+}
 
-.listStyle{  // for styling the list of statements in a section
-    padding-left: 30px;
+.listStyle {
+  // for styling the list of statements in a section
+  padding-left: 30px;
 }
 
 @media (max-width: 959.98px) {
   //change of styling of the list of statements in a section for small screen
-  .listStyle { // for styling the list
+  .listStyle {
+    // for styling the list
     padding-left: 5px;
   }
 }
 
-.statementStyle { //size of the text of the statements
+.statementStyle {
+  //size of the text of the statements
   // avoid fixed viewport widths which can break component layouts;
   // allow container sizing and constrain to full width when needed
   width: auto;
@@ -343,38 +336,44 @@ body {
   padding-bottom: 2px; // from 3px
 }
 
-  .description-text { //color and weight for the descriptions of the statements and qualifiers
-    font-weight: 321;
-    color: #808080 !important;
-  }
+.description-text {
+  //color and weight for the descriptions of the statements and qualifiers
+  font-weight: 321;
+  color: #808080 !important;
+}
 
-  .qualifierProperty { //size and color of the label of the qualifier
-    font-size: 14px;
-    color: #3F51B5;
-    font-style: italic;
-  }
+.qualifierProperty {
+  //size and color of the label of the qualifier
+  font-size: 14px;
+  color: #3f51b5;
+  font-style: italic;
+}
 
-  .propertyStyle { // size and color or the label of the statement
-    color: #3F51B5;
-    @include font-size();
-    font-weight: 400;
-    padding-bottom: 4px;
-  }
+.propertyStyle {
+  // size and color or the label of the statement
+  color: #3f51b5;
+  @include font-size();
+  font-weight: 400;
+  padding-bottom: 4px;
+}
 
-  .qualifierStyle { //size of the text of the qualifier
-    font-size: 14px;
-    padding-left: 10px;
-  }
+.qualifierStyle {
+  //size of the text of the qualifier
+  font-size: 14px;
+  padding-left: 10px;
+}
 
-.referenceStyle { //size of the text of the reference
+.referenceStyle {
+  //size of the text of the reference
   font-size: 14px;
   padding-left: 20px;
 }
 
-.references-toggle-btn { // button for displaying/hiding references
+.references-toggle-btn {
+  // button for displaying/hiding references
   background: #fff; // white background
-  color: #AD1457; // red text
-  font-size: 0.80rem;
+  color: #ad1457; // red text
+  font-size: 0.8rem;
   font-style: italic;
   font-weight: 400;
   border: none; // no border
@@ -388,9 +387,10 @@ body {
   align-items: center;
   min-width: 0;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     background: #f6f8fd; // blue background on hover/focus
-    color: #AD1457; // red text
+    color: #ad1457; // red text
     box-shadow: none;
   }
 }
@@ -403,7 +403,7 @@ body {
   vertical-align: middle;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
-  border-left: 7px solid #AD1457; // red triangle
+  border-left: 7px solid #ad1457; // red triangle
   //border-left: 7px solid #3F51B5; // blue triangle
   transition: transform 0.2s;
 
@@ -423,25 +423,26 @@ body {
   display: inline-block;
 }
 
-  .calendarStyle { //size and style of the calendar type of the date
-    font-size: 10px;
-    font-style: italic;
-  }
+.calendarStyle {
+  //size and style of the calendar type of the date
+  font-size: 10px;
+  font-style: italic;
+}
 
+.warningDeprecated {
+  //warning for deprecated statements
+  font-size: 14px;
+  color: #ad1457;
+}
 
-  .warningDeprecated { //warning for deprecated statements
-    font-size: 14px;
-    color: #AD1457;
-  }
-
-  /* UNUSED: .qualifierTextColor { //color of the text of the qualifier
+/* UNUSED: .qualifierTextColor { //color of the text of the qualifier
     color: black;
   } */
 
-  .selectedItemText {
-    font-size: 16px; // from 16px
-    color: white;
-  }
+.selectedItemText {
+  font-size: 16px; // from 16px
+  color: white;
+}
 
 /* UNUSED: .selectedItemText2 {
   font-size: 16px;
@@ -450,7 +451,6 @@ body {
   // display:list-item;
   padding: 10 px;
   } */
-
 
 /* UNUSED: .search-center { //style for the links in the search components
    display: flex;
@@ -508,10 +508,9 @@ body {
   box-sizing: border-box;
   background: #fafbfc;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
   padding: 16px 0;
 }
-
 
 .items-list-container ul {
   list-style: none;
@@ -537,10 +536,9 @@ body {
   border-bottom: none;
 }
 
-
 .items-list-container li:hover {
   background: #f5f5f5;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.1);
 }
 
 @media (max-width: 700px) {
@@ -554,7 +552,6 @@ body {
     padding: 10px 8px;
   }
 }
-
 
 .filter-field {
   width: 300px; /* ou la largeur souhaitée */
@@ -580,8 +577,6 @@ body {
     min-width: 0;
   }
 }
-
-
 
 mat-form-field.search-field {
   /* Force la même hauteur pour les deux champs */
@@ -628,127 +623,132 @@ button.mat-icon-button .mat-icon {
   color: #888; // gris pour inactif
 }
 
-
 /* UNUSED: .search-center3 {
   display: flex;
   justify-content: center;
 } */
 
+.referenceProperty {
+  //style for the property labels of references
+  font-size: 14px;
+  color: #ad1457;
+  font-style: italic;
+}
 
-  .referenceProperty { //style for the property labels of references
-    font-size: 14px;
-    color: #AD1457;
-    font-style: italic;
-  }
+.labelTitlePadding {
+  //padding top on the labels of the statements
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
 
+.iframeTitlePadding {
+  //padding bottom on the title of the iframe
+  padding-bottom: 10px;
+}
 
-  .labelTitlePadding { //padding top on the labels of the statements
-    padding-top: 4px;
-    padding-bottom: 4px;
-  }
-
-  .iframeTitlePadding { //padding bottom on the title of the iframe
-    padding-bottom: 10px;
-  }
-
-
-  /* UNUSED: .mapPadding {
+/* UNUSED: .mapPadding {
     padding-top: 10px;
     padding-bottom: 10px;
   } */
 
-  .subTitlePadding { // padding-bottom on the subtitles
-    padding-bottom: 12px;
-  }
+.subTitlePadding {
+  // padding-bottom on the subtitles
+  padding-bottom: 12px;
+}
 
-  .matCardPadding { //padding top and left of the mat-card
-    padding-top: 2px;
-    // padding-left:3px;
-  }
+.matCardPadding {
+  //padding top and left of the mat-card
+  padding-top: 2px;
+  // padding-left:3px;
+}
 
-  .searchFormPadding {
-    padding-top: 15px;
-    padding-bottom: 15px;
-  }
-  //// styling the externalLinks
+.searchFormPadding {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+//// styling the externalLinks
 
+.externalLinksPadding {
+  //padding top and left of the externalLinks
+  padding-top: 10px;
+  padding-left: 3px;
+}
 
+.externalLinksText {
+  //styling of the external links and wikis
+  font-size: 16px;
+  padding: 10px;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  word-wrap: break-word;
+}
+////
 
-  .externalLinksPadding { //padding top and left of the externalLinks
-    padding-top: 10px;
-    padding-left: 3px;
-  }
+@mixin layout() {
+  padding-left: 10px;
+  padding-right: 10px;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  word-wrap: break-word;
+}
 
-  .externalLinksText { //styling of the external links and wikis
-    font-size: 16px;
-    padding: 10px;
-    display: table;
-    table-layout: fixed;
-    width: 100%;
-    word-wrap: break-word;
-  }
-  ////
+.displayLayout {
+  // layout des external links and others
+  @include layout();
+}
 
-  @mixin layout() {
+.url {
+  // display of the url
+  word-wrap: break-word;
+}
+
+@mixin title() {
+  padding-bottom: 5px;
+  line-height: 30px;
+}
+
+.divisionTitle {
+  //size and color of the subtitles
+  color: #ad1457;
+  font-size: 2rem;
+  font-weight: 100;
+  @include title();
+  margin-left: auto;
+  padding-top: 5px;
+  line-height: 0.8;
+}
+
+.bigTitle {
+  //size and color of the title of the page of specific projects
+  padding-top: 20px;
+  padding-bottom: 50px;
+  color: #3f51b5;
+  font-size: 3rem;
+  font-weight: 150;
+  @include title();
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 959.98px) {
+  //change the size of the title for small screen
+  .bigTitle {
+    //big title of the bibliography of HU
+    font-size: 2.5rem;
+    line-height: 45px;
+    padding-top: 60px;
     padding-left: 10px;
-    padding-right: 10px;
-    display: table;
-    table-layout: fixed;
-    width: 100%;
-    word-wrap: break-word;
   }
+}
 
-  .displayLayout { // layout des external links and others
-    @include layout();
-  }
-
-
-  .url { // display of the url
-    word-wrap: break-word;
-  }
-
-
-  @mixin title() {
-    padding-bottom: 5px;
-    line-height: 30px;
-  }
-
-
-  .divisionTitle { //size and color of the subtitles
-    color: #AD1457;
-    font-size: 2rem;
-    font-weight: 100;
-    @include title();
-    margin-left: auto;
-    padding-top: 5px;
-    line-height: 0.8;
-  }
-
-  .bigTitle { //size and color of the title of the page of specific projects
-    padding-top: 20px;
-    padding-bottom: 50px;
-    color: #3F51B5;
-    font-size: 3rem;
-    font-weight: 150;
-    @include title();
-    display: flex;
-    justify-content: center;
-  }
-
-  @media (max-width: 959.98px) { //change the size of the title for small screen
-    .bigTitle { //big title of the bibliography of HU
-      font-size: 2.5rem;
-      line-height: 45px;
-      padding-top: 60px;
-      padding-left: 10px;
-    }
-  }
-
-.FactGridTitle { //size and color of the title of the search page of FactGrid
+.FactGridTitle {
+  //size and color of the title of the search page of FactGrid
   font-family: 'Inter', 'Oxygen', Arial, sans-serif; // Inter prioritaire, fallback sur Oxygen
   padding-top: 20px;
   padding-bottom: 50px;
-  color: #3F51B5;
+  color: #3f51b5;
   font-size: 4rem;
   font-weight: 200;
   @include title();
@@ -756,7 +756,7 @@ button.mat-icon-button .mat-icon {
   justify-content: center;
 }
 
-@media (max-width:959.98px) {
+@media (max-width: 959.98px) {
   .FactGridTitle {
     font-size: 3.5rem;
     padding-top: 80px;
@@ -768,25 +768,23 @@ button.mat-icon-button .mat-icon {
   }
 }
 
-
-  .subTitle { // subtitle of the FactGrid title
-    padding-top: 20px;
-    display: flex;
-    justify-content: center;
-  }
+.subTitle {
+  // subtitle of the FactGrid title
+  padding-top: 20px;
+  display: flex;
+  justify-content: center;
+}
 
 .selected-research-field {
   display: flex;
   justify-content: center; /* centre horizontalement le contenu */
   align-items: center; /* centre verticalement si hauteur fixée */
-  color: #3F51B5;
+  color: #3f51b5;
   font-weight: 400;
   padding: 8px 30px;
   margin: 0 auto; /* centre le div si largeur fixée */
   padding-bottom: 40px; /* espace important sous l'élément */
 }
-
-
 
 .research-field-option {
   line-height: 1.1;
@@ -804,46 +802,53 @@ button.mat-icon-button .mat-icon {
   margin-top: 0;
 }
 
-  @media (min-width: 959.98px) { // change the size of the picture for big screen
-    /* UNUSED: .smallPicture {
+@media (min-width: 959.98px) {
+  // change the size of the picture for big screen
+  /* UNUSED: .smallPicture {
       width: 30%;
     } */
-  }
+}
 
-  .cover {
-    object-fit: cover;
-  }
+.cover {
+  object-fit: cover;
+}
 
-  @media (max-width: 959.98px) { //change the size of the subtitles for small screen
-    .divisionTitle { //size and color of the subtitles
-      font-size: 1.6rem;
-    }
-  }
-
-  .subdivisionTitle { //size and color of the subsubtitles
-    color: #AD1457;
+@media (max-width: 959.98px) {
+  //change the size of the subtitles for small screen
+  .divisionTitle {
+    //size and color of the subtitles
     font-size: 1.6rem;
-    font-weight: 100;
-    padding-bottom: 15px;
-    margin-left: auto;
   }
+}
 
-  @media (max-width: 959.98px) { //change the size of the subsubtitles for small screen
-    .subdivisionTitle { //size and color of the subsubtitles
-      font-size: 1.4rem;
-    }
+.subdivisionTitle {
+  //size and color of the subsubtitles
+  color: #ad1457;
+  font-size: 1.6rem;
+  font-weight: 100;
+  padding-bottom: 15px;
+  margin-left: auto;
+}
+
+@media (max-width: 959.98px) {
+  //change the size of the subsubtitles for small screen
+  .subdivisionTitle {
+    //size and color of the subsubtitles
+    font-size: 1.4rem;
   }
+}
 
-  .selectedListTitle { //size and color of the title of selectedList in display
-    color: white;
-    font-size: 1.6rem;
-    font-weight: 100;
-    padding: 5px;
-    margin-left: auto;
-    margin-bottom: 10px;
-  }
+.selectedListTitle {
+  //size and color of the title of selectedList in display
+  color: white;
+  font-size: 1.6rem;
+  font-weight: 100;
+  padding: 5px;
+  margin-left: auto;
+  margin-bottom: 10px;
+}
 
-  /* UNUSED: .selectedListTitle2 { //size and color of the title of selectedList in search
+/* UNUSED: .selectedListTitle2 { //size and color of the title of selectedList in search
     color: white;
     font-size: 1.2rem;
     font-weight: 400;
@@ -853,28 +858,30 @@ button.mat-icon-button .mat-icon {
     margin-bottom: 10px;
   } */
 
-  .listTitleStart {
-    align-self: start; // align left the subtitle linked page in the drawer
-    padding: 10px;
-  }
+.listTitleStart {
+  align-self: start; // align left the subtitle linked page in the drawer
+  padding: 10px;
+}
 
 .iFrameComment {
-  color: #3F51B5;
+  color: #3f51b5;
   font-size: 14px;
   text-overflow: ellipsis;
   word-break: normal;
-//  margin-top: 1rem;
+  //  margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
-  .searchListSize { // in the search-component for the list of items
-    margin-top: 50px;
-    justify-content: center;
-    width: 80%;
-    font-size: 16px;
-  }
+.searchListSize {
+  // in the search-component for the list of items
+  margin-top: 50px;
+  justify-content: center;
+  width: 80%;
+  font-size: 16px;
+}
 
-.search-itemSelected-mat-card { //style the card of selected items
+.search-itemSelected-mat-card {
+  //style the card of selected items
   height: fit-content;
   width: 600px;
   background-color: rgb(99, 98, 98);
@@ -887,11 +894,13 @@ button.mat-icon-button .mat-icon {
   display: block; // s'assure que le mat-card prend toute la largeur disponible
 }
 
-  @media (max-width: 959.98px) { //change the size of the subsubtitles for small screen
-    .search-itemSelected-mat-card { //size and color of the subsubtitles
-      width: 300px;
-    }
+@media (max-width: 959.98px) {
+  //change the size of the subsubtitles for small screen
+  .search-itemSelected-mat-card {
+    //size and color of the subsubtitles
+    width: 300px;
   }
+}
 
 .item-row {
   display: flex;
@@ -903,10 +912,9 @@ button.mat-icon-button .mat-icon {
 .item-row.clicked,
 .item-row.clicked:hover,
 .item-row.clicked:focus {
-  background-color: #e0e0e0 !important; 
+  background-color: #e0e0e0 !important;
   transition: background-color 0.2s;
 }
-
 
 .item-main {
   display: flex;
@@ -993,47 +1001,49 @@ button.mat-icon-button .mat-icon {
   color: #283593;
 }
 
-  .center { // use in the display-component for buttons on the drawer and new search
-    display: flex;
-    justify-content: center;
-    //  padding: 5px;
-    //  background-color: rgb(250, 245, 236);
-  }
+.center {
+  // use in the display-component for buttons on the drawer and new search
+  display: flex;
+  justify-content: center;
+  //  padding: 5px;
+  //  background-color: rgb(250, 245, 236);
+}
 
+.blueButton {
+  //use for the button opening the panel in the displayComponent
+  color: #283593;
+  font-size: medium;
+  line-height: 30px;
+}
 
-  .blueButton { //use for the button opening the panel in the displayComponent
-    color: #283593;
-    font-size: medium;
-    line-height: 30px;
-  }
+.whiteButton {
+  //use for you have visited
+  color: white;
+  font-size: medium;
+  line-height: 30px;
+}
 
+.basicSize {
+  font-size: 16px;
+}
 
-  .whiteButton { //use for you have visited
-    color: white;
-    font-size: medium;
-    line-height: 30px;
-  }
-
-  .basicSize {
-    font-size: 16px;
-  }
-
-  .spinner {
-    // background-color: rgb(250, 245, 236);
-    position: absolute;
-    top: 70%;
-    left: 50%;
-    -moz-transform: translateX(-50%) translateY(-50%);
-    -webkit-transform: translateX(-50%) translateY(-50%);
-    transform: translateX(-50%) translateY(-50%);
-  }
+.spinner {
+  // background-color: rgb(250, 245, 236);
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  -moz-transform: translateX(-50%) translateY(-50%);
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
 
 // Effet de survol générique pour fond clair
 .hover-bg-light {
   transition: background-color 0.2s;
 }
 
-.hover-bg-light:hover, .hover-bg-light:focus {
+.hover-bg-light:hover,
+.hover-bg-light:focus {
   background-color: #f5f5f5; // gris très clair
   cursor: pointer;
 }
@@ -1043,7 +1053,8 @@ button.mat-icon-button .mat-icon {
   transition: background-color 0.2s;
 }
 
-.hover-bg-accent:hover, .hover-bg-accent:focus {
+.hover-bg-accent:hover,
+.hover-bg-accent:focus {
   background-color: #e3eafc; // bleu très clair
   cursor: pointer;
 }
@@ -1063,7 +1074,10 @@ button.mat-icon-button .mat-icon {
 } */
 
 @media (max-width: 813px) {
-  mat-card-content, .mat-card-content, mat-card, .mat-card {
+  mat-card-content,
+  .mat-card-content,
+  mat-card,
+  .mat-card {
     padding-left: 8px !important;
   }
 }
@@ -1076,11 +1090,3 @@ button.mat-icon-button .mat-icon {
     padding-left: 0;
   }
 }
-
-
-
-
-
-
-
-

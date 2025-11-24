@@ -1,17 +1,17 @@
 @if (!compact) {
   <div class="cardBackground">
-    <div class="FactGridTitle" [class.with-researchfield-input]="showResearchField">
-      FactGrid
-    </div>
-    <div class="subTitle">{{subtitle}}</div>
-    @let selected = (selectedResearchField$ | async);
-    <div class="selected-research-field" style="display: flex; align-items: center; gap: 4px;">
+    <div class="FactGridTitle" [class.with-researchfield-input]="showResearchField">FactGrid</div>
+    <div class="subTitle">{{ subtitle }}</div>
+    @let selected = selectedResearchField$ | async;
+    <div class="selected-research-field" style="display: flex; align-items: center; gap: 4px">
       @if (selected?.name !== '-' && selected?.name !== '' && selected?.name !== 'all') {
         {{ selected.name }}
-        <button mat-icon-button
-                aria-label="Désélectionner le projet"
-                style="margin-left: 2px; font-size: 18px;"
-                (click)="clearProjectSearch()">
+        <button
+          mat-icon-button
+          aria-label="Désélectionner le projet"
+          style="margin-left: 2px; font-size: 18px"
+          (click)="clearProjectSearch()"
+        >
           <mat-icon>close</mat-icon>
         </button>
       }
@@ -24,7 +24,11 @@
   <div class="search-field-col" *ngIf="compact; else fullSearchField">
     <div class="compact-dual-search">
       <!-- Réserve toujours la place du sélecteur projet, même s'il n'est pas affiché -->
-      <div class="compact-search-wrapper compact-project" [class.invisible-project]="!showResearchField" matTooltip="{{ projectDisplayValue || projectsInput }}">
+      <div
+        class="compact-search-wrapper compact-project"
+        [class.invisible-project]="!showResearchField"
+        matTooltip="{{ projectDisplayValue || projectsInput }}"
+      >
         <ng-container *ngIf="showResearchField; else emptyProjectSelector">
           <mat-icon class="compact-search-icon">settings</mat-icon>
           <input
@@ -34,21 +38,31 @@
             [value]="projectDisplayValue"
             (focus)="onProjectInputFocus()"
             (blur)="onProjectInputBlur()"
-            (input)="onProjectInputChange($event)" />
+            (input)="onProjectInputChange($event)"
+          />
           <button
-            *ngIf="(selectedResearchField$ | async)?.id && (selectedResearchField$ | async)?.id !== 'all' && (selectedResearchField$ | async)?.id !== '-'"
+            *ngIf="
+              (selectedResearchField$ | async)?.id &&
+              (selectedResearchField$ | async)?.id !== 'all' &&
+              (selectedResearchField$ | async)?.id !== '-'
+            "
             type="button"
             class="compact-clear-btn"
             aria-label="Effacer le projet"
-            (click)="clearProjectSearch()">
+            (click)="clearProjectSearch()"
+          >
             ✕
           </button>
           <!-- Dropdown autocomplete simple -->
-          <div class="compact-project-dropdown" *ngIf="showProjectDropdown && (filteredResearchFields$ | async) as projects">
+          <div
+            class="compact-project-dropdown"
+            *ngIf="showProjectDropdown && (filteredResearchFields$ | async) as projects"
+          >
             <div
               *ngFor="let project of projects"
               class="compact-project-option"
-              (mousedown)="selectProjectCompact(project)">
+              (mousedown)="selectProjectCompact(project)"
+            >
               {{ project.name }}
             </div>
           </div>
@@ -63,13 +77,15 @@
         <input
           class="compact-search-input"
           [placeholder]="itemsInput"
-          [formControl]="searchInput" />
+          [formControl]="searchInput"
+        />
         <button
           *ngIf="searchInput.value"
           type="button"
           class="compact-clear-btn"
           aria-label="Effacer"
-          (click)="clearItemSearch()">
+          (click)="clearItemSearch()"
+        >
           ✕
         </button>
       </div>
@@ -81,7 +97,8 @@
       <mat-form-field
         appearance="outline"
         class="search-field project-field"
-        *ngIf="showResearchField">
+        *ngIf="showResearchField"
+      >
         <mat-label>{{ projectSearch }}</mat-label>
         <input
           #searchResearchFieldInput
@@ -89,16 +106,19 @@
           matInput
           [formControl]="searchResearchField"
           [matAutocomplete]="autoResearchField"
-          [placeholder]="projectsInput">
+          [placeholder]="projectsInput"
+        />
         <mat-autocomplete
           #autoResearchField="matAutocomplete"
           [displayWith]="displayResearchField"
           class="wide-autocomplete"
-          (optionSelected)="researchFieldSelect($event.option.value)">
+          (optionSelected)="researchFieldSelect($event.option.value)"
+        >
           <mat-option
             *ngFor="let researchField of filteredResearchFields$ | async"
             [value]="researchField"
-            class="research-field-option">
+            class="research-field-option"
+          >
             <span>{{ researchField.name }}</span>
             <span *ngIf="researchField.description" class="research-field-description">
               {{ researchField.description }}
@@ -108,46 +128,65 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="search-field main-search-field">
-        <input matInput
+        <input
+          matInput
           class="search-input-style"
           [placeholder]="itemsInput"
-          [formControl]="searchInput">
-        <button mat-icon-button
-                matSuffix
-                *ngIf="searchInput.value"
-                aria-label="Effacer"
-                (click)="clearItemSearch()">
+          [formControl]="searchInput"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          *ngIf="searchInput.value"
+          aria-label="Effacer"
+          (click)="clearItemSearch()"
+        >
           <mat-icon>close</mat-icon>
         </button>
         @if (
-        (selectedResearchField$ | async)?.id &&
-        (selectedResearchField$ | async)?.id !== 'all' &&
-        (selectedResearchField$ | async)?.id !== '-' &&
-        (selectedResearchField$ | async)?.id !== 'Q0'
-        ) {      
-        <div class="search-icons-row">
-          <button mat-icon-button
-                  class="small-icon-btn people-btn"
-                  (click)="togglePeopleFilter()"
-                  [class.active]="filterPeople === 'people'"
-                  [matTooltip]="filterPeople === 'people' ? filterPeopleDeactivate : filterPeopleActivate"
-                  aria-label="Filtrer par personnes">
-            <mat-icon class="small-icon"
-                      [ngClass]="filterPeople === 'people' ? 'icon-active' : 'icon-inactive'">
-              {{ filterPeople === 'people' ? 'person' : 'person_outline' }}
-            </mat-icon>
-          </button>
-          <button mat-icon-button
-                  class="small-icon-btn"
-                  (click)="togglePublicationFilter()"
-                  [class.active]="filterPublication === 'publication'"
-                  [matTooltip]="filterPublication === 'publication' ? filterPublicationDeactivate : filterPublicationActivate" aria-label="Filtrer par publications">
-            <mat-icon class="small-icon"
-                      [ngClass]="filterPublication === 'publication' ? 'icon-active' : 'icon-inactive'">
-              {{ filterPublication === 'publication' ? 'menu_book' : 'menu_book' }}
-            </mat-icon>
-          </button>
-        </div>
+          (selectedResearchField$ | async)?.id &&
+          (selectedResearchField$ | async)?.id !== 'all' &&
+          (selectedResearchField$ | async)?.id !== '-' &&
+          (selectedResearchField$ | async)?.id !== 'Q0'
+        ) {
+          <div class="search-icons-row">
+            <button
+              mat-icon-button
+              class="small-icon-btn people-btn"
+              (click)="togglePeopleFilter()"
+              [class.active]="filterPeople === 'people'"
+              [matTooltip]="
+                filterPeople === 'people' ? filterPeopleDeactivate : filterPeopleActivate
+              "
+              aria-label="Filtrer par personnes"
+            >
+              <mat-icon
+                class="small-icon"
+                [ngClass]="filterPeople === 'people' ? 'icon-active' : 'icon-inactive'"
+              >
+                {{ filterPeople === 'people' ? 'person' : 'person_outline' }}
+              </mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="small-icon-btn"
+              (click)="togglePublicationFilter()"
+              [class.active]="filterPublication === 'publication'"
+              [matTooltip]="
+                filterPublication === 'publication'
+                  ? filterPublicationDeactivate
+                  : filterPublicationActivate
+              "
+              aria-label="Filtrer par publications"
+            >
+              <mat-icon
+                class="small-icon"
+                [ngClass]="filterPublication === 'publication' ? 'icon-active' : 'icon-inactive'"
+              >
+                {{ filterPublication === 'publication' ? 'menu_book' : 'menu_book' }}
+              </mat-icon>
+            </button>
+          </div>
         }
       </mat-form-field>
     </div>
@@ -155,53 +194,49 @@
 </div>
 
 <!-- Affichage de la liste des items trouvés -->
-@let results = (searchResults$ | async);
+@let results = searchResults$ | async;
 @if (results && results.length > 0) {
-<!---@let filtered = (filteredItems$ | async);
+  <!---@let filtered = (filteredItems$ | async);
 @if (isArray(filtered) && filtered.length === 0) {-->
-<div class="items-list-container">
-  <div class="items-list-inner">
-    @let filtered = (filteredItems$ | async);
-    @let searchValue = (searchInputValue$ | async);
-    @if (searchValue && searchValue.length > 0) {
-    <div class="items-filter-row">
-      <div class="compact-filter-wrapper">
-        <span class="compact-filter-label">{{filterResults}}</span>
-        <input
-          class="compact-filter-input"
-          type="text"
-          [formControl]="filterInput" />
-      </div>
-      <span class="item-count compact-item-count">
-        {{ filtered.length }} {{dataOptions}}
-      </span>
-    </div>
-    }
-
-
-    <ul>
-      @for (item of filteredItems$ | async; track item.id) {
-    <li class="item-row"
-      [class.clicked]="clickedItemId === item.id"
-      (click)="onItemRowClick(item.id, $event)"
-      tabindex="0"
-      style="cursor:pointer;">
-        <div class="item-main">
-          <span class="item-label">
-            {{ item.label }}
+  <div class="items-list-container">
+    <div class="items-list-inner">
+      @let filtered = filteredItems$ | async;
+      @let searchValue = searchInputValue$ | async;
+      @if (searchValue && searchValue.length > 0) {
+        <div class="items-filter-row">
+          <div class="compact-filter-wrapper">
+            <span class="compact-filter-label">{{ filterResults }}</span>
+            <input class="compact-filter-input" type="text" [formControl]="filterInput" />
+          </div>
+          <span class="item-count compact-item-count">
+            {{ filtered.length }} {{ dataOptions }}
           </span>
-          @if (item.description) {
-          <span class="item-description">{{ item.description }}</span>
-          }
         </div>
-      </li>
       }
-    </ul>
 
+      <ul>
+        @for (item of filteredItems$ | async; track item.id) {
+          <li
+            class="item-row"
+            [class.clicked]="clickedItemId === item.id"
+            (click)="onItemRowClick(item.id, $event)"
+            tabindex="0"
+            style="cursor: pointer"
+          >
+            <div class="item-main">
+              <span class="item-label">
+                {{ item.label }}
+              </span>
+              @if (item.description) {
+                <span class="item-description">{{ item.description }}</span>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
   </div>
-</div>
 }
-
 
 <!--
   Bloc "visites précédentes" et liens avancés.
@@ -245,6 +280,3 @@
   </div>
 }
 -->
-
-
-

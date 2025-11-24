@@ -132,7 +132,8 @@
   border-radius: 0;
   box-sizing: border-box;
 
-  .mat-button, button {
+  .mat-button,
+  button {
     padding-left: 0 !important;
     margin-left: 0 !important;
     color: var(--primary-color);
@@ -289,11 +290,35 @@
   /* Very specific overrides scoped to the generic-list display inside the
      thematic cards to beat component-local selectors that set large
      line-heights (useful when those selectors use !important). */
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child > span,
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child .linkedItemText,
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child .displayLayout,
+  :host
+    ::ng-deep
+    .thematic-cards-grid
+    app-generic-list-display
+    .statementStyle
+    > div:first-child
+    > span,
+  :host
+    ::ng-deep
+    .thematic-cards-grid
+    app-generic-list-display
+    .statementStyle
+    > div:first-child
+    .linkedItemText,
+  :host
+    ::ng-deep
+    .thematic-cards-grid
+    app-generic-list-display
+    .statementStyle
+    > div:first-child
+    .displayLayout,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child a,
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .statementStyle > div:first-child .description-text {
+  :host
+    ::ng-deep
+    .thematic-cards-grid
+    app-generic-list-display
+    .statementStyle
+    > div:first-child
+    .description-text {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
@@ -345,7 +370,12 @@
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle span,
-    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .description-text {
+    :host
+      ::ng-deep
+      .thematic-cards-grid
+      app-generic-list-display
+      .qualifierStyle
+      .description-text {
       line-height: 1.02 !important;
     }
   }
@@ -357,7 +387,7 @@
     color: #5f6c7f;
     line-height: 1.4;
     padding: 1px 0 1px 8px;
-    border-left: 2px solid var(--color-primary, #6699CC);
+    border-left: 2px solid var(--color-primary, #6699cc);
   }
 
   .qualifierProperty {
@@ -374,13 +404,13 @@
     font-size: 0.85rem;
     color: #5f6c7f;
     background-color: rgba(173, 20, 87, 0.02);
-    border-left: 3px solid var(--color-primary, #6699CC);
+    border-left: 3px solid var(--color-primary, #6699cc);
     border-radius: 0 4px 4px 0;
     line-height: 1.35;
   }
 
   .referenceProperty {
-    color: #AD1457;
+    color: #ad1457;
     font-size: inherit;
     font-style: italic;
     margin-right: 4px;
@@ -392,7 +422,7 @@
     padding: 2px 8px;
     font-size: 0.85rem;
     font-weight: 400;
-    color: var(--color-primary, #3F51B5) !important;
+    color: var(--color-primary, #3f51b5) !important;
     background-color: transparent; /* neutralisé */
     border: none; /* neutralisé */
     border-radius: 0;
@@ -408,7 +438,7 @@
     vertical-align: middle;
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
-    border-left: 8px solid var(--color-primary, #3F51B5);
+    border-left: 8px solid var(--color-primary, #3f51b5);
     transition: transform 150ms ease;
   }
 
@@ -441,7 +471,7 @@
 
   .calendarStyle {
     font-size: 0.8rem;
-    color: #AD1457;
+    color: #ad1457;
     margin-left: 6px;
     font-style: italic;
   }
@@ -547,9 +577,30 @@
 }
 
 /* Règle spécifique pour annuler max-width */
-:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-sparql-display .cardBackground,
-:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-generic-list-display .cardBackground,
-:host ::ng-deep .thematic-cards-grid > app-thematic-card > section.card-body .body-inner app-iframes-display .cardBackground {
+:host
+  ::ng-deep
+  .thematic-cards-grid
+  > app-thematic-card
+  > section.card-body
+  .body-inner
+  app-sparql-display
+  .cardBackground,
+:host
+  ::ng-deep
+  .thematic-cards-grid
+  > app-thematic-card
+  > section.card-body
+  .body-inner
+  app-generic-list-display
+  .cardBackground,
+:host
+  ::ng-deep
+  .thematic-cards-grid
+  > app-thematic-card
+  > section.card-body
+  .body-inner
+  app-iframes-display
+  .cardBackground {
   margin: 0 !important;
   max-width: none !important;
   width: 100% !important;
@@ -657,74 +708,74 @@
   padding: 2px 0 !important;
 }
 
-  /* Selected items in child2 should look like other child2 lists; link on label without underline */
-  :host ::ng-deep .child2 .visited-list .listStyle {
-    margin: 0 0 2px 0;
-    padding: 0 0;
-    border-bottom: 1px solid rgba(227, 232, 239, 0.4);
-  }
+/* Selected items in child2 should look like other child2 lists; link on label without underline */
+:host ::ng-deep .child2 .visited-list .listStyle {
+  margin: 0 0 2px 0;
+  padding: 0 0;
+  border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+}
 
-  :host ::ng-deep .child2 .visited-list .propertyStyle {
-    font-weight: 600;
-    color: #111;
-    font-size: 0.95rem;
-    display: inline;
-    margin-right: 4px;
-    padding: 0 1px;
-    white-space: normal;
-  }
+:host ::ng-deep .child2 .visited-list .propertyStyle {
+  font-weight: 600;
+  color: #111;
+  font-size: 0.95rem;
+  display: inline;
+  margin-right: 4px;
+  padding: 0 1px;
+  white-space: normal;
+}
 
-  :host ::ng-deep .child2 .visited-list .statementStyle {
-    padding: 2px 0 2px 0 !important;
-    font-size: 0.94rem;
-    color: #1f2d40;
-    line-height: 1.12;
-    margin: 1px 0 !important;
-    display: block;
-  }
+:host ::ng-deep .child2 .visited-list .statementStyle {
+  padding: 2px 0 2px 0 !important;
+  font-size: 0.94rem;
+  color: #1f2d40;
+  line-height: 1.12;
+  margin: 1px 0 !important;
+  display: block;
+}
 
-  /* Tighten vertical spacing and line-height for child2 lists (external, wikis, visited) */
-  :host ::ng-deep .child2 .listStyle .statementStyle,
-  :host ::ng-deep .child2 .visited-list .statementStyle,
-  :host ::ng-deep .child2 .wiki-themed-card .statementStyle,
-  :host ::ng-deep .child2 .external-themed-card .statementStyle {
-    line-height: 1.14 !important; /* increased interline for breathing room */
-    padding-top: 4px !important;
-    padding-bottom: 4px !important;
-    margin: 2px 0 !important;
-    font-size: 0.95rem;
-  }
+/* Tighten vertical spacing and line-height for child2 lists (external, wikis, visited) */
+:host ::ng-deep .child2 .listStyle .statementStyle,
+:host ::ng-deep .child2 .visited-list .statementStyle,
+:host ::ng-deep .child2 .wiki-themed-card .statementStyle,
+:host ::ng-deep .child2 .external-themed-card .statementStyle {
+  line-height: 1.14 !important; /* increased interline for breathing room */
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  margin: 2px 0 !important;
+  font-size: 0.95rem;
+}
 
-  /* Slightly increase separator space between successive list entries to avoid cramping */
-  :host ::ng-deep .child2 .listStyle {
-    margin: 0 0 6px 0 !important;
-    padding: 0 0 0 8px !important; /* add left inset so items are not flush with card edge */
-  }
+/* Slightly increase separator space between successive list entries to avoid cramping */
+:host ::ng-deep .child2 .listStyle {
+  margin: 0 0 6px 0 !important;
+  padding: 0 0 0 8px !important; /* add left inset so items are not flush with card edge */
+}
 
-  /* Add a little top margin for the first list item to create breathing room under the header */
-  :host ::ng-deep .child2 .listStyle:first-child {
-    margin-top: 6px !important;
-  }
+/* Add a little top margin for the first list item to create breathing room under the header */
+:host ::ng-deep .child2 .listStyle:first-child {
+  margin-top: 6px !important;
+}
 
-  /* Ensure visited-list first element also gets top spacing when wrapped in visited-list container */
-  :host ::ng-deep .child2 .visited-list .listStyle:first-child {
-    margin-top: 6px !important;
-  }
+/* Ensure visited-list first element also gets top spacing when wrapped in visited-list container */
+:host ::ng-deep .child2 .visited-list .listStyle:first-child {
+  margin-top: 6px !important;
+}
 
-  /* selected item link: no underline on label, inherit color; subtle hover like external links */
-  :host ::ng-deep .child2 a.selectedItemLink {
-    text-decoration: none !important;
-    color: inherit !important;
-    display: inline;
-    padding: 0 1px;
-    border-radius: 4px;
-  }
+/* selected item link: no underline on label, inherit color; subtle hover like external links */
+:host ::ng-deep .child2 a.selectedItemLink {
+  text-decoration: none !important;
+  color: inherit !important;
+  display: inline;
+  padding: 0 1px;
+  border-radius: 4px;
+}
 
-  :host ::ng-deep .child2 a.selectedItemLink:hover {
-    color: var(--color-primary, #3F51B5) !important;
-    cursor: pointer;
-    box-shadow: inset 0 0 0 9999px rgba(63, 81, 181, 0.06);
-  }
+:host ::ng-deep .child2 a.selectedItemLink:hover {
+  color: var(--color-primary, #3f51b5) !important;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 9999px rgba(63, 81, 181, 0.06);
+}
 
 /* Ensure child2 uses same inter-card gap as thematic-cards-grid in child1 */
 :host ::ng-deep .child2 {
@@ -742,9 +793,13 @@
 :host ::ng-deep app-thematic-card.external-themed-card .card-header,
 :host ::ng-deep app-thematic-card.wiki-themed-card .card-header {
   /* subtle primary-tinted gradient, non-intrusive */
-  background: linear-gradient(90deg, rgba(63,81,181,0.06) 0%, rgba(63,81,181,0.03) 100%) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(63, 81, 181, 0.06) 0%,
+    rgba(63, 81, 181, 0.03) 100%
+  ) !important;
   color: #111 !important;
-  border-bottom: 1px solid rgba(63,81,181,0.06) !important;
+  border-bottom: 1px solid rgba(63, 81, 181, 0.06) !important;
   padding: 6px 10px !important;
   border-radius: 6px 6px 0 0 !important;
 }
@@ -920,7 +975,7 @@
    competing styles (flex, nowrap) coming from other files. */
 :host ::ng-deep .child2 .visited-list .selectedItemLink {
   display: block !important; /* allow the anchor to take the full width so its text can wrap */
-  min-width: 0 !important;   /* allow flex parents to shrink this element */
+  min-width: 0 !important; /* allow flex parents to shrink this element */
   width: 100% !important;
   padding: 2px 6px !important;
   box-sizing: border-box !important;
@@ -937,10 +992,9 @@
   line-height: 1.18 !important;
 }
 
-
 /* Hover effect for external link values: subtle background and primary color */
 :host ::ng-deep .child2 .displayLayout a:hover {
-  color: var(--color-primary, #3F51B5);
+  color: var(--color-primary, #3f51b5);
   text-decoration: underline;
   cursor: pointer;
   /* Use inset box-shadow to simulate background without changing layout/line-height */
@@ -1090,5 +1144,4 @@
     padding: 6px 8px !important;
     box-sizing: border-box !important;
   }
-
 }

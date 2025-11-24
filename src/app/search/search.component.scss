@@ -1,34 +1,33 @@
-
-
 .search-container {
   display: flex;
   flex-direction: column;
- 
 }
 
-.FactGrid-div { // box styling the factgrid title
+.FactGrid-div {
+  // box styling the factgrid title
   height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-  
-.FactGridTitle-div {  //font of the title FactGrid
-    padding-left:10px;
-    color:#AD1457;
-    font-weight: 600;
-    font-size: 60px;
-  }
 
+.FactGridTitle-div {
+  //font of the title FactGrid
+  padding-left: 10px;
+  color: #ad1457;
+  font-weight: 600;
+  font-size: 60px;
+}
 
-.search-label { // style of the labels of the items
+.search-label {
+  // style of the labels of the items
   font-weight: bold;
 }
 
-.search-itemSelected { // put a margin on top of the box of selected items
+.search-itemSelected {
+  // put a margin on top of the box of selected items
   margin-top: 50px;
 }
-
 
 .selected-project-label {
   font-size: 0.95em;
@@ -39,8 +38,6 @@
   box-sizing: border-box;
 }
 
-
-
 //style the card of selected items
 
 :host {
@@ -49,13 +46,9 @@
   min-height: 100%;
 }
 
-
- 
-
 .selectedItemSize {
-   font-size: 14px;
+  font-size: 14px;
 }
-
 
 // Réduit l’interligne entre les deux mat-hint
 mat-form-field .mat-hint {
@@ -64,7 +57,6 @@ mat-form-field .mat-hint {
   line-height: 0.5 !important;
   padding: 0 !important;
 }
-
 
 // Affine le style du label de la checkbox (ligne déjà présente)
 mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
@@ -106,25 +98,16 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 }
 
 .icon-active {
-  color: #AD1457 !important; // rouge vif
+  color: #ad1457 !important; // rouge vif
 }
 
 .icon-inactive {
-  color: #3F51B5 !important; // bleu vif
+  color: #3f51b5 !important; // bleu vif
 }
-
 
 .no-results {
   text-align: center;
   margin-top: 24px;
-  color: #AD1457;
+  color: #ad1457;
   font-size: 1.1em;
 }
-
-
-
-
-
-
-
-

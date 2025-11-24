@@ -1,8 +1,7 @@
-
 <!-- Spinner de chargement centré -->
 @if (isSpinner) {
   <div class="spinner">
-    <mat-spinner diameter=50 mode="indeterminate"></mat-spinner>
+    <mat-spinner diameter="50" mode="indeterminate"></mat-spinner>
   </div>
 }
 
@@ -17,312 +16,455 @@
 <!-- Conteneur principal avec drawer -->
 @if (!isSpinner && !isError) {
   <mat-drawer-container class="drawer-container" [autosize]="true">
-    <mat-drawer #drawer [mode]="isMobile ? 'over' : 'push'" [opened]="drawerOpened" position="start" class="app-drawer">
-          <mat-toolbar class="side-toolbar">
-            <span class="toolbar-text">{{linkedPagesTitle}}</span>
-            <span class="example-spacer"></span>
-            <button mat-button class="close-btn" (click)="drawerOpened = false; drawer.close()" matTooltip="Fermer le panneau">
-              <mat-icon>close</mat-icon>
-              <span>Fermer</span>
-            </button>
-          </mat-toolbar>
-          <div class="info-card-content">
-            @for (link of linkedItems; track link.id) {
-              <div class="selectedItemRow">
-                <a class="selectedItemText" [routerLink]="['/item', link.id]" (click)="isMobile ? drawer.close() : null">{{link.label}}</a>
-              </div>
-            }
+    <mat-drawer
+      #drawer
+      [mode]="isMobile ? 'over' : 'push'"
+      [opened]="drawerOpened"
+      position="start"
+      class="app-drawer"
+    >
+      <mat-toolbar class="side-toolbar">
+        <span class="toolbar-text">{{ linkedPagesTitle }}</span>
+        <span class="example-spacer"></span>
+        <button
+          mat-button
+          class="close-btn"
+          (click)="drawerOpened = false; drawer.close()"
+          matTooltip="Fermer le panneau"
+        >
+          <mat-icon>close</mat-icon>
+          <span>Fermer</span>
+        </button>
+      </mat-toolbar>
+      <div class="info-card-content">
+        @for (link of linkedItems; track link.id) {
+          <div class="selectedItemRow">
+            <a
+              class="selectedItemText"
+              [routerLink]="['/item', link.id]"
+              (click)="isMobile ? drawer.close() : null"
+              >{{ link.label }}</a
+            >
           </div>
-        </mat-drawer>
-  <mat-drawer-content>
-          <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
-            <mat-toolbar class="top-toolbar">
-            <button mat-button class="drawer-toggle"
-        (click)="drawerOpened = !drawerOpened; drawer.toggle()"
-        [disabled]="!(linkedItems?.length)"
-        [attr.aria-expanded]="drawer.opened"
-        [attr.aria-pressed]="drawer.opened"
-        matTooltip="Ouvrir/fermer le panneau des pages liées">
-              <mat-icon class="icon" style="color: #1565c0;">{{ drawerOpened ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-              <span>{{linkedPagesTitle}}<ng-container *ngIf="linkedItems?.length"> ({{linkedItems.length}})</ng-container></span>
-            </button>
-            <span class="example-spacer"></span>
-            <!-- Barre de recherche intégrée en mode compact (état antérieur) -->
-            <app-search
-              [compact]="true"
-              (itemSelected)="onSearchItemSelected($event)">
-            </app-search>
-          </mat-toolbar>
-          <div class="toolbar-band"></div>
-          <div class="parent">
-            <div class="child1">
-              <!-- Vue d'accueil lorsqu'aucun item n'est chargé -->
-              <ng-container *ngIf="item; else homeView">
-              <div class="thematic-cards-grid">
-                <!-- Carte d'informations générales avec fond teinté -->
-                <app-thematic-card [collapsible]="false" class="info-themed-card">
-                  <div class="info-themed-content">
-                    <div class="itemTitle">{{ label }}</div>
-                    <div class="aliases" *ngIf="aliases?.length">{{ aliases | join:', ' }}</div>
-                    <div class="itemDescription" *ngIf="description">{{ description }}</div>
-                    <div class="header-container">
-                      <app-header-display [headerDetail]="headerDetail" [id]="id" [factGridUrl]="factGridUrl"></app-header-display>
-                    </div>
-                  </div>
-                </app-thematic-card>
-              @if (isIdentity) {
-                  <app-thematic-card [collapsible]="true" [title]="identityTitle">
-                    <app-generic-list-display [title]="identityTitle" [items]="identity"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-                @if (isPerson) {
-                  <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [title]="'Biographie'">
-                    <app-generic-list-display [title]="'Biographie'" [items]="lifeAndFamily"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-                @if (trans !== "") { <app-thematic-card><app-text-display [trans]="trans"></app-text-display></app-thematic-card> } <!----transcription-->
-                @if (isTraining) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="training">
-                    <app-generic-list-display  [title]="training" [items]="education"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-                @if (isCareer) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerTitle">
-                    <app-generic-list-display [title]="careerTitle" [items]="careerAndActivities"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-                @if (isSociability) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sociabilityTitle">
-                    <app-generic-list-display [title]="sociabilityTitle" [items]="sociabilityAndCulture"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-                @if (isCulture) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cultureTitle">
-                    <app-generic-list-display [title]="cultureTitle" [items]="culture"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-
-               @if (isCareerStatement) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerStatementTitle">
-                    <app-generic-list-display [title]="careerStatementTitle" [items]="careerStatementDetail"></app-generic-list-display>
-                  </app-thematic-card>
-                }
-
-                @if (isMain) {
-                    <app-thematic-card collapsible="true" [title]="mainTitle" icon="star" [startCollapsed]="lifeAndFamily?.length">
-                        <div class="thematic-card-header-bar"></div>
-                      <app-generic-list-display [title]="''" [items]="mainList"></app-generic-list-display>
-                      </app-thematic-card>
-                }
-                @if (isIframes) { <app-thematic-card><app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display></app-thematic-card> }
-                <ng-container *ngIf="sparqlCards$ | async as cards">
-                  <div *ngIf="cards">
-                    <ng-container *ngIf="cards.sparql0.list?.length">
-                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql0.title">
-                        <div class="thematic-card-header-bar"></div>
-                        <app-sparql-display
-                          #sparqlDisplay0
-                          sparqlType="sparql0"
-                          [sparqlData]="cards.sparql0.list"
-                          [sparqlSubject]="cards.sparql0.subject"
-                          [langService]="lang"
-                          [parentTitle]="cards.sparql0.title">
-                        </app-sparql-display>
-                      </app-thematic-card>
-                    </ng-container>
-
-                    <ng-container *ngIf="cards.sparql1.list?.length">
-                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql1.title">
-                        <div class="thematic-card-header-bar"></div>
-                        <app-sparql-display
-                          #sparqlDisplay1
-                          sparqlType="sparql1"
-                          [sparqlData]="cards.sparql1.list"
-                          [sparqlSubject]="cards.sparql1.subject"
-                          [langService]="lang"
-                          [parentTitle]="cards.sparql1.title">
-                        </app-sparql-display>
-                      </app-thematic-card>
-                    </ng-container>
-
-                    <ng-container *ngIf="cards.sparql2.list?.length">
-                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql2.title">
-                        <div class="thematic-card-header-bar"></div>
-                        <app-sparql-display
-                          #sparqlDisplay2
-                          sparqlType="sparql2"
-                          [sparqlData]="cards.sparql2.list"
-                          [sparqlSubject]="cards.sparql2.subject"
-                          [langService]="lang"
-                          [parentTitle]="cards.sparql2.title">
-                        </app-sparql-display>
-                      </app-thematic-card>
-                    </ng-container>
-
-                    <ng-container *ngIf="cards.sparql3.list?.length">
-                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql3.title">
-                        <div class="thematic-card-header-bar"></div>
-                        <app-sparql-display
-                          #sparqlDisplay3
-                          sparqlType="sparql3"
-                          [sparqlData]="cards.sparql3.list"
-                          [sparqlSubject]="cards.sparql3.subject"
-                          [langService]="lang"
-                          [parentTitle]="cards.sparql3.title">
-                        </app-sparql-display>
-                      </app-thematic-card>
-                    </ng-container>
-
-                    <ng-container *ngIf="cards.sparql4.list?.length">
-                      <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql4.title">
-                        <div class="thematic-card-header-bar"></div>
-                        <app-sparql-display
-                          #sparqlDisplay4
-                          sparqlType="sparql4"
-                          [sparqlData]="cards.sparql4.list"
-                          [sparqlSubject]="cards.sparql4.subject"
-                          [langService]="lang"
-                          [parentTitle]="cards.sparql4.title">
-                        </app-sparql-display>
-                      </app-thematic-card>
-                    </ng-container>
-                  </div>
-                </ng-container>
-                <app-thematic-card *ngIf="showSources" [collapsible]="true"  [startCollapsed]="true" [title]="sources">
-                  <app-generic-list-display [title]="sources" [items]="sourcesList"></app-generic-list-display>
-                </app-thematic-card>
-                <app-thematic-card [collapsible]="true"  [startCollapsed]="true" title="Informations sur l'élément">
-                  <app-item-info [infoList]="infoList"></app-item-info>
-                </app-thematic-card>
-              </div>
-              </ng-container>
-
-              <ng-template #homeView>
-                <div class="thematic-cards-grid">
-                  <div class="matCardPadding">
-                    <div class="itemTitle">FactGrid</div>
-                    <div class="itemDescription" style="margin-bottom: 8px;">
-                      {{ subtitle }}
-                    </div>
-
-                    <!-- Projet sélectionné -->
-                    <div class="itemDescription" *ngIf="currentProject && currentProject.id !== 'all'" style="margin-bottom: 12px;">
-                      <strong>{{ currentProject.name }}</strong>
-                      <span *ngIf="currentProject.description"> – {{ currentProject.description }}</span>
-                    </div>
-
-                    <p class="itemDescription">
-                      Utilisez la barre de recherche en haut pour trouver une personne, une publication ou un autre item dans FactGrid.<br>
-                      Vous pouvez également sélectionner un projet, puis commencer à taper quelques lettres du nom ou du titre pour afficher les résultats ici.
-                    </p>
+        }
+      </div>
+    </mat-drawer>
+    <mat-drawer-content>
+      <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
+      <mat-toolbar class="top-toolbar">
+        <button
+          mat-button
+          class="drawer-toggle"
+          (click)="drawerOpened = !drawerOpened; drawer.toggle()"
+          [disabled]="!linkedItems?.length"
+          [attr.aria-expanded]="drawer.opened"
+          [attr.aria-pressed]="drawer.opened"
+          matTooltip="Ouvrir/fermer le panneau des pages liées"
+        >
+          <mat-icon class="icon" style="color: #1565c0">{{
+            drawerOpened ? 'chevron_right' : 'chevron_left'
+          }}</mat-icon>
+          <span
+            >{{ linkedPagesTitle
+            }}<ng-container *ngIf="linkedItems?.length">
+              ({{ linkedItems.length }})</ng-container
+            ></span
+          >
+        </button>
+        <span class="example-spacer"></span>
+        <!-- Barre de recherche intégrée en mode compact (état antérieur) -->
+        <app-search [compact]="true" (itemSelected)="onSearchItemSelected($event)"> </app-search>
+      </mat-toolbar>
+      <div class="toolbar-band"></div>
+      <div class="parent">
+        <div class="child1">
+          <!-- Vue d'accueil lorsqu'aucun item n'est chargé -->
+          <ng-container *ngIf="item; else homeView">
+            <div class="thematic-cards-grid">
+              <!-- Carte d'informations générales avec fond teinté -->
+              <app-thematic-card [collapsible]="false" class="info-themed-card">
+                <div class="info-themed-content">
+                  <div class="itemTitle">{{ label }}</div>
+                  <div class="aliases" *ngIf="aliases?.length">{{ aliases | join: ', ' }}</div>
+                  <div class="itemDescription" *ngIf="description">{{ description }}</div>
+                  <div class="header-container">
+                    <app-header-display
+                      [headerDetail]="headerDetail"
+                      [id]="id"
+                      [factGridUrl]="factGridUrl"
+                    ></app-header-display>
                   </div>
                 </div>
-              </ng-template>
+              </app-thematic-card>
+              @if (isIdentity) {
+                <app-thematic-card [collapsible]="true" [title]="identityTitle">
+                  <app-generic-list-display
+                    [title]="identityTitle"
+                    [items]="identity"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
+              @if (isPerson) {
+                <app-thematic-card
+                  [collapsible]="true"
+                  [startCollapsed]="true"
+                  [title]="'Biographie'"
+                >
+                  <app-generic-list-display
+                    [title]="'Biographie'"
+                    [items]="lifeAndFamily"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
+              @if (trans !== '') {
+                <app-thematic-card
+                  ><app-text-display [trans]="trans"></app-text-display
+                ></app-thematic-card>
+              }
+              <!----transcription-->
+              @if (isTraining) {
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="training">
+                  <app-generic-list-display
+                    [title]="training"
+                    [items]="education"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
+              @if (isCareer) {
+                <app-thematic-card
+                  [collapsible]="true"
+                  [startCollapsed]="true"
+                  [title]="careerTitle"
+                >
+                  <app-generic-list-display
+                    [title]="careerTitle"
+                    [items]="careerAndActivities"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
+              @if (isSociability) {
+                <app-thematic-card
+                  [collapsible]="true"
+                  [startCollapsed]="true"
+                  [title]="sociabilityTitle"
+                >
+                  <app-generic-list-display
+                    [title]="sociabilityTitle"
+                    [items]="sociabilityAndCulture"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
+              @if (isCulture) {
+                <app-thematic-card
+                  [collapsible]="true"
+                  [startCollapsed]="true"
+                  [title]="cultureTitle"
+                >
+                  <app-generic-list-display
+                    [title]="cultureTitle"
+                    [items]="culture"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
 
+              @if (isCareerStatement) {
+                <app-thematic-card
+                  [collapsible]="true"
+                  [startCollapsed]="true"
+                  [title]="careerStatementTitle"
+                >
+                  <app-generic-list-display
+                    [title]="careerStatementTitle"
+                    [items]="careerStatementDetail"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
 
+              @if (isMain) {
+                <app-thematic-card
+                  collapsible="true"
+                  [title]="mainTitle"
+                  icon="star"
+                  [startCollapsed]="lifeAndFamily?.length"
+                >
+                  <div class="thematic-card-header-bar"></div>
+                  <app-generic-list-display
+                    [title]="''"
+                    [items]="mainList"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
+              @if (isIframes) {
+                <app-thematic-card
+                  ><app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display
+                ></app-thematic-card>
+              }
+              <ng-container *ngIf="sparqlCards$ | async as cards">
+                <div *ngIf="cards">
+                  <ng-container *ngIf="cards.sparql0.list?.length">
+                    <app-thematic-card
+                      [collapsible]="true"
+                      [startCollapsed]="true"
+                      [title]="cards.sparql0.title"
+                    >
+                      <div class="thematic-card-header-bar"></div>
+                      <app-sparql-display
+                        #sparqlDisplay0
+                        sparqlType="sparql0"
+                        [sparqlData]="cards.sparql0.list"
+                        [sparqlSubject]="cards.sparql0.subject"
+                        [langService]="lang"
+                        [parentTitle]="cards.sparql0.title"
+                      >
+                      </app-sparql-display>
+                    </app-thematic-card>
+                  </ng-container>
 
-              <!--  ************************************* sparql3 ****************************************
+                  <ng-container *ngIf="cards.sparql1.list?.length">
+                    <app-thematic-card
+                      [collapsible]="true"
+                      [startCollapsed]="true"
+                      [title]="cards.sparql1.title"
+                    >
+                      <div class="thematic-card-header-bar"></div>
+                      <app-sparql-display
+                        #sparqlDisplay1
+                        sparqlType="sparql1"
+                        [sparqlData]="cards.sparql1.list"
+                        [sparqlSubject]="cards.sparql1.subject"
+                        [langService]="lang"
+                        [parentTitle]="cards.sparql1.title"
+                      >
+                      </app-sparql-display>
+                    </app-thematic-card>
+                  </ng-container>
+
+                  <ng-container *ngIf="cards.sparql2.list?.length">
+                    <app-thematic-card
+                      [collapsible]="true"
+                      [startCollapsed]="true"
+                      [title]="cards.sparql2.title"
+                    >
+                      <div class="thematic-card-header-bar"></div>
+                      <app-sparql-display
+                        #sparqlDisplay2
+                        sparqlType="sparql2"
+                        [sparqlData]="cards.sparql2.list"
+                        [sparqlSubject]="cards.sparql2.subject"
+                        [langService]="lang"
+                        [parentTitle]="cards.sparql2.title"
+                      >
+                      </app-sparql-display>
+                    </app-thematic-card>
+                  </ng-container>
+
+                  <ng-container *ngIf="cards.sparql3.list?.length">
+                    <app-thematic-card
+                      [collapsible]="true"
+                      [startCollapsed]="true"
+                      [title]="cards.sparql3.title"
+                    >
+                      <div class="thematic-card-header-bar"></div>
+                      <app-sparql-display
+                        #sparqlDisplay3
+                        sparqlType="sparql3"
+                        [sparqlData]="cards.sparql3.list"
+                        [sparqlSubject]="cards.sparql3.subject"
+                        [langService]="lang"
+                        [parentTitle]="cards.sparql3.title"
+                      >
+                      </app-sparql-display>
+                    </app-thematic-card>
+                  </ng-container>
+
+                  <ng-container *ngIf="cards.sparql4.list?.length">
+                    <app-thematic-card
+                      [collapsible]="true"
+                      [startCollapsed]="true"
+                      [title]="cards.sparql4.title"
+                    >
+                      <div class="thematic-card-header-bar"></div>
+                      <app-sparql-display
+                        #sparqlDisplay4
+                        sparqlType="sparql4"
+                        [sparqlData]="cards.sparql4.list"
+                        [sparqlSubject]="cards.sparql4.subject"
+                        [langService]="lang"
+                        [parentTitle]="cards.sparql4.title"
+                      >
+                      </app-sparql-display>
+                    </app-thematic-card>
+                  </ng-container>
+                </div>
+              </ng-container>
+              <app-thematic-card
+                *ngIf="showSources"
+                [collapsible]="true"
+                [startCollapsed]="true"
+                [title]="sources"
+              >
+                <app-generic-list-display
+                  [title]="sources"
+                  [items]="sourcesList"
+                ></app-generic-list-display>
+              </app-thematic-card>
+              <app-thematic-card
+                [collapsible]="true"
+                [startCollapsed]="true"
+                title="Informations sur l'élément"
+              >
+                <app-item-info [infoList]="infoList"></app-item-info>
+              </app-thematic-card>
+            </div>
+          </ng-container>
+
+          <ng-template #homeView>
+            <div class="thematic-cards-grid">
+              <div class="matCardPadding">
+                <div class="itemTitle">FactGrid</div>
+                <div class="itemDescription" style="margin-bottom: 8px">
+                  {{ subtitle }}
+                </div>
+
+                <!-- Projet sélectionné -->
+                <div
+                  class="itemDescription"
+                  *ngIf="currentProject && currentProject.id !== 'all'"
+                  style="margin-bottom: 12px"
+                >
+                  <strong>{{ currentProject.name }}</strong>
+                  <span *ngIf="currentProject.description">
+                    – {{ currentProject.description }}</span
+                  >
+                </div>
+
+                <p class="itemDescription">
+                  Utilisez la barre de recherche en haut pour trouver une personne, une publication
+                  ou un autre item dans FactGrid.<br />
+                  Vous pouvez également sélectionner un projet, puis commencer à taper quelques
+                  lettres du nom ou du titre pour afficher les résultats ici.
+                </p>
+              </div>
+            </div>
+          </ng-template>
+
+          <!--  ************************************* sparql3 ****************************************
   <div class="matCardPadding" [ngClass]="isSparql0 ? 'show-division':'hide-division'">
     <mat-card appearance="outlined" class=mat-elevation-z12>
       <app-sparql3-display [item]="this.item"></app-sparql3-display>
     </mat-card>
   </div>-->
-              <!-- ******************************* Info ****************************************  -->
-              <div class="matCardPadding" style="display: none;">
-                <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
-                  <div class="info-card-header">
-                    <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
-                      <mat-icon class="icon whiteButton">
-                        {{ isInfo ? 'expand_less' : 'expand_more' }}
-                      </mat-icon>
-                    </button>
-                  </div>
-                  <div class="info-card-closed-spacer" [ngClass]="isInfo ? 'hide-division' : 'show-division'"></div>
-                  <mat-card-content class="info-card-content" [ngClass]="isInfo ? 'show-division' : 'hide-division'">
-                    <app-item-info [infoList]="infoList"></app-item-info>
-                  </mat-card-content>
-                </mat-card>
+          <!-- ******************************* Info ****************************************  -->
+          <div class="matCardPadding" style="display: none">
+            <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
+              <div class="info-card-header">
+                <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
+                  <mat-icon class="icon whiteButton">
+                    {{ isInfo ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
+                </button>
               </div>
-
-            </div>
-            <!-- ****************************************** Pictures ****************************************  -->
-            <div class="child2">
-              <mat-card appearance="outlined">
-                <div class="img2" [ngClass]="isPicture ? 'show-division':'hide-division'">
-                  @for (picture of pictures; track picture.uniqueKey) {
-                    <div>
-                      <img mat-card-image [src]="picture.thumbnail"
-                           [attr.data-src]="picture.full"
-                           loading="lazy"
-                           alt="Image description"
-                           (load)="onThumbnailLoad(picture)"
-                           (click)="openImage(picture.full)" />
-                    </div>
-                  }
-                </div>
-              </mat-card>
-
-  <!-- ************************************* external links ****************************************  -->
-                      <!--          <div>   -->
-                      <mat-card appearance="outlined" class="external-links">
-                        <mat-card-content [ngClass]="isExternalLinks ? 'show-division':'hide-division'">
-                          <div class="externalLinksPadding">
-                            <div class="divisionTitle">{{externalLinksTitle}}</div>
-                            <hr>
-                          </div>
-                          @for (externalLink of externalLinks; track externalLink.label) {
-                          <div class="externalLinksText">
-                            <span>{{externalLink.label}}: </span><a href="{{externalLink.url}}" target="_blank">
-                              {{externalLink[0].mainsnak.datavalue.value}}
-                            </a><span>&nbsp;&nbsp;</span>
-                          </div>
-                          }
-                        </mat-card-content>
-
-
-                        <!-- ************************************* wikis links ****************************************  -->
-
-                        <mat-card-content class="header-spacer" [ngClass]="isWikis ? 'show-division':'hide-division'">
-                          <div class="externalLinksPadding">
-                            <div class="divisionTitle">Wikis</div>
-                            <hr>
-                          </div>
-                          @for (wiki of wikis; track wiki.uniqueKey) {
-                          <!--          <div>   -->
-                          <div class="externalLinksText">
-                            <span>{{wiki.site}}: </span><a href="{{wiki.url}}" target="_blank">{{wiki.title}}</a><span>&nbsp;&nbsp;</span>
-                          </div>
-                          <!--                <br>    -->
-                          <!--          </div>   -->
-                          }
-                        </mat-card-content>
-                      </mat-card>
-                      <!--              </div> -->
-                      <!-- ************************************* selected items  ****************************************  -->
-                      <!--         <div>  -->
-                      <mat-card appearance="outlined" class="mat-elevation-z8 itemSelected-mat-card">
-                        <div class="info-card-header selectedListTitle">
-                          <mat-icon class="icon blue-text">history</mat-icon>
-                          {{formerVisitsTitle}}
-                        </div>
-                        <mat-card-content class="info-card-content">
-                          <div *ngIf="selectedItemsList?.length === 0" class="itemDescription">Aucune visite précédente.</div>
-                          <div *ngFor="let selectedItem of selectedItemsList" class="selectedItemRow">
-                            <span *ngIf="selectedItem">
-                              <a class="selectedItemLink"
-                                 [routerLink]="['/item', selectedItem?.value?.id]"
-                                 (click)="$event.stopPropagation()"
-                                 >
-                                {{selectedItem.label}}
-                              </a>
-                            </span>
-                          </div>
-                        </mat-card-content>
-                      </mat-card>
-                      <!--          </div>  -->
-
-            </div>
+              <div
+                class="info-card-closed-spacer"
+                [ngClass]="isInfo ? 'hide-division' : 'show-division'"
+              ></div>
+              <mat-card-content
+                class="info-card-content"
+                [ngClass]="isInfo ? 'show-division' : 'hide-division'"
+              >
+                <app-item-info [infoList]="infoList"></app-item-info>
+              </mat-card-content>
+            </mat-card>
           </div>
-        </mat-drawer-content>
-      </mat-drawer-container>
-    }
+        </div>
+        <!-- ****************************************** Pictures ****************************************  -->
+        <div class="child2">
+          <mat-card appearance="outlined">
+            <div class="img2" [ngClass]="isPicture ? 'show-division' : 'hide-division'">
+              @for (picture of pictures; track picture.uniqueKey) {
+                <div>
+                  <img
+                    mat-card-image
+                    [src]="picture.thumbnail"
+                    [attr.data-src]="picture.full"
+                    loading="lazy"
+                    alt="Image description"
+                    (load)="onThumbnailLoad(picture)"
+                    (click)="openImage(picture.full)"
+                  />
+                </div>
+              }
+            </div>
+          </mat-card>
+
+          <!-- ************************************* external links ****************************************  -->
+          <!--          <div>   -->
+          <mat-card appearance="outlined" class="external-links">
+            <mat-card-content [ngClass]="isExternalLinks ? 'show-division' : 'hide-division'">
+              <div class="externalLinksPadding">
+                <div class="divisionTitle">{{ externalLinksTitle }}</div>
+                <hr />
+              </div>
+              @for (externalLink of externalLinks; track externalLink.label) {
+                <div class="externalLinksText">
+                  <span>{{ externalLink.label }}: </span
+                  ><a href="{{ externalLink.url }}" target="_blank">
+                    {{ externalLink[0].mainsnak.datavalue.value }} </a
+                  ><span>&nbsp;&nbsp;</span>
+                </div>
+              }
+            </mat-card-content>
+
+            <!-- ************************************* wikis links ****************************************  -->
+
+            <mat-card-content
+              class="header-spacer"
+              [ngClass]="isWikis ? 'show-division' : 'hide-division'"
+            >
+              <div class="externalLinksPadding">
+                <div class="divisionTitle">Wikis</div>
+                <hr />
+              </div>
+              @for (wiki of wikis; track wiki.uniqueKey) {
+                <!--          <div>   -->
+                <div class="externalLinksText">
+                  <span>{{ wiki.site }}: </span
+                  ><a href="{{ wiki.url }}" target="_blank">{{ wiki.title }}</a
+                  ><span>&nbsp;&nbsp;</span>
+                </div>
+                <!--                <br>    -->
+                <!--          </div>   -->
+              }
+            </mat-card-content>
+          </mat-card>
+          <!--              </div> -->
+          <!-- ************************************* selected items  ****************************************  -->
+          <!--         <div>  -->
+          <mat-card appearance="outlined" class="mat-elevation-z8 itemSelected-mat-card">
+            <div class="info-card-header selectedListTitle">
+              <mat-icon class="icon blue-text">history</mat-icon>
+              {{ formerVisitsTitle }}
+            </div>
+            <mat-card-content class="info-card-content">
+              <div *ngIf="selectedItemsList?.length === 0" class="itemDescription">
+                Aucune visite précédente.
+              </div>
+              <div *ngFor="let selectedItem of selectedItemsList" class="selectedItemRow">
+                <span *ngIf="selectedItem">
+                  <a
+                    class="selectedItemLink"
+                    [routerLink]="['/item', selectedItem?.value?.id]"
+                    (click)="$event.stopPropagation()"
+                  >
+                    {{ selectedItem.label }}
+                  </a>
+                </span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          <!--          </div>  -->
+        </div>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
+}

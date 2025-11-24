@@ -19,28 +19,27 @@
   max-height: 500px;
 }
 
-.search-center {  
+.search-center {
   display: flex;
   justify-content: center;
 }
-
 
 .search-center2 {
-  margin-top:40px;
+  margin-top: 40px;
   display: flex;
   justify-content: center;
 }
 
-.search-label { // style of the labels of the items
+.search-label {
+  // style of the labels of the items
   font-weight: bold;
 }
 
-.search-itemSelected { // put a margin on top of the box of selected items
+.search-itemSelected {
+  // put a margin on top of the box of selected items
   margin-top: 50px;
 }
 
-
-
 .selectedItemSize {
-   font-size: 14px;
+  font-size: 14px;
 }

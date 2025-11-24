@@ -1,5 +1,4 @@
 .linkedItemText {
-
   color: #000;
   text-decoration: none;
   font-size: inherit;
@@ -10,7 +9,8 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.linkedItemText:hover, .linkedItemText:focus {
+.linkedItemText:hover,
+.linkedItemText:focus {
   text-decoration: none;
   background: none;
   color: #000;
@@ -21,7 +21,8 @@
   color: #000 !important;
   text-decoration: none;
 }
-.factgrid-link:hover, .factgrid-link:focus {
+.factgrid-link:hover,
+.factgrid-link:focus {
   color: #000 !important;
   text-decoration: none;
 }
@@ -100,7 +101,7 @@
   overflow: visible;
   box-sizing: border-box;
   padding: 0; /* contenu interne géré localement; padding de carte centralisé */
-  margin: 0;  /* espacement inter-cartes géré par le parent via `gap` */
+  margin: 0; /* espacement inter-cartes géré par le parent via `gap` */
 }
 
 /* ========================================
@@ -171,7 +172,7 @@
 
 .propertyStyle {
   font-weight: 600;
-  color: var(--color-primary, #3F51B5) !important;
+  color: var(--color-primary, #3f51b5) !important;
   font-size: 0.95rem;
   display: inline-block;
   margin-right: 8px;
@@ -212,7 +213,7 @@
   color: #1f2d40;
   line-height: 1.7;
   margin: 4px 0;
-  
+
   > div {
     padding: 4px 0;
   }
@@ -234,7 +235,7 @@
 }
 
 .qualifierProperty {
-  color: #AD1457;
+  color: #ad1457;
   font-size: 0.875rem;
   font-style: italic;
   margin-right: 2px;
@@ -254,7 +255,7 @@
   color: #5f6c7f;
   line-height: 1.6;
   background-color: rgba(102, 153, 204, 0.03); /* couleur primaire très claire */
-  border-left: 3px solid var(--color-primary, #6699CC) !important;
+  border-left: 3px solid var(--color-primary, #6699cc) !important;
   border-radius: 0 4px 4px 0;
 }
 
@@ -298,7 +299,7 @@
   font-size: 0.85rem; /* même taille que les qualifiers */
   line-height: 1.25; /* compaction verticale */
   font-weight: 400; /* poids normal */
-  color: #AD1457;
+  color: #ad1457;
   background-color: rgba(173, 20, 87, 0.03);
   border: 1px solid rgba(173, 20, 87, 0.18);
   border-radius: 4px;
@@ -306,7 +307,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
 
   &:hover {
     background-color: rgba(173, 20, 87, 0.08);
@@ -324,7 +327,7 @@
   margin-right: 8px;
   transition: transform 150ms ease;
   vertical-align: middle;
-  
+
   &.open {
     transform: rotate(180deg);
   }
@@ -353,7 +356,7 @@
   padding: 2px;
   margin: 0 2px;
   vertical-align: middle;
-  
+
   mat-icon {
     font-size: 18px;
     width: 18px;
@@ -369,10 +372,10 @@
 }
 
 a {
-  color: #3F51B5;
+  color: #3f51b5;
   text-decoration: none;
   transition: color 150ms ease;
-  
+
   &:hover {
     color: #283593;
     text-decoration: underline;
@@ -388,7 +391,7 @@ a {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(40, 53, 147, 0.08),
     0 1px 3px rgba(40, 53, 147, 0.04);
   cursor: pointer;
@@ -396,7 +399,7 @@ a {
 }
 
 .cover:hover {
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(40, 53, 147, 0.12),
     0 2px 6px rgba(40, 53, 147, 0.06);
   transform: scale(1.02);
@@ -410,15 +413,15 @@ a {
   .subdivisionTitle {
     font-size: 1.05rem;
   }
-  
+
   .list-title {
     font-size: 1rem;
   }
-  
+
   .statementStyle {
     font-size: 0.9rem;
   }
-  
+
   .qualifierStyle {
     margin-left: 12px;
     font-size: 0.85rem;
@@ -429,9 +432,8 @@ a {
   .subdivisionTitle {
     font-size: 1rem;
   }
-  
+
   .cover {
     width: 100px;
   }
-
 }
