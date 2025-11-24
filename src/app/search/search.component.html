@@ -21,15 +21,16 @@
 }
 
 <div class="search-center2" [class.compact-mode]="compact">
-  <div class="search-field-col" *ngIf="compact; else fullSearchField">
-    <div class="compact-dual-search">
+  @if (compact) {
+    <div class="search-field-col">
+      <div class="compact-dual-search">
       <!-- Réserve toujours la place du sélecteur projet, même s'il n'est pas affiché -->
       <div
         class="compact-search-wrapper compact-project"
         [class.invisible-project]="!showResearchField"
         matTooltip="{{ projectDisplayValue || projectsInput }}"
       >
-        <ng-container *ngIf="showResearchField; else emptyProjectSelector">
+        @if (showResearchField) {
           <mat-icon class="compact-search-icon">settings</mat-icon>
           <input
             #projectInputCompact
@@ -40,33 +41,35 @@
             (blur)="onProjectInputBlur()"
             (input)="onProjectInputChange($event)"
           />
-          <button
-            *ngIf="
-              (selectedResearchField$ | async)?.id &&
-              (selectedResearchField$ | async)?.id !== 'all' &&
-              (selectedResearchField$ | async)?.id !== '-'
-            "
-            type="button"
-            class="compact-clear-btn"
-            aria-label="Effacer le projet"
-            (click)="clearProjectSearch()"
-          >
-            ✕
-          </button>
-          <!-- Dropdown autocomplete simple -->
-          <div
-            class="compact-project-dropdown"
-            *ngIf="showProjectDropdown && (filteredResearchFields$ | async) as projects"
-          >
-            <div
-              *ngFor="let project of projects"
-              class="compact-project-option"
-              (mousedown)="selectProjectCompact(project)"
+          @if (
+            (selectedResearchField$ | async)?.id &&
+            (selectedResearchField$ | async)?.id !== 'all' &&
+            (selectedResearchField$ | async)?.id !== '-'
+          ) {
+            <button
+              type="button"
+              class="compact-clear-btn"
+              aria-label="Effacer le projet"
+              (click)="clearProjectSearch()"
             >
-              {{ project.name }}
+              ✕
+            </button>
+          }
+
+          @let projects = filteredResearchFields$ | async;
+          @if (showProjectDropdown && projects) {
+            <div class="compact-project-dropdown">
+              @for (project of projects) {
+                <div
+                  class="compact-project-option"
+                  (mousedown)="selectProjectCompact(project)"
+                >
+                  {{ project.name }}
+                </div>
+              }
             </div>
-          </div>
-        </ng-container>
+          }
+        }
         <ng-template #emptyProjectSelector>
           <!-- Réserve l'espace mais n'affiche rien -->
         </ng-template>
@@ -79,26 +82,25 @@
           [placeholder]="itemsInput"
           [formControl]="searchInput"
         />
-        <button
-          *ngIf="searchInput.value"
-          type="button"
-          class="compact-clear-btn"
-          aria-label="Effacer"
-          (click)="clearItemSearch()"
-        >
-          ✕
-        </button>
+        @if (searchInput.value) {
+          <button
+            type="button"
+            class="compact-clear-btn"
+            aria-label="Effacer"
+            (click)="clearItemSearch()"
+          >
+            ✕
+          </button>
+        }
       </div>
     </div>
-  </div>
+    </div>
+  }
   <ng-template #fullSearchField>
     <div class="search-row-full">
       <!-- Sélecteur de projet aligné avec la recherche item -->
-      <mat-form-field
-        appearance="outline"
-        class="search-field project-field"
-        *ngIf="showResearchField"
-      >
+      @if (showResearchField) {
+        <mat-form-field appearance="outline" class="search-field project-field">
         <mat-label>{{ projectSearch }}</mat-label>
         <input
           #searchResearchFieldInput
@@ -108,24 +110,25 @@
           [matAutocomplete]="autoResearchField"
           [placeholder]="projectsInput"
         />
-        <mat-autocomplete
-          #autoResearchField="matAutocomplete"
-          [displayWith]="displayResearchField"
-          class="wide-autocomplete"
-          (optionSelected)="researchFieldSelect($event.option.value)"
-        >
-          <mat-option
-            *ngFor="let researchField of filteredResearchFields$ | async"
-            [value]="researchField"
-            class="research-field-option"
-          >
-            <span>{{ researchField.name }}</span>
-            <span *ngIf="researchField.description" class="research-field-description">
-              {{ researchField.description }}
-            </span>
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
+            <mat-autocomplete
+              #autoResearchField="matAutocomplete"
+              [displayWith]="displayResearchField"
+              class="wide-autocomplete"
+              (optionSelected)="researchFieldSelect($event.option.value)"
+            >
+              @for (researchField of filteredResearchFields$ | async) {
+                <mat-option [value]="researchField" class="research-field-option">
+                  <span>{{ researchField.name }}</span>
+                  @if (researchField.description) {
+                    <span class="research-field-description">
+                      {{ researchField.description }}
+                    </span>
+                  }
+                </mat-option>
+              }
+            </mat-autocomplete>
+        </mat-form-field>
+      }
 
       <mat-form-field appearance="outline" class="search-field main-search-field">
         <input
@@ -134,15 +137,11 @@
           [placeholder]="itemsInput"
           [formControl]="searchInput"
         />
-        <button
-          mat-icon-button
-          matSuffix
-          *ngIf="searchInput.value"
-          aria-label="Effacer"
-          (click)="clearItemSearch()"
-        >
-          <mat-icon>close</mat-icon>
-        </button>
+        @if (searchInput.value) {
+          <button mat-icon-button matSuffix aria-label="Effacer" (click)="clearItemSearch()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
         @if (
           (selectedResearchField$ | async)?.id &&
           (selectedResearchField$ | async)?.id !== 'all' &&
