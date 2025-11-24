@@ -74,10 +74,10 @@
                   class="linkedItemText factgrid-link"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
                   >{{ M.mainsnak.label }}</a
-                >{{ M.mainsnak.datavalue.value.separator
-                }}<span *ngIf="M.mainsnak.datavalue.value.description" class="description-text">{{
-                  M.mainsnak.datavalue.value.description
-                }}</span>
+                >{{ M.mainsnak.datavalue.value.separator }}
+                @if (M.mainsnak.datavalue.value.description) {
+                  <span class="description-text">{{ M.mainsnak.datavalue.value.description }}</span>
+                }
               </span>
             }
             @if (M && M.rank === 'deprecated') {

@@ -94,12 +94,13 @@
                       [noEntriesFoundLabel]="noDataFoundLabel"
                     ></ngx-mat-select-search>
                   </mat-option>
-                  <mat-option
-                    *ngFor="let itemType of filteredItemTypesArray[i] | async"
-                    [value]="[i, itemType.label, itemType.value, itemType.id, itemType.order]"
-                  >
-                    {{ itemType.label }}
-                  </mat-option>
+                  @for (itemType of filteredItemTypesArray[i] | async; track itemType) {
+                    <mat-option
+                      [value]="[i, itemType.label, itemType.value, itemType.id, itemType.order]"
+                    >
+                      {{ itemType.label }}
+                    </mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
 
@@ -120,12 +121,11 @@
                       noEntriesFoundLabel="Not found"
                     ></ngx-mat-select-search>
                   </mat-option>
-                  <mat-option
-                    *ngFor="let property of filteredPropertyMultiArray[i] | async"
-                    [value]="[i, property.value, property.id, property.type]"
-                  >
-                    {{ property.label }}
-                  </mat-option>
+                  @for (property of filteredPropertyMultiArray[i] | async; track property) {
+                    <mat-option [value]="[i, property.value, property.id, property.type]">
+                      {{ property.label }}
+                    </mat-option>
+                  }
                 </mat-select>
                 @if (statements.at(i).get('properties').hasError('differentDatatype')) {
                   <div class="validatorWarning">
@@ -152,12 +152,11 @@
                           noEntriesFoundLabel="Not found"
                         ></ngx-mat-select-search>
                       </mat-option>
-                      <mat-option
-                        *ngFor="let itemValue of filteredItemValuesArray[i] | async"
-                        [value]="[i, itemValue.label, itemValue.col, itemValue.id]"
-                      >
-                        {{ itemValue.label }}{{ itemValue.separator }}{{ itemValue.description }}
-                      </mat-option>
+                      @for (itemValue of filteredItemValuesArray[i] | async; track itemValue) {
+                        <mat-option [value]="[i, itemValue.label, itemValue.col, itemValue.id]">
+                          {{ itemValue.label }}{{ itemValue.separator }}{{ itemValue.description }}
+                        </mat-option>
+                      }
                     </mat-select>
                   </mat-form-field>
                 }
@@ -229,18 +228,22 @@
                               ></ngx-mat-select-search>
                             </mat-option>
 
-                            <mat-option
-                              *ngFor="let qualifier of filteredQualifierProperties | async"
-                              [value]="[
-                                i,
-                                j,
-                                qualifier.id,
-                                qualifier.propertyType.id,
-                                qualifier.itemLabel.value,
-                              ]"
-                            >
-                              {{ qualifier.itemLabel.label }}
-                            </mat-option>
+                            @for (
+                              qualifier of filteredQualifierProperties | async;
+                              track qualifier
+                            ) {
+                              <mat-option
+                                [value]="[
+                                  i,
+                                  j,
+                                  qualifier.id,
+                                  qualifier.propertyType.id,
+                                  qualifier.itemLabel.value,
+                                ]"
+                              >
+                                {{ qualifier.itemLabel.label }}
+                              </mat-option>
+                            }
                           </mat-select>
                         </mat-form-field>
 
@@ -262,19 +265,23 @@
                                     noEntriesFoundLabel="Not found"
                                   ></ngx-mat-select-search>
                                 </mat-option>
-                                <mat-option
-                                  *ngFor="let qualifierValue of filteredQualifierValues | async"
-                                  [value]="[
-                                    i,
-                                    j,
-                                    qualifierValue.label,
-                                    qualifierValue.col,
-                                    qualifierValue.id,
-                                  ]"
-                                >
-                                  {{ qualifierValue.label }}{{ qualifierValue.separator
-                                  }}{{ qualifierValue.description }}
-                                </mat-option>
+                                @for (
+                                  qualifierValue of filteredQualifierValues | async;
+                                  track qualifierValue
+                                ) {
+                                  <mat-option
+                                    [value]="[
+                                      i,
+                                      j,
+                                      qualifierValue.label,
+                                      qualifierValue.col,
+                                      qualifierValue.id,
+                                    ]"
+                                  >
+                                    {{ qualifierValue.label }}{{ qualifierValue.separator
+                                    }}{{ qualifierValue.description }}
+                                  </mat-option>
+                                }
                               </mat-select>
                             </mat-form-field>
                           }

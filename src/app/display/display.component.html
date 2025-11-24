@@ -65,10 +65,13 @@
             drawerOpened ? 'chevron_right' : 'chevron_left'
           }}</mat-icon>
           <span
-            >{{ linkedPagesTitle
-            }}<ng-container *ngIf="linkedItems?.length">
-              ({{ linkedItems.length }})</ng-container
-            ></span
+            >{{ linkedPagesTitle }}
+            @if (linkedItems?.length) {
+              (
+              {{ linkedItems.length }}
+              )
+            }
+          </span>
           >
         </button>
         <span class="example-spacer"></span>
@@ -85,8 +88,12 @@
               <app-thematic-card [collapsible]="false" class="info-themed-card">
                 <div class="info-themed-content">
                   <div class="itemTitle">{{ label }}</div>
-                  <div class="aliases" *ngIf="aliases?.length">{{ aliases | join: ', ' }}</div>
-                  <div class="itemDescription" *ngIf="description">{{ description }}</div>
+                  @if (aliases?.length) {
+                    <div class="aliases">{{ aliases | join: ', ' }}</div>
+                  }
+                  @if (description) {
+                    <div class="itemDescription">{{ description }}</div>
+                  }
                   <div class="header-container">
                     <app-header-display
                       [headerDetail]="headerDetail"
@@ -199,115 +206,106 @@
                   ><app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display
                 ></app-thematic-card>
               }
-              <ng-container *ngIf="sparqlCards$ | async as cards">
-                <div *ngIf="cards">
-                  <ng-container *ngIf="cards.sparql0.list?.length">
-                    <app-thematic-card
-                      [collapsible]="true"
-                      [startCollapsed]="true"
-                      [title]="cards.sparql0.title"
-                    >
-                      <div class="thematic-card-header-bar"></div>
-                      <app-sparql-display
-                        #sparqlDisplay0
-                        sparqlType="sparql0"
-                        [sparqlData]="cards.sparql0.list"
-                        [sparqlSubject]="cards.sparql0.subject"
-                        [langService]="lang"
-                        [parentTitle]="cards.sparql0.title"
-                      >
-                      </app-sparql-display>
-                    </app-thematic-card>
-                  </ng-container>
+              @let cards = sparqlCards$ | async;
+              @if (cards) {
+                @if (cards.sparql0.list?.length) {
+                  <app-thematic-card
+                    [collapsible]="true"
+                    [startCollapsed]="true"
+                    [title]="cards.sparql0.title"
+                  >
+                    <div class="thematic-card-header-bar"></div>
+                    <app-sparql-display
+                      #sparqlDisplay0
+                      sparqlType="sparql0"
+                      [sparqlData]="cards.sparql0.list"
+                      [sparqlSubject]="cards.sparql0.subject"
+                      [langService]="lang"
+                      [parentTitle]="cards.sparql0.title"
+                    ></app-sparql-display>
+                  </app-thematic-card>
+                }
 
-                  <ng-container *ngIf="cards.sparql1.list?.length">
-                    <app-thematic-card
-                      [collapsible]="true"
-                      [startCollapsed]="true"
-                      [title]="cards.sparql1.title"
-                    >
-                      <div class="thematic-card-header-bar"></div>
-                      <app-sparql-display
-                        #sparqlDisplay1
-                        sparqlType="sparql1"
-                        [sparqlData]="cards.sparql1.list"
-                        [sparqlSubject]="cards.sparql1.subject"
-                        [langService]="lang"
-                        [parentTitle]="cards.sparql1.title"
-                      >
-                      </app-sparql-display>
-                    </app-thematic-card>
-                  </ng-container>
+                @if (cards.sparql1.list?.length) {
+                  <app-thematic-card
+                    [collapsible]="true"
+                    [startCollapsed]="true"
+                    [title]="cards.sparql1.title"
+                  >
+                    <div class="thematic-card-header-bar"></div>
+                    <app-sparql-display
+                      #sparqlDisplay1
+                      sparqlType="sparql1"
+                      [sparqlData]="cards.sparql1.list"
+                      [sparqlSubject]="cards.sparql1.subject"
+                      [langService]="lang"
+                      [parentTitle]="cards.sparql1.title"
+                    ></app-sparql-display>
+                  </app-thematic-card>
+                }
 
-                  <ng-container *ngIf="cards.sparql2.list?.length">
-                    <app-thematic-card
-                      [collapsible]="true"
-                      [startCollapsed]="true"
-                      [title]="cards.sparql2.title"
-                    >
-                      <div class="thematic-card-header-bar"></div>
-                      <app-sparql-display
-                        #sparqlDisplay2
-                        sparqlType="sparql2"
-                        [sparqlData]="cards.sparql2.list"
-                        [sparqlSubject]="cards.sparql2.subject"
-                        [langService]="lang"
-                        [parentTitle]="cards.sparql2.title"
-                      >
-                      </app-sparql-display>
-                    </app-thematic-card>
-                  </ng-container>
+                @if (cards.sparql2.list?.length) {
+                  <app-thematic-card
+                    [collapsible]="true"
+                    [startCollapsed]="true"
+                    [title]="cards.sparql2.title"
+                  >
+                    <div class="thematic-card-header-bar"></div>
+                    <app-sparql-display
+                      #sparqlDisplay2
+                      sparqlType="sparql2"
+                      [sparqlData]="cards.sparql2.list"
+                      [sparqlSubject]="cards.sparql2.subject"
+                      [langService]="lang"
+                      [parentTitle]="cards.sparql2.title"
+                    ></app-sparql-display>
+                  </app-thematic-card>
+                }
 
-                  <ng-container *ngIf="cards.sparql3.list?.length">
-                    <app-thematic-card
-                      [collapsible]="true"
-                      [startCollapsed]="true"
-                      [title]="cards.sparql3.title"
-                    >
-                      <div class="thematic-card-header-bar"></div>
-                      <app-sparql-display
-                        #sparqlDisplay3
-                        sparqlType="sparql3"
-                        [sparqlData]="cards.sparql3.list"
-                        [sparqlSubject]="cards.sparql3.subject"
-                        [langService]="lang"
-                        [parentTitle]="cards.sparql3.title"
-                      >
-                      </app-sparql-display>
-                    </app-thematic-card>
-                  </ng-container>
+                @if (cards.sparql3.list?.length) {
+                  <app-thematic-card
+                    [collapsible]="true"
+                    [startCollapsed]="true"
+                    [title]="cards.sparql3.title"
+                  >
+                    <div class="thematic-card-header-bar"></div>
+                    <app-sparql-display
+                      #sparqlDisplay3
+                      sparqlType="sparql3"
+                      [sparqlData]="cards.sparql3.list"
+                      [sparqlSubject]="cards.sparql3.subject"
+                      [langService]="lang"
+                      [parentTitle]="cards.sparql3.title"
+                    ></app-sparql-display>
+                  </app-thematic-card>
+                }
 
-                  <ng-container *ngIf="cards.sparql4.list?.length">
-                    <app-thematic-card
-                      [collapsible]="true"
-                      [startCollapsed]="true"
-                      [title]="cards.sparql4.title"
-                    >
-                      <div class="thematic-card-header-bar"></div>
-                      <app-sparql-display
-                        #sparqlDisplay4
-                        sparqlType="sparql4"
-                        [sparqlData]="cards.sparql4.list"
-                        [sparqlSubject]="cards.sparql4.subject"
-                        [langService]="lang"
-                        [parentTitle]="cards.sparql4.title"
-                      >
-                      </app-sparql-display>
-                    </app-thematic-card>
-                  </ng-container>
-                </div>
-              </ng-container>
-              <app-thematic-card
-                *ngIf="showSources"
-                [collapsible]="true"
-                [startCollapsed]="true"
-                [title]="sources"
-              >
-                <app-generic-list-display
-                  [title]="sources"
-                  [items]="sourcesList"
-                ></app-generic-list-display>
-              </app-thematic-card>
+                @if (cards.sparql4.list?.length) {
+                  <app-thematic-card
+                    [collapsible]="true"
+                    [startCollapsed]="true"
+                    [title]="cards.sparql4.title"
+                  >
+                    <div class="thematic-card-header-bar"></div>
+                    <app-sparql-display
+                      #sparqlDisplay4
+                      sparqlType="sparql4"
+                      [sparqlData]="cards.sparql4.list"
+                      [sparqlSubject]="cards.sparql4.subject"
+                      [langService]="lang"
+                      [parentTitle]="cards.sparql4.title"
+                    ></app-sparql-display>
+                  </app-thematic-card>
+                }
+              }
+              @if (showSources) {
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sources">
+                  <app-generic-list-display
+                    [title]="sources"
+                    [items]="sourcesList"
+                  ></app-generic-list-display>
+                </app-thematic-card>
+              }
               <app-thematic-card
                 [collapsible]="true"
                 [startCollapsed]="true"
@@ -327,16 +325,14 @@
                 </div>
 
                 <!-- Projet sélectionné -->
-                <div
-                  class="itemDescription"
-                  *ngIf="currentProject && currentProject.id !== 'all'"
-                  style="margin-bottom: 12px"
-                >
-                  <strong>{{ currentProject.name }}</strong>
-                  <span *ngIf="currentProject.description">
-                    – {{ currentProject.description }}</span
-                  >
-                </div>
+                @if (currentProject && currentProject.id !== 'all') {
+                  <div class="itemDescription" style="margin-bottom: 12px">
+                    <strong>{{ currentProject.name }}</strong>
+                    @if (currentProject.description) {
+                      <span>– {{ currentProject.description }}</span>
+                    }
+                  </div>
+                }
 
                 <p class="itemDescription">
                   Utilisez la barre de recherche en haut pour trouver une personne, une publication
@@ -446,20 +442,22 @@
               {{ formerVisitsTitle }}
             </div>
             <mat-card-content class="info-card-content">
-              <div *ngIf="selectedItemsList?.length === 0" class="itemDescription">
-                Aucune visite précédente.
-              </div>
-              <div *ngFor="let selectedItem of selectedItemsList" class="selectedItemRow">
-                <span *ngIf="selectedItem">
-                  <a
-                    class="selectedItemLink"
-                    [routerLink]="['/item', selectedItem?.value?.id]"
-                    (click)="$event.stopPropagation()"
-                  >
-                    {{ selectedItem.label }}
-                  </a>
-                </span>
-              </div>
+              @if (selectedItemsList?.length === 0) {
+                <div class="itemDescription">Aucune visite précédente.</div>
+              }
+              @for (selectedItem of selectedItemsList; track selectedItem) {
+                <div class="selectedItemRow">
+                  @if (selectedItem) {
+                    <a
+                      class="selectedItemLink"
+                      [routerLink]="['/item', selectedItem?.value?.id]"
+                      (click)="$event.stopPropagation()"
+                    >
+                      {{ selectedItem.label }}
+                    </a>
+                  }
+                </div>
+              }
             </mat-card-content>
           </mat-card>
           <!--          </div>  -->
