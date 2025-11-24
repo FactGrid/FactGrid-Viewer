@@ -1,0 +1,10 @@
+node_modules
+dist
+.pnp.cjs
+.pnp.js
+coverage
+.cache
+/.idea
+/.vscode
+.sass-cache
+tmp
