@@ -36,7 +36,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { SelectedLangService } from '../selected-lang.service';
 import {
@@ -59,7 +59,7 @@ import { SearchComponent } from '../search/search.component';
     MatTabsModule,
     MatButtonModule,
     RouterModule,
-    NgIf,
+    
     MatProgressSpinnerModule,
     MatSidenavModule,
     MatToolbarModule,
@@ -68,7 +68,6 @@ import { SearchComponent } from '../search/search.component';
     MatTooltipModule,
     MatIconModule,
     MatCardModule,
-    NgFor,
     NgClass,
     TextDisplayComponent,
     SparqlDisplayComponent,
@@ -158,6 +157,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Affichage
   isSpinner = false;
+  isError = false;
   isMain = false;
   isExternalLinks = false;
   isWikis = false;
@@ -346,6 +346,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadItem() {
     this.subscription2 = this.setData.itemToDisplay(this.itemId).subscribe((item) => {
+      // reset error flag for new load
+      this.isError = false;
+
       this.isMain =
         this.isOther =
         this.isPicture =
@@ -369,7 +372,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.setList.addToSelectedItemsList(item[0]);
       this.claims = item[0].claims;
       if (!this.claims.P2) {
-        alert('property P2 undefined');
+        // mark as error so the template can display an explanatory message
+        this.isError = true;
+        this.item = null;
+        this.isSpinner = false;
         return;
       }
       if (!this.claims.P320) {

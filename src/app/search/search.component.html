@@ -59,7 +59,7 @@
           @let projects = filteredResearchFields$ | async;
           @if (showProjectDropdown && projects) {
             <div class="compact-project-dropdown">
-              @for (project of projects) {
+              @for (project of projects; track project.id) {
                 <div
                   class="compact-project-option"
                   (mousedown)="selectProjectCompact(project)"
@@ -116,7 +116,7 @@
               class="wide-autocomplete"
               (optionSelected)="researchFieldSelect($event.option.value)"
             >
-              @for (researchField of filteredResearchFields$ | async) {
+              @for (researchField of filteredResearchFields$ | async; track researchField.id) {
                 <mat-option [value]="researchField" class="research-field-option">
                   <span>{{ researchField.name }}</span>
                   @if (researchField.description) {

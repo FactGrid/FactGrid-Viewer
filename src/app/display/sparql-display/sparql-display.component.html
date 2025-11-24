@@ -14,7 +14,7 @@
       class="virtual-scroll-viewport"
       [style.height.px]="getViewportHeightPx(list.length)"
     >
-      @for (L of list) {
+      @for (L of list; track L.item.id) {
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         }
@@ -32,7 +32,7 @@
   }
   <ng-template #nonVirtualList>
     <div class="non-virtual-list">
-      @for (L of list) {
+      @for (L of list; track L.item.id) {
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         }
