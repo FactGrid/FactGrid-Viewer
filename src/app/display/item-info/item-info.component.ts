@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -13,9 +13,11 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
   styleUrls: ['./item-info.component.scss'],
   standalone: true,
   imports: [CommonModule, NgClass, MatCardModule, RouterLink, MatIconModule, ScrollingModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ItemInfoComponent implements OnChanges {
   private lang = inject(SelectedLangService);
+  private cdr = inject(ChangeDetectorRef);
 
   @Input() infoList;
 
@@ -105,5 +107,7 @@ export class ItemInfoComponent implements OnChanges {
     this.isList2 = this.list2.length > 0;
     this.isList3 = this.list3.length > 0;
     this.isList4 = this.list4.length > 0;
+    // ensure OnPush components detect these changes
+    this.cdr.markForCheck();
   }
 }

@@ -1,0 +1,11 @@
+{
+  "port": 8990,
+  "hostOnly": true,
+  "allowedCommandPrefixes": [
+    "ng ",
+    "npm run ",
+    "node ",
+    "powershell ",
+    "pwsh "
+  ]
+}

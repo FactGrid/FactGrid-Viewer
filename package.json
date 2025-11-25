@@ -21,6 +21,9 @@
     "theme:navy-coral": "node switch-palette.js 4",
     "theme:burgundy-gold": "node switch-palette.js 5",
     "theme:preview": "start theme-preview.html"
+    ,
+    "aif:check": "node ./scripts/aif-check.js",
+    "mcp:start": "node ./scripts/mcp-server.js"
   },
   "private": true,
   "dependencies": {

@@ -1,4 +1,5 @@
 <div class="cardBackground" [ngClass]="isList ? 'show-division' : 'hide-division'">
+  
   @if (isSearch) {
     <div class="searchFormPadding">
       <mat-form-field appearance="outline">
@@ -17,8 +18,7 @@
       @for (L of list; track L.item.id) {
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
-        }
-        <ng-template #defaultRow>
+        } @else {
           <div class="sparql-div statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
               {{ L.itemLabel?.value
@@ -26,17 +26,15 @@
             </a>
             @if (L.year) {<span>, {{ L.year.value }}</span>}
           </div>
-        </ng-template>
+        }
       }
     </cdk-virtual-scroll-viewport>
-  }
-  <ng-template #nonVirtualList>
+  } @else {
     <div class="non-virtual-list">
       @for (L of list; track L.item.id) {
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
-        }
-        <ng-template #defaultRow2>
+        } @else {
           <div class="sparql-div statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
               {{ L.itemLabel?.value
@@ -44,10 +42,10 @@
             </a>
             @if (L.year) {<span>, {{ L.year.value }}</span>}
           </div>
-        </ng-template>
+        }
       }
     </div>
-  </ng-template>
+  }
   <span>
     <button
       mat-icon-button

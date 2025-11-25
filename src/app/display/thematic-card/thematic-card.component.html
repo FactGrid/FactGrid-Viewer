@@ -1,9 +1,8 @@
-@if (title || hasProjectedHeader || collapsible) {
+@if (showHeader || title || hasProjectedHeader || collapsible) {
   <header class="card-header" [class.has-custom]="hasProjectedHeader">
     @if (hasProjectedHeader) {
       <ng-content select="[card-header]"></ng-content>
-    }
-    <ng-template #autoHeader>
+    } @else {
       @if (title || icon) {
         <div class="title">
           @if (icon && !title) {
@@ -14,16 +13,18 @@
           }
         </div>
       }
-      <div class="header-actions">
-        @if (collapsible) {
-          <button mat-button (click)="toggle()" class="collapse-btn" [attr.aria-expanded]="!isCollapsed">
-            <mat-icon>{{ isCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
-            <span>{{ isCollapsed ? 'Afficher' : 'Masquer' }}</span>
-          </button>
-        }
-        <ng-content select="[card-actions]"></ng-content>
-      </div>
-    </ng-template>
+    }
+
+    <!-- Always show header actions (collapse button / projected actions) -->
+    <div class="header-actions">
+      @if (collapsible) {
+        <button mat-button (click)="toggle()" class="collapse-btn" [attr.aria-expanded]="!isCollapsed">
+          <mat-icon>{{ isCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+          <span>{{ isCollapsed ? 'Afficher' : 'Masquer' }}</span>
+        </button>
+      }
+      <ng-content select="[card-actions]"></ng-content>
+    </div>
   </header>
 }
 <section class="card-body" [class.collapsed]="isCollapsed">

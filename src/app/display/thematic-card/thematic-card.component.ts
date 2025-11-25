@@ -31,6 +31,7 @@ export class ThematicCardComponent implements AfterContentInit {
   @Input() icon?: string;
   @Input() collapsible: boolean = false;
   @Input() startCollapsed: boolean = false;
+  @Input() showHeader: boolean = false;
   @Input() loading: boolean = false;
 
   isCollapsed: boolean = false;

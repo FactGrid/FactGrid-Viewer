@@ -52,31 +52,9 @@
     <mat-drawer-content>
       <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
       <mat-toolbar class="top-toolbar">
-        <button
-          mat-button
-          class="drawer-toggle"
-          (click)="drawerOpened = !drawerOpened; drawer.toggle()"
-          [disabled]="!linkedItems?.length"
-          [attr.aria-expanded]="drawer.opened"
-          [attr.aria-pressed]="drawer.opened"
-          matTooltip="Ouvrir/fermer le panneau des pages liées"
-        >
-          <mat-icon class="icon" style="color: #1565c0">{{
-            drawerOpened ? 'chevron_right' : 'chevron_left'
-          }}</mat-icon>
-          <span
-            >{{ linkedPagesTitle }}
-            @if (linkedItems?.length) {
-              (
-              {{ linkedItems.length }}
-              )
-            }
-          </span>
-          >
-        </button>
         <span class="example-spacer"></span>
-        <!-- Barre de recherche intégrée en mode compact (état antérieur) -->
-        <app-search [compact]="true" (itemSelected)="onSearchItemSelected($event)"> </app-search>
+        <!-- Barre de recherche intégrée (mode compact par défaut) -->
+        <app-search (itemSelected)="onSearchItemSelected($event)"> </app-search>
       </mat-toolbar>
       <div class="toolbar-band"></div>
       <div class="parent">
@@ -211,8 +189,9 @@
                 @if (cards.sparql0.list?.length) {
                   <app-thematic-card
                     [collapsible]="true"
-                    [startCollapsed]="true"
+                    [startCollapsed]="!cards.sparql0.list?.length"
                     [title]="cards.sparql0.title"
+                    [showHeader]="true"
                   >
                     <div class="thematic-card-header-bar"></div>
                     <app-sparql-display
@@ -229,8 +208,9 @@
                 @if (cards.sparql1.list?.length) {
                   <app-thematic-card
                     [collapsible]="true"
-                    [startCollapsed]="true"
+                    [startCollapsed]="!cards.sparql1.list?.length"
                     [title]="cards.sparql1.title"
+                    [showHeader]="true"
                   >
                     <div class="thematic-card-header-bar"></div>
                     <app-sparql-display
@@ -247,8 +227,9 @@
                 @if (cards.sparql2.list?.length) {
                   <app-thematic-card
                     [collapsible]="true"
-                    [startCollapsed]="true"
+                    [startCollapsed]="!cards.sparql2.list?.length"
                     [title]="cards.sparql2.title"
+                    [showHeader]="true"
                   >
                     <div class="thematic-card-header-bar"></div>
                     <app-sparql-display
@@ -265,8 +246,9 @@
                 @if (cards.sparql3.list?.length) {
                   <app-thematic-card
                     [collapsible]="true"
-                    [startCollapsed]="true"
+                    [startCollapsed]="!cards.sparql3.list?.length"
                     [title]="cards.sparql3.title"
+                    [showHeader]="true"
                   >
                     <div class="thematic-card-header-bar"></div>
                     <app-sparql-display
@@ -283,8 +265,9 @@
                 @if (cards.sparql4.list?.length) {
                   <app-thematic-card
                     [collapsible]="true"
-                    [startCollapsed]="true"
+                    [startCollapsed]="!cards.sparql4.list?.length"
                     [title]="cards.sparql4.title"
+                    [showHeader]="true"
                   >
                     <div class="thematic-card-header-bar"></div>
                     <app-sparql-display

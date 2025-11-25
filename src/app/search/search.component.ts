@@ -7,7 +7,6 @@ import {
   ChangeDetectionStrategy,
   Output,
   EventEmitter,
-  Input,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -21,8 +20,10 @@ import {
   combineLatest,
   filter,
   startWith,
-  forkJoin,
   of,
+  take,
+  catchError,
+  forkJoin,
 } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -35,6 +36,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { SetLanguageService } from '../services/set-language.service';
@@ -85,6 +87,7 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     MatAutocompleteModule,
     MatCheckboxModule,
     MatSelectModule,
+    OverlayModule,
   ],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
@@ -104,8 +107,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   // ========== OUTPUTS (EMBEDDED MODE) ==========
   @Output() itemSelected = new EventEmitter<string>();
 
-  // ========== INPUTS (DISPLAY MODES) ==========
-  @Input() compact = false;
+  // mode compact only — no external input
 
   // ========== UI TEXTS ==========
   title = 'factgrid';
@@ -145,9 +147,9 @@ export class SearchComponent implements OnInit, OnDestroy {
   items: WikibaseEntity[] = [];
   private items$ = new BehaviorSubject<WikibaseEntity[]>([]);
   filteredItems$: Observable<WikibaseEntity[]>;
-  searchResults$: Observable<WikibaseEntity[]>;
-  hintValue$: Observable<number>;
-  pages: Observable<number>;
+  // Observable indiquant si l'overlay doit être ouvert (utilisé pour debug/contrôle)
+  overlayOpen$: Observable<boolean>;
+  // pagination/pages removed for compact-only mode
   selectedItemsList: any[] = [];
   selectedResearchField$ = this.selectedResearchField.selectedResearchField$;
 
@@ -157,11 +159,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   // ========== SUBJECTS ==========
   showInDescriptionSubject = new BehaviorSubject<boolean>(false);
 
-  // ========== PAGINATION ==========
-  pageSize = 20;
-  currentPage = 0;
-  totalResults = 0;
-  maxApiResults = 100; // Nombre maximum d'items récupérables via l'API (1 ou 2 requêtes de 50)
+  // pagination / totals removed — compact-only
 
   // ========== API ENDPOINTS ==========
   private readonly baseGetURL = 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=';
@@ -177,16 +175,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   private broadCacheItems: WikibaseEntity[] = [];
   private broadCacheComplete: boolean = false;
 
-  goToPage(page: number) {
-    this.currentPage = page;
-    this.searchInput.setValue(this.searchInput.value || '', { emitEvent: true });
+  // pagination removed for compact-only mode
+
+  ngAfterViewInit(): void {
+    // no-op; ViewChild is available for manual overlay positioning
   }
 
-  setPageSize(size: number) {
-    this.pageSize = size;
-    this.currentPage = 0;
-    this.searchInput.setValue(this.searchInput.value || '', { emitEvent: true });
-  }
 
   togglePeopleFilter() {
     if (this.filterPeople === 'people') {
@@ -209,6 +203,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // ngOnInit called
     this.initTranslations();
     this.initSelectedItemsList();
     this.initShowResearchFieldSync();
@@ -216,14 +211,19 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.initProjectList();
     this.initSearchResults();
     this.initFilteredItems();
-    this.initHintValue();
-
-    this.pageSize = 100;
-    this.currentPage = 0;
 
     this.searchInput.valueChanges.subscribe(() => {
       this.filterInput.setValue('', { emitEvent: false });
     });
+
+    const overlaySub = this.overlayOpen$?.subscribe();
+    if (overlaySub) this.subscriptions.push(overlaySub);
+
+    // Check for CDK overlay panes after component init
+    setTimeout(() => {
+      const panes = document.querySelectorAll('.cdk-overlay-pane');
+      console.log('[SearchComponent] CDK overlay panes found:', panes.length, panes);
+    }, 1000);
   }
 
   onItemRowClick(itemId: string, event?: MouseEvent) {
@@ -243,8 +243,6 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.filterInput.setValue('', { emitEvent: false });
       this.items = [];
       this.items$.next([]);
-      this.totalResults = 0;
-      this.currentPage = 0;
       this.changeDetector.markForCheck();
     }, 200);
   }
@@ -373,87 +371,42 @@ export class SearchComponent implements OnInit, OnDestroy {
    * Initialisation de la recherche principale avec pagination UI
    */
   private initSearchResults() {
-    this.searchResults$ = combineLatest([
-      this.searchInput.valueChanges.pipe(startWith('')),
-      this.showInDescriptionSubject,
-      this.selectedResearchField.selectedResearchField$,
-    ]).pipe(
-      tap(([label]) => {
-        this.isSearching = !!label && label.length > 0;
-      }),
+    // Compact-only search pipeline: simple autocomplete + update items list
+    const sub = this.searchInput.valueChanges.pipe(
+      startWith(this.searchInput.value || ''),
+      tap((label) => (this.isSearching = !!label && label.length > 0)),
       debounceTime(250),
-      switchMap(([label, showInDescription, selectedResearchField]) => {
-        const searchTerm = normalizeString(label);
-        const selectedId = selectedResearchField?.id || 'all';
-
+      switchMap((label) => {
+        const searchTerm = normalizeString(label as string);
         if (!searchTerm) {
           this.searchCache.invalidateCache();
           this.resetSearchState();
-          return of([]);
+          return of([] as WikibaseEntity[]);
         }
-
-        // Recherche globale paginée (max 100 résultats)
-        if (!selectedId || selectedId === 'all' || selectedId === '-' || selectedId === 'Q0') {
-          // On récupère jusqu'à 100 résultats, puis on découpe la page courante
-          const offset = this.currentPage * this.pageSize;
-          const maxResults = Math.min(this.maxApiResults, offset + this.pageSize);
-          return this.fetchAutocompleteEntities(
-            searchTerm,
-            this.lang.selectedLang,
-            maxResults
-          ).pipe(
-            map(({ items, total }) => {
-              const pagedItems = items.slice(offset, offset + this.pageSize);
-              this.totalResults = total;
-              this.updateItemsList(pagedItems);
-              return pagedItems;
-            })
-          );
-        }
-
-        // Recherche filtrée (CirrusSearch) : pas de pagination ici
-        const firstWord = searchTerm.split(' ')[0];
-        const filters = this.searchFilter.buildSearchFilters(
-          firstWord,
-          selectedId,
-          this.filterPeople === 'people',
-          this.filterPublication === 'publication'
-        );
-        const searchQuery = filters.join(' ');
-        const searchUrl = this.wikibaseSearch.buildSearchUrl(searchQuery);
-
-        return this.wikibaseSearch.fetchAllIds(searchUrl).pipe(
-          tap((ids) => {
-            const isComplete = ids.length < 2000;
-            this.searchCache.setCacheComplete(isComplete);
-          }),
-          switchMap((ids) => this.wikibaseSearch.fetchEntities(ids)),
-          map((entities) =>
-            this.searchFilter.filterResultsLocally(entities, searchTerm, showInDescription)
-          ),
-          tap((items) => {
-            this.totalResults = items.length;
-            if (this.searchCache.isComplete()) {
-              this.searchCache.cacheItems(searchTerm, items);
-            }
+        return this.fetchAutocompleteEntities(searchTerm, this.lang.selectedLang, 50).pipe(
+          map(({ items }) => {
             this.updateItemsList(items);
+            return items;
+          }),
+          catchError((err) => {
+            console.error('[SearchComponent] fetchAutocompleteEntities error', err);
+            this.resetSearchState();
+            return of([] as WikibaseEntity[]);
           })
         );
       })
-    );
+    ).subscribe();
+    this.subscriptions.push(sub);
   }
 
   private resetSearchState(): void {
     this.items = [];
     this.items$.next([]);
-    this.updateHintValue();
     this.changeDetector.markForCheck();
     this.termCache = {};
     this.broadCacheInput = '';
     this.broadCacheItems = [];
     this.broadCacheComplete = false;
-    this.totalResults = 0;
-    this.currentPage = 0;
   }
 
   private buildSearchFilters(selectedId: string, searchTerm: string): string[] {
@@ -537,7 +490,6 @@ export class SearchComponent implements OnInit, OnDestroy {
   private updateItemsList(items: WikibaseEntity[]): void {
     this.items = items;
     this.items$.next(items);
-    this.updateHintValue();
     this.changeDetector.markForCheck();
   }
 
@@ -556,23 +508,23 @@ export class SearchComponent implements OnInit, OnDestroy {
         );
       })
     );
+    // overlayOpen$ suit la condition utilisée dans le template et logge sa valeur
+    this.overlayOpen$ = combineLatest([this.filteredItems$, this.searchInputValue$]).pipe(
+      tap(([items, input]) => console.log('[SearchComponent] overlayOpen$ inputs - items:', items?.length, 'input:', input)),
+      map(([items, input]) => !!(items && items.length > 0 && (input || '').length > 0)),
+      tap((open) => console.log('[SearchComponent] overlayOpen$ computed:', open))
+      // overlayOpen state computed
+    );
+    // Log once when overlay opens (single, non-repeating diagnostic)
+    const overlayOnceSub = this.overlayOpen$.pipe(filter((v) => !!v), take(1)).subscribe(() =>
+      console.log('[SearchComponent] overlay opened (one-time)')
+    );
+    this.subscriptions.push(overlayOnceSub);
     const sub = this.filteredItems$.subscribe();
     this.subscriptions.push(sub);
   }
 
-  private initHintValue() {
-    this.hintValue$ = of(0);
-  }
-
-  updateHintValue() {
-    const selectedResearchField = this.selectedResearchField.getSelectedResearchField();
-    this.hintValue$ =
-      this.items.length > 0
-        ? of(this.items.length)
-        : !selectedResearchField || selectedResearchField.id === 'Q0'
-          ? this.pages
-          : of(0);
-  }
+  // hintValue/pages removed for compact-only mode
 
   isArray(val: any): boolean {
     return Array.isArray(val);
@@ -634,7 +586,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    this.updateHintValue();
+    this.changeDetector.markForCheck();
   }
 
   public displayResearchField(researchField: any): string {
@@ -652,7 +604,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       description: '',
     });
     this.selectedResearchField.setShowResearchField(false);
-    this.updateHintValue();
+    this.changeDetector.markForCheck();
   }
 
   clearItemSearch() {
@@ -660,8 +612,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.filterInput.setValue('', { emitEvent: false });
     this.items = [];
     this.items$.next([]);
-    this.totalResults = 0;
-    this.currentPage = 0;
+    // pagination counters removed for compact-only mode
     this.changeDetector.markForCheck();
   }
 
@@ -686,6 +637,14 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searchResearchField.setValue(value);
     this.showProjectDropdown = true;
     this.changeDetector.markForCheck();
+  }
+
+  onSearchFieldInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input?.value ?? '';
+    console.log('[SearchComponent] onSearchFieldInput value =', value);
+    // Ensure FormControl has the latest value and trigger valueChanges
+    this.searchInput.setValue(value, { emitEvent: true });
   }
 
   updateProjectDisplayValue(field: ResearchField | null) {

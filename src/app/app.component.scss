@@ -5,13 +5,7 @@
   min-height: 48px;
   height: 56px;
   padding: 0 16px;
-  background-color: #222;
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
-    url('/assets/toolbar/4096px-Mediterranean_chart_fourteenth_century.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -21,7 +15,7 @@
 
 .toolbar-btn {
   margin: 0 4px;
-  color: #fff !important;
+  color: #000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +33,7 @@
 .mat-icon,
 .material-icons,
 mat-icon {
-  color: #fff !important;
+  color: #000 !important;
   font-size: 24px !important;
 }
 

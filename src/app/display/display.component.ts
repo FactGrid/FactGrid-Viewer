@@ -38,16 +38,17 @@ import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgClass } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { SelectedLangService } from '../selected-lang.service';
-import {
-  SelectedResearchFieldService,
-  ResearchField,
-} from '../services/selected-research-field.service';
+import { DrawerService } from '../services/drawer.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { ItemDisplayDispatcherService } from './services/item-display-dispatcher.service';
 import { RouterModule } from '@angular/router';
 import { SearchComponent } from '../search/search.component';
+import { SelectedLangService } from '../selected-lang.service';
+import {
+  SelectedResearchFieldService,
+  ResearchField,
+} from '../services/selected-research-field.service';
 
 @Component({
   selector: 'app-display',
@@ -102,6 +103,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private observer = inject(BreakpointObserver);
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
+  private drawerService = inject(DrawerService);
 
   // Données principales
   item: any;
@@ -228,8 +230,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription1: Subscription;
   subscription2: Subscription;
   subscription3: Subscription;
-  sparqlSubscription: Subscription;
+  sparqlSubscription: Subscription | null = null;
   selectedResearchFieldSubscription: Subscription;
+  subscriptions: Subscription[] = [];
 
   // Textes d’interface
   newSearch: string = 'new search';
@@ -290,6 +293,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clickToDisplay = this.lang.getTranslation('clickToDisplay', this.lang.selectedLang);
     this.stemma = this.lang.getTranslation('stemma', this.lang.selectedLang);
 
+    // Abonnement aux commandes du drawer
     this.subscription0 = this.route.paramMap.subscribe((params) => {
       this.itemId = params.get('id');
       this.drawerOpened = false; // Fermer le drawer à chaque changement d'item
@@ -304,6 +308,19 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isSpinner = false;
       }
     });
+
+    // Abonnement aux commandes du drawer depuis app.component
+    const drawerSubscription = this.drawerService.commands$.subscribe((command) => {
+      if (command === 'toggle') {
+        this.drawerOpened = !this.drawerOpened;
+      } else if (command === 'open') {
+        this.drawerOpened = true;
+      } else if (command === 'close') {
+        this.drawerOpened = false;
+      }
+      this.drawerService.setState(this.drawerOpened);
+    });
+    this.subscriptions.push(drawerSubscription);
   }
 
   private loadBackList() {
@@ -579,6 +596,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       };
       waitForSparqlObservable();
+      
 
       // Spinner
       this.isSpinner = false;
@@ -635,5 +653,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription3?.unsubscribe();
     this.sparqlSubscription?.unsubscribe();
     this.selectedResearchFieldSubscription?.unsubscribe();
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 }

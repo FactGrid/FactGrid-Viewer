@@ -142,6 +142,11 @@ $my-theme: mat.m2-define-light-theme(
 
 @import '../node_modules/leaflet/dist/leaflet.css';
 
+// Import overlay styles (CDK overlay panes) so global overlay panel
+// classes like `.search-items_panel` receive their CSS when attached
+// to the document body.
+@import 'styles/overlay-search.scss';
+
 /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 .mat-form-field-appearance-legacy.mat-form-field-can-float.mat-form-field-should-float
   .mat-form-field-label:not(.mat-empty):not(.mat-form-field-empty) {
@@ -466,26 +471,11 @@ body {
   justify-content: center;
 } */
 
-/* UNUSED: .search-center2 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-left: 16px;
-  padding-right: 16px;
-} */
-
-.search-inputs-row {
-  display: flex;
-  flex-direction: row;
-  gap: 24px; /* espace entre les deux inputs */
-  width: 100%;
-  justify-content: center;
-}
-
-.search-field {
-  width: 300px;
-  min-width: 220px;
-}
+/* LEGACY: non-compact search styles removed.
+   These rules were for the old (non-compact) search layout and are no
+   longer used. The compact-only styles now live in
+   `src/app/search/search.component.scss`. Keeping this note for history.
+*/
 
 .items-list-container {
   margin-top: 32px;
@@ -565,23 +555,13 @@ body {
     padding-left: 8vw;
     padding-right: 8vw;
   }
-
-  .search-inputs-row {
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-  }
-
-  .search-field {
-    width: 100%;
-    min-width: 0;
-  }
+  /* responsive rules for legacy non-compact search removed */
 }
 
-mat-form-field.search-field {
-  /* Force la même hauteur pour les deux champs */
-  min-height: 80px; // Ajustez selon le rendu, 80px est une base pour Angular Material outline
-}
+
+/* The following mat-form-field/search-field legacy rule removed in cleanup.
+   If a future component needs a global uniform height, reintroduce a
+   scoped rule or add it to the specific component stylesheet. */
 
 .search-field-col {
   width: 300px; /* ou la largeur de ton mat-form-field */

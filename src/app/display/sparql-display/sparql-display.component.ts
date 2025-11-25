@@ -7,6 +7,7 @@ import {
   SimpleChanges,
   inject,
   TemplateRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
@@ -41,6 +42,7 @@ import { SparqlDisplayService, SparqlDisplayType } from '../services/sparql-disp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparqlDisplayComponent implements OnChanges, OnDestroy {
+  private cdr = inject(ChangeDetectorRef);
   constructor() {}
   @Input() sparqlType: SparqlDisplayType = 'sparql0';
   @Input() sparqlSubject: string;
@@ -94,6 +96,8 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
         );
     this.subTitleSubject.next(newTitle);
     this.isWorks = !!newTitle;
+    // Ensure OnPush components update when inputs change asynchronously
+    this.cdr.markForCheck();
   }
 
   trackByFn(index: number, item: any): any {

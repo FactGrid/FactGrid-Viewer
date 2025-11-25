@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "backupExtension": ".orig",
+  "convertGlobs": [
+    "src/**/*.component.html",
+    "src/**/*.html"
+  ],
+  "excludeGlobs": [
+    "src/**/*.html.orig",
+    "src/assets/**",
+    "node_modules/**",
+    "documentation/**"
+  ],
+  "defaultTrack": {
+    "priorityFields": ["id", "item.id", "value.id"],
+    "fallback": "$index"
+  },
+  "requireTrack": true,
+  "letAliasMap": {
+    "isLast": "$last",
+    "isFirst": "$first"
+  },
+  "checks": {
+    "forMustHaveTrack": true,
+    "noNgDirectives": true
+  },
+  "ciScript": "aif:check",
+  "notes": "Backups created with extension .orig — keep or remove as desired."
+}

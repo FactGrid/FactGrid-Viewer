@@ -16,6 +16,7 @@ import { SelectedResearchFieldService } from './services/selected-research-field
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { SelectedLangService } from './selected-lang.service';
+import { DrawerService } from './services/drawer.service';
 
 export interface Lang {
   name: string;
@@ -47,6 +48,7 @@ export class AppComponent implements OnInit {
   private request = inject(RequestService);
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
   private lang = inject(SelectedLangService);
+  private drawerService = inject(DrawerService);
 
   langs: Lang[] = [
     { name: 'English', code: 'en' },
@@ -139,5 +141,9 @@ export class AppComponent implements OnInit {
     const next = !current;
     this.selectedResearchFieldService.setShowResearchField(next);
     this.showResearchField = next;
+  }
+
+  toggleDrawer() {
+    this.drawerService.toggle();
   }
 }
