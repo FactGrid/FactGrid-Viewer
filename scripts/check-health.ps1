@@ -19,9 +19,9 @@ Write-Output "Checking port $Port with timeout ${TimeoutMs}ms"
 
 $nc = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
 if ($nc) {
-    $pid = $nc.OwningProcess
-    Write-Output "LISTENER_FOUND PID:$pid"
-    Get-Process -Id $pid -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, Path
+    $listenerPid = $nc.OwningProcess
+    Write-Output "LISTENER_FOUND PID:$listenerPid"
+    Get-Process -Id $listenerPid -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, Path
 } else {
     Write-Output "NO_LISTENER"
 }

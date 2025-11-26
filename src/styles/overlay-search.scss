@@ -33,6 +33,46 @@
   overflow-wrap: anywhere;
 }
 
+/* Prevent panel from overlapping a fixed footer: limit inner height and enable scroll */
+.cdk-overlay-pane.search-items_panel .search-items_inner {
+  max-height: calc(100vh - 160px); /* leave room for footer */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Additional targets: some overlays may inject the .compact-suggestions list
+   directly under the CDK pane without the `search-items_inner` wrapper.
+   Target those cases to enforce opaque background, scrolling and width. */
+.cdk-overlay-pane.search-items_panel .compact-suggestions,
+.cdk-overlay-pane.search-items_panel .compact-suggestion-item {
+  background: var(--panel-bg) !important;
+  box-sizing: border-box !important;
+}
+
+.cdk-overlay-pane.search-items_panel.compact-overlay-panel,
+.cdk-overlay-pane.search-items_panel .compact-suggestions {
+  /* ensure overlay pane itself cannot exceed viewport height and will scroll internally */
+  max-height: calc(100vh - 160px) !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure pane width is larger on desktop; keep mobile constraints from earlier rules */
+.cdk-overlay-pane.search-items_panel {
+  width: min(var(--panel-maxw), 92vw) !important;
+}
+
+@media (min-width: 960px) {
+  .cdk-overlay-pane.search-items_panel {
+    width: min(520px, 80vw) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .cdk-overlay-pane.search-items_panel {
+    width: min(640px, 70vw) !important;
+  }
+}
+
 .cdk-overlay-pane.search-items_panel .search-items_row {
   padding: 8px 10px;
   cursor: pointer;

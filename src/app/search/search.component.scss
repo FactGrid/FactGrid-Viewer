@@ -112,84 +112,130 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   font-size: 1.1em;
 }
 
-// Styles pour les suggestions compactes en overlay
-.compact-overlay-panel {
-  max-height: 200px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
 
-.compact-suggestions {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
+/* Les règles globales liées aux overlays (CDK) sont centralisées dans
+   `src/styles/overlay-search.scss`. Elles ont été retirées d'ici pour
+   éviter les duplications et garantir qu'elles s'appliquent correctement
+   au panneau attaché au `document.body` par le CDK. */
 
-.compact-suggestion-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.2s;
-}
-
-.compact-suggestion-item:hover {
-  background-color: #f5f5f5;
-}
-
-.compact-suggestion-item:last-child {
-  border-bottom: none;
-}
-
-.item-label {
-  font-size: 14px;
-  color: #333;
-}
-
-// Styles pour les inputs compact avec coins ronds
-.compact-search-input {
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 6px 10px;
-  font-size: 13px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
+/* Styles pour les inputs compact avec coins ronds (plain inputs) */
 .compact-dual-search {
   display: flex;
   flex-direction: row;
   gap: 8px;
   width: 100%;
-  max-width: 400px; /* encore plus réduit pour éviter débordement */
-  margin: 0 auto;
-  align-items: flex-start;
+  max-width: 100%;
+  margin: 0; /* avoid extra margins that cause overflow */
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* fixed compact input width: stays visually equal when single or paired
+   but adapts to container size to avoid horizontal overflow. */
+:host {
+  --compact-input-width: 190px; /* default preferred width */
 }
 
 .compact-search-field {
-  flex: 1;
-  min-width: 120px;
-  height: 40px; /* réduire la hauteur pour plus compact */
-}
-
-.compact-search-field .mat-mdc-form-field-outline {
+  /* pick the smaller of the preferred width and half of the available
+     space (minus gap) so two fields never overflow their container */
+  flex: 0 0 min(var(--compact-input-width), calc((100% - 8px) / 2));
+  min-width: 0; /* allow shrinking on narrow containers */
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
   border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
-.compact-search-field.mat-form-field-appearance-fill .mat-form-field-flex {
-  padding: 0 8px; /* réduire le padding */
+/* Place the clear (✕) button inside the right edge of the wrapper */
+.compact-search-field {
+  position: relative;
 }
 
-.compact-search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-  display: none; /* cacher les hints et erreurs pour plus compact */
+
+.compact-search-field .compact-search-input {
+  padding-right: 44px; /* extra room for clear button */
 }
 
-.compact-search-field ::ng-deep .mat-mdc-input-element {
-  padding: 4px 0; /* réduire padding interne */
+.compact-search-field .compact-clear-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff; /* ensure white background so it never overlays input content visually */
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
   font-size: 13px;
+  color: #666;
+  line-height: 1;
+  z-index: 3; /* sit above input content */
+  border-left: 1px solid #eee; /* visual separation */
+  border-radius: 0 6px 6px 0;
+  box-sizing: content-box;
+}
+
+.compact-search-field .compact-clear-btn[hidden] {
+  display: none !important;
+}
+
+.compact-search-field .compact-clear-btn:focus {
+  outline: 2px solid rgba(100, 150, 220, 0.35);
+  border-radius: 4px;
+}
+
+.compact-search-field.plain .compact-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.compact-search-field .compact-search-input {
+  border: none;
+  outline: none;
+  padding: 6px 4px;
+  font-size: 13px;
+  width: 100%;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* If screen too small, stack the inputs and let them take full width */
+@media (max-width: 480px) {
+  .compact-dual-search {
+    flex-direction: column;
+    max-width: 100%;
+    gap: 6px;
+  }
+
+  .compact-search-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.compact-search-field .compact-clear-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+}
+
+.compact-clear-btn:hover {
+  color: #222;
 }
 
 .compact-search-wrapper {
@@ -201,14 +247,21 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ccc;
+  background-color: #ffffff; /* opaque white */
+  opacity: 1;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  backdrop-filter: none;
   z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
 }
+
+
+/* Les styles globaux d'overlay ont été déplacés vers
+   `src/styles/overlay-search.scss`. Voir ce fichier pour les règles
+   `.search-items_panel`, `.compact-overlay-panel`, `.compact-suggestions`, etc. */
 
 .compact-project-option {
   padding: 8px 12px;

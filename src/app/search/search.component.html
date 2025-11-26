@@ -8,11 +8,10 @@
         matTooltip="{{ projectDisplayValue || projectsInput }}"
       >
         @if (showResearchField) {
-          <mat-form-field appearance="fill" class="compact-search-field">
-            <mat-icon matPrefix>settings</mat-icon>
+          <div class="compact-search-field plain">
+            <span class="compact-icon" aria-hidden>⚙</span>
             <input
               #projectInputCompact
-              matInput
               class="compact-search-input"
               [placeholder]="projectsInput"
               [value]="projectDisplayValue"
@@ -26,7 +25,6 @@
               (selectedResearchField$ | async)?.id !== '-'
             ) {
               <button
-                matSuffix
                 type="button"
                 class="compact-clear-btn"
                 aria-label="Effacer le projet"
@@ -35,7 +33,7 @@
                 ✕
               </button>
             }
-          </mat-form-field>
+          </div>
 
           @let projects = filteredResearchFields$ | async;
           @if (showProjectDropdown && projects) {
@@ -52,10 +50,9 @@
 
       <!-- Input item compact -->
       <div class="compact-search-wrapper">
-        <mat-form-field appearance="fill" class="compact-search-field">
-          <mat-icon matPrefix>search</mat-icon>
+        <div class="compact-search-field plain">
+          <span class="compact-icon" aria-hidden>🔍</span>
           <input
-            matInput
             class="compact-search-input"
             [placeholder]="itemsInput"
             [formControl]="searchInput"
@@ -64,9 +61,9 @@
             cdkOverlayOrigin
           />
           @if (searchInput.value) {
-            <button matSuffix type="button" class="compact-clear-btn" aria-label="Effacer" (click)="clearItemSearch()">✕</button>
+            <button type="button" class="compact-clear-btn" aria-label="Effacer" (click)="clearItemSearch()">✕</button>
           }
-        </mat-form-field>
+        </div>
 
         <!-- Compact suggestions dropdown via CDK Overlay -->
         @if ((filteredItems$ | async)?.length && (searchInputValue$ | async)) {
@@ -78,12 +75,19 @@
             [cdkConnectedOverlayPositions]="[{originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top'}]"
             panelClass="search-items_panel compact-overlay-panel"
           >
-            <div class="compact-suggestions">
-              <ul>
-                @for (item of filteredItems$ | async; track item.id) {
-                  <li class="compact-suggestion-item" (click)="onItemRowClick(item.id, $event)"><span class="item-label">{{ item.label }}</span></li>
-                }
-              </ul>
+            <div class="search-items_inner">
+              <div class="compact-suggestions">
+                <ul>
+                  @for (item of filteredItems$ | async; track item.id) {
+                    <li class="compact-suggestion-item" (click)="onItemRowClick(item.id, $event)">
+                      <div class="item-label">{{ item.label }}</div>
+                      @if (item.description) {
+                        <div class="item-description">{{ item.description }}</div>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
             </div>
           </ng-template>
         }

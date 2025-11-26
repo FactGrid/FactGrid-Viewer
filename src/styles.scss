@@ -1070,3 +1070,8 @@ button.mat-icon-button .mat-icon {
     padding-left: 0;
   }
 }
+
+/* Les règles d'overlay CDK pour le panneau de recherche sont centralisées
+   dans `src/styles/overlay-search.scss`. Ce fichier est importé plus haut
+   dans ce fichier (`@import 'styles/overlay-search.scss'`) — évitons les
+   définitions dupliquées ici. */

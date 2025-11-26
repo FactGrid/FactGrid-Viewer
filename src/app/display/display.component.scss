@@ -203,12 +203,13 @@
    BARRES D'OUTILS ET NAVIGATION
    ======================================== */
 
-.toolbar-band {
+.toolbar-separator {
+  height: 1px;
+  background: #000;
+  border: none;
   width: 100%;
-  height: 8px;
-  background: var(--color-primary, #6699cc);
+  margin: 0;
 }
-
 .top-toolbar,
 .side-toolbar {
   min-height: 64px !important;

@@ -66,11 +66,7 @@
 }
 
 /* Decorative stripe */
-.toolbar-band {
-  height: 8px;
-  width: 100%;
-  background: var(--color-primary, #6699cc);
-}
+/* Decorative stripe removed: toolbar-band not used anymore */
 
 /* Info card */
 .info-card {
