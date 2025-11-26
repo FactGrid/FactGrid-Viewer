@@ -1,100 +1,84 @@
 /* Global styles for the search overlay panel
-   This file centralizes rules that must apply to the CDK overlay pane
-   which is attached to document.body. Keep selectors simple and use
-   the `search-items_panel` panelClass applied when creating the overlay.
-*/
+   Centralized and opinionated defaults to ensure the CDK overlay
+   panel is opaque, readable and wide enough on desktop while
+   remaining responsive on small screens. This file should be the
+   single source-of-truth for `.search-items_panel` styles. */
+
 :root {
-  --panel-bg: #fafbfc;
-  --panel-border: rgba(31, 45, 64, 0.12);
-  --panel-shadow: 0 6px 20px rgba(31, 45, 64, 0.12);
+  --panel-bg: #ffffff; /* opaque white by default */
+  --panel-border: rgba(31, 45, 64, 0.08);
+  --panel-shadow: 0 10px 30px rgba(31, 45, 64, 0.12);
   --panel-padding: 8px 12px;
-  --panel-maxw: 700px;
+  --panel-maxw: 720px;
   --panel-gap-mobile: 24px;
 }
 
+/* Base pane: target the CDK overlay pane that receives the `search-items_panel` class. */
 .cdk-overlay-pane.search-items_panel {
-  position: fixed; /* explicit fixed positioning when we adjust via script */
-  z-index: 1300;
-  left: auto;
-  right: auto;
-  max-width: calc(100vw - 32px);
-  width: min(var(--panel-maxw), 92vw);
-  box-sizing: border-box;
+  position: fixed !important; /* ensure predictable layout */
+  z-index: 1400 !important;
+  left: auto !important;
+  right: auto !important;
+  box-sizing: border-box !important;
+  max-width: calc(100vw - 32px) !important;
+  width: min(var(--panel-maxw), 92vw) !important; /* wider on desktop */
+  pointer-events: auto !important;
 }
 
+/* Inner wrapper that holds the actual content. Keep it opaque and with comfortable padding. */
 .cdk-overlay-pane.search-items_panel .search-items_inner {
-  background: var(--panel-bg);
-  border-radius: 8px;
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  padding: var(--panel-padding);
-  width: 100%;
-  box-sizing: border-box;
-  overflow-wrap: anywhere;
+  background: var(--panel-bg) !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--panel-border) !important;
+  box-shadow: var(--panel-shadow) !important;
+  padding: var(--panel-padding) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-wrap: anywhere !important;
+  max-height: calc(100vh - 120px) !important; /* leave room for header/footer */
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
-/* Prevent panel from overlapping a fixed footer: limit inner height and enable scroll */
-.cdk-overlay-pane.search-items_panel .search-items_inner {
-  max-height: calc(100vh - 160px); /* leave room for footer */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Additional targets: some overlays may inject the .compact-suggestions list
-   directly under the CDK pane without the `search-items_inner` wrapper.
-   Target those cases to enforce opaque background, scrolling and width. */
+/* Ensure suggestion lists injected directly are also opaque and sized */
 .cdk-overlay-pane.search-items_panel .compact-suggestions,
 .cdk-overlay-pane.search-items_panel .compact-suggestion-item {
   background: var(--panel-bg) !important;
   box-sizing: border-box !important;
 }
 
-.cdk-overlay-pane.search-items_panel.compact-overlay-panel,
-.cdk-overlay-pane.search-items_panel .compact-suggestions {
-  /* ensure overlay pane itself cannot exceed viewport height and will scroll internally */
-  max-height: calc(100vh - 160px) !important;
-  overflow-y: auto !important;
-}
-
-/* Ensure pane width is larger on desktop; keep mobile constraints from earlier rules */
-.cdk-overlay-pane.search-items_panel {
+/* Pane variant for compact-overlay-panel class (often applied together) */
+.cdk-overlay-pane.search-items_panel.compact-overlay-panel {
   width: min(var(--panel-maxw), 92vw) !important;
+  max-width: calc(100vw - 32px) !important;
 }
 
-@media (min-width: 960px) {
-  .cdk-overlay-pane.search-items_panel {
-    width: min(520px, 80vw) !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .cdk-overlay-pane.search-items_panel {
-    width: min(640px, 70vw) !important;
-  }
-}
-
+/* Row / item styles */
 .cdk-overlay-pane.search-items_panel .search-items_row {
-  padding: 8px 10px;
-  cursor: pointer;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+  transition: background-color 160ms ease !important;
 }
 .cdk-overlay-pane.search-items_panel .search-items_row:hover {
-  background: rgba(31, 45, 64, 0.04);
+  background: rgba(31, 45, 64, 0.04) !important;
 }
 .cdk-overlay-pane.search-items_panel .search-items_row.clicked {
-  background: rgba(31, 45, 64, 0.06);
-}
-.cdk-overlay-pane.search-items_panel .search-items_row.clicked:hover {
-  background: rgba(31, 45, 64, 0.09);
+  background: rgba(31, 45, 64, 0.06) !important;
 }
 
 .cdk-overlay-pane.search-items_panel .search-items_label {
-  font-weight: 600;
-  color: #1f2d40;
+  font-weight: 600 !important;
+  color: #1f2d40 !important;
 }
 
-/* Ensure panel never overflows on small screens; center it */
+/* Accessibility: ensure focus styles are visible */
+.cdk-overlay-pane.search-items_panel .search-items_row:focus {
+  outline: 2px solid rgba(100, 150, 220, 0.35) !important;
+  outline-offset: 2px !important;
+}
+
+/* Mobile: center the overlay and let it be nearly full-width */
 @media (max-width: 700px) {
-  /* Stronger selector to override any inline CDK transforms/positions on small viewports */
   .cdk-overlay-container .cdk-overlay-pane.search-items_panel {
     left: 50% !important;
     transform: translateX(-50%) !important;
@@ -105,6 +89,7 @@
     position: fixed !important;
     box-sizing: border-box !important;
   }
+
   .cdk-overlay-pane.search-items_panel .search-items_inner {
     width: 100% !important;
     max-width: none !important;
@@ -113,17 +98,15 @@
   }
 }
 
-/* Ensure project-panel variant inherits the same visual treatment as items panel
-   Use a more specific selector to override possible inline styles or other rules
-*/
+/* Project panel variant keeps same visual treatment */
 .cdk-overlay-pane.search-items_panel.project-panel {
-  position: fixed;
-  z-index: 1310;
+  position: fixed !important;
+  z-index: 1410 !important;
 }
 .cdk-overlay-pane.search-items_panel.project-panel .search-items_inner,
 .cdk-overlay-pane.search-items_panel.project-panel .project-panel_inner {
   background: var(--panel-bg) !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   border: 1px solid var(--panel-border) !important;
   box-shadow: var(--panel-shadow) !important;
   padding: var(--panel-padding) !important;
@@ -131,9 +114,23 @@
   box-sizing: border-box !important;
 }
 
-.cdk-overlay-pane.search-items_panel.project-panel .search-items_row,
-.cdk-overlay-pane.search-items_panel.project-panel .project-item {
-  padding: 8px 10px;
+/* Small visual tweaks for the compact suggestion items */
+.cdk-overlay-pane.search-items_panel .compact-suggestion-item {
+  display: flex !important;
+  flex-direction: column !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  border-bottom: 1px solid rgba(0,0,0,0.04) !important;
 }
 
-/* Fallback manual overlay styles - ensure it floats above content */
+/* Remove any inherited translucent backgrounds on list items so the panel background shows */
+.cdk-overlay-pane.search-items_panel .compact-suggestion-item,
+.cdk-overlay-pane.search-items_panel .compact-suggestions {
+  background: transparent !important;
+}
+
+/* Fallback: ensure panel floats above content */
+.cdk-overlay-pane.search-items_panel,
+.cdk-overlay-pane.search-items_panel * {
+  isolation: isolate !important;
+}
