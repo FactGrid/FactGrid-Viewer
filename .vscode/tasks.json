@@ -1,35 +1,16 @@
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Kill Process on Port 4200",
-      "type": "shell",
-      "command": "$processId = Get-NetTCPConnection -LocalPort 4200 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess; if ($processId -and $processId -ne 0) { Stop-Process -Id $processId -Force }",
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": []
-    }
-    ,
-    {
-      "label": "Check MCP Health (port 8990)",
-      "type": "shell",
-      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\scripts\\check-health.ps1\" -Port 8990 -TimeoutMs 5000",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "test",
-        "isDefault": false
-      }
-    }
-  ]
+﻿{
+    "version":  "2.0.0",
+    "tasks":  [
+                  {
+                      "label":  "Dev: start frontend",
+                      "group":  "build",
+                      "command":  "ng serve",
+                      "presentation":  {
+                                           "reveal":  "always",
+                                           "panel":  "shared",
+                                           "focus":  false
+                                       },
+                      "type":  "shell"
+                  }
+              ]
 }
