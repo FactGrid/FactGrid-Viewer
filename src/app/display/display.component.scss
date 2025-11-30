@@ -955,10 +955,27 @@ $card-top-offset: 8px;
      to the viewport edges (left for child1, right for child2). Do not change
      internal card paddings. */
   .parent {
-    /* reduce horizontal gutters for wide (desktop) layouts */
-    padding-left: var(--spacing-md);
-    padding-right: var(--spacing-md);
-    gap: var(--spacing-md); /* keep a reasonable column gutter */
+    /* reduce horizontal outer padding so columns sit closer to the viewport edges */
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
+    gap: var(--spacing-md); /* keep a reasonable column gutter between child1 and child2 */
+  }
+}
+
+/* Desktop: increase inner padding for card content so text has more breathing room */
+@media (min-width: 1280px) {
+  :host ::ng-deep .thematic-cards-grid .cardBackground {
+    padding: calc(var(--spacing-md) + 6px) !important; /* a little room inside cards */
+    box-sizing: border-box;
+  }
+
+  /* Slightly increase list left insets for desktop so property/statement lines have space */
+  :host ::ng-deep app-generic-list-display .listStyle {
+    padding-left: 40px !important; /* from 30 -> 40 on desktop */
+  }
+
+  :host ::ng-deep app-generic-list-display .statementStyle {
+    padding-left: 20px !important; /* from 15 -> 20 on desktop */
   }
 }
 
