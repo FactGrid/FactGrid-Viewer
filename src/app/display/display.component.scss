@@ -950,6 +950,23 @@ $card-top-offset: 8px;
     min-width: 360px;
     max-width: 440px;
   }
+
+  /* Reduce the horizontal gutter between the two columns on large screens
+     so card margins on the inner sides are smaller (child1 right, child2 left).
+     Keep mobile behaviour unchanged. */
+  .parent {
+    gap: var(--spacing-sm); /* smaller horizontal gap on desktop */
+  }
+
+  /* Give the two columns a modest inner margin so cards don't touch each other
+     but the centre gutter is reduced compared to previous wide gap. */
+  .child1 {
+    margin-right: calc(var(--spacing-xs) + 4px);
+  }
+
+  .child2 {
+    margin-left: calc(var(--spacing-xs) + 4px);
+  }
 }
 
 /* ========================================
