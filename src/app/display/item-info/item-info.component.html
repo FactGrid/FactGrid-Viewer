@@ -25,18 +25,16 @@
           </div>
           <hr class="spacer-hr" />
           <ul>
-            @for (tech of infoList.technicalities; track tech.propertyId) {
+            @for (tech of infoList.technicalities; track trackTechPropKey(index, tech)) {
               <li>
                 <span class="propertyStyle">{{
                   tech.propertyLabel || tech.propertyId || '?'
                 }}</span>
                 <ul>
                   @for (
-                    val of tech.statements;
-                    track val.mainsnak?.datavalue?.value?.id ??
-                      val.mainsnak?.datavalue?.value ??
-                      val
-                  ) {
+                        val of tech.statements;
+                        track trackTechKey(index, val)
+                      ) {
                     <li class="entry-row">
                       @if (val.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                         {{
@@ -103,7 +101,7 @@
               </div>
             </cdk-virtual-scroll-viewport>
           } @else {
-            @for (L of infoList.natureOfList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+            @for (L of infoList.natureOfList; track trackListKey(index, L)) {
               <div class="entry-row">
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
@@ -172,7 +170,7 @@
               </div>
             </cdk-virtual-scroll-viewport>
           } @else {
-            @for (L of infoList.classesList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+            @for (L of infoList.classesList; track trackListKey(index, L)) {
               <div class="entry-row">
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
@@ -234,7 +232,7 @@
               </div>
             </cdk-virtual-scroll-viewport>
           } @else {
-            @for (L of infoList.subclassesList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+            @for (L of infoList.subclassesList; track trackListKey(index, L)) {
               <div class="entry-row">
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
@@ -301,7 +299,7 @@
               </div>
             </cdk-virtual-scroll-viewport>
           } @else {
-            @for (L of infoList.instancesList; track L.item?.id ?? L.itemLabel?.value ?? L) {
+            @for (L of infoList.instancesList; track trackListKey(index, L)) {
               <div class="entry-row">
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}

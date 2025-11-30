@@ -1,3 +1,51 @@
+/* Aligne le bord droit du panel sur le bord droit de l'input et ajoute un décalage vertical */
+.cdk-overlay-pane.search-items_panel.compact-overlay-panel {
+  /* don't override the CDK's computed horizontal placement (left);
+     remove centering transform if present and add a small vertical offset */
+  transform: none !important;
+  margin-top: 8px !important;
+}
+
+/* Compact project panel variant: keep placement controlled by CDK, make it slightly narrower */
+.cdk-overlay-pane.search-items_panel.compact-project-panel {
+  /* do not force fixed positioning for compact project panels */
+  transform: none !important;
+  margin-top: 8px !important;
+  width: min(480px, 70vw) !important;
+  max-width: calc(100vw - 48px) !important;
+}
+/* Ensure project panel sits above page content and other overlays (visible) */
+.cdk-overlay-pane.search-items_panel.compact-project-panel {
+  z-index: 1420 !important;
+}
+
+/* inside the CDK pane, the original .compact-project-dropdown used to be absolute
+   — when rendered inside an overlay we want a static flow element so it fills
+   the overlay pane consistently */
+.cdk-overlay-pane.search-items_panel.compact-project-panel .compact-project-dropdown {
+  position: static !important;
+  width: 100% !important;
+  max-height: calc(60vh) !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  padding: 6px 8px !important;
+}
+.cdk-overlay-pane.search-items_panel:not(.compact-overlay-panel) {
+  width: min(720px, 92vw) !important;
+  max-width: calc(100vw - 32px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+/* Correction : appliquer le style principal sur .cdk-overlay-pane.search-items_panel pour garantir l'opacité */
+.cdk-overlay-pane.search-items_panel {
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(31, 45, 64, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(31, 45, 64, 0.12) !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow: hidden !important;
+  padding: 8px 12px !important;
+}
 /* Global styles for the search overlay panel
    Centralized and opinionated defaults to ensure the CDK overlay
    panel is opaque, readable and wide enough on desktop while
@@ -13,88 +61,77 @@
   --panel-gap-mobile: 24px;
 }
 
-/* Base pane: target the CDK overlay pane that receives the `search-items_panel` class. */
-.cdk-overlay-pane.search-items_panel {
-  position: fixed !important; /* ensure predictable layout */
-  z-index: 1400 !important;
-  left: auto !important;
-  right: auto !important;
-  box-sizing: border-box !important;
-  max-width: calc(100vw - 32px) !important;
-  width: min(var(--panel-maxw), 92vw) !important; /* wider on desktop */
-  pointer-events: auto !important;
+/* Base pane: target the wrapper div that receives the `search-items_panel` class. */
+.cdk-overlay-pane .search-items_panel {
+  background: #ffffff !important; /* ensure opaque background */
+  border-radius: 10px !important;
+  border: 1px solid rgba(31, 45, 64, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(31, 45, 64, 0.12) !important;
+  max-height: calc(100vh - 120px) !important; /* prevent overflow */
+  overflow: hidden !important; /* clip content */
+  padding: 8px 12px !important;
 }
 
 /* Inner wrapper that holds the actual content. Keep it opaque and with comfortable padding. */
-.cdk-overlay-pane.search-items_panel .search-items_inner {
-  background: var(--panel-bg) !important;
-  border-radius: 10px !important;
-  border: 1px solid var(--panel-border) !important;
-  box-shadow: var(--panel-shadow) !important;
-  padding: var(--panel-padding) !important;
+.search-items_panel .search-items_inner {
   width: 100% !important;
   box-sizing: border-box !important;
   overflow-wrap: anywhere !important;
-  max-height: calc(100vh - 120px) !important; /* leave room for header/footer */
+  max-height: 100% !important; /* fill the pane */
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
 }
 
 /* Ensure suggestion lists injected directly are also opaque and sized */
-.cdk-overlay-pane.search-items_panel .compact-suggestions,
-.cdk-overlay-pane.search-items_panel .compact-suggestion-item {
-  background: var(--panel-bg) !important;
+.search-items_panel .compact-suggestions,
+.search-items_panel .compact-suggestion-item {
+  background: transparent !important;
   box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Pane variant for compact-overlay-panel class (often applied together) */
-.cdk-overlay-pane.search-items_panel.compact-overlay-panel {
-  width: min(var(--panel-maxw), 92vw) !important;
+.search-items_panel.compact-overlay-panel {
+  width: min(720px, 92vw) !important;
   max-width: calc(100vw - 32px) !important;
 }
 
 /* Row / item styles */
-.cdk-overlay-pane.search-items_panel .search-items_row {
+.search-items_panel .search-items_row {
   padding: 10px 12px !important;
   cursor: pointer !important;
   transition: background-color 160ms ease !important;
 }
-.cdk-overlay-pane.search-items_panel .search-items_row:hover {
+.search-items_panel .search-items_row:hover {
   background: rgba(31, 45, 64, 0.04) !important;
 }
-.cdk-overlay-pane.search-items_panel .search-items_row.clicked {
+.search-items_panel .search-items_row.clicked {
   background: rgba(31, 45, 64, 0.06) !important;
 }
 
-.cdk-overlay-pane.search-items_panel .search-items_label {
+.search-items_panel .search-items_label {
   font-weight: 600 !important;
   color: #1f2d40 !important;
 }
 
 /* Accessibility: ensure focus styles are visible */
-.cdk-overlay-pane.search-items_panel .search-items_row:focus {
+.search-items_panel .search-items_row:focus {
   outline: 2px solid rgba(100, 150, 220, 0.35) !important;
   outline-offset: 2px !important;
 }
 
 /* Mobile: center the overlay and let it be nearly full-width */
 @media (max-width: 700px) {
-  .cdk-overlay-container .cdk-overlay-pane.search-items_panel {
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: calc(100vw - var(--panel-gap-mobile)) !important;
-    max-width: none !important;
-    right: auto !important;
-    top: auto !important;
-    position: fixed !important;
-    box-sizing: border-box !important;
+  .cdk-overlay-container .cdk-overlay-pane .search-items_panel {
+    max-height: calc(100vh - 120px) !important; /* prevent overflow */
+    overflow: hidden !important;
   }
 
-  .cdk-overlay-pane.search-items_panel .search-items_inner {
+  .search-items_panel .search-items_inner {
     width: 100% !important;
     max-width: none !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+    max-height: 100% !important;
   }
 }
 
@@ -105,32 +142,68 @@
 }
 .cdk-overlay-pane.search-items_panel.project-panel .search-items_inner,
 .cdk-overlay-pane.search-items_panel.project-panel .project-panel_inner {
-  background: var(--panel-bg) !important;
+  background: #ffffff !important;
   border-radius: 10px !important;
-  border: 1px solid var(--panel-border) !important;
-  box-shadow: var(--panel-shadow) !important;
+  border: 1px solid rgba(31, 45, 64, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(31, 45, 64, 0.12) !important;
   padding: var(--panel-padding) !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
 
 /* Small visual tweaks for the compact suggestion items */
-.cdk-overlay-pane.search-items_panel .compact-suggestion-item {
-  display: flex !important;
-  flex-direction: column !important;
+.search-items_panel .compact-suggestion-item {
+  display: block !important;
   white-space: normal !important;
   word-wrap: break-word !important;
-  border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+  margin-bottom: 4px !important; /* reduced spacing between blocks for compact layout */
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  border: 1px solid transparent !important; /* visual separation handled by inner link hover */
 }
 
 /* Remove any inherited translucent backgrounds on list items so the panel background shows */
-.cdk-overlay-pane.search-items_panel .compact-suggestion-item,
-.cdk-overlay-pane.search-items_panel .compact-suggestions {
+.search-items_panel .compact-suggestion-item,
+.search-items_panel .compact-suggestions {
   background: transparent !important;
 }
 
+/* Make the entire suggestion block a clear, interactive link */
+.search-items_panel .compact-suggestion-item .compact-suggestion-link {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important; /* tighter spacing inside each block */
+  width: 100% !important;
+  padding: 8px 10px !important; /* smaller internal padding for compactness */
+  text-decoration: none !important;
+  color: inherit !important;
+  border-radius: 6px !important;
+  transition: background-color 120ms ease, transform 100ms ease !important;
+}
+
+.search-items_panel .compact-suggestion-item .compact-suggestion-link:hover {
+  background: rgba(31, 45, 64, 0.035) !important;
+  cursor: pointer !important;
+  transform: none !important; /* avoid vertical shift to keep layout compact */
+}
+
+.search-items_panel .compact-suggestion-item.clicked .compact-suggestion-link {
+  background: rgba(31, 45, 64, 0.06) !important;
+}
+
+.search-items_panel .compact-suggestion-item .item-label {
+  font-weight: 600 !important;
+  color: #1f2d40 !important;
+}
+
+.search-items_panel .compact-suggestion-item .item-description {
+  color: rgba(31,45,64,0.7) !important;
+  font-size: 0.92rem !important;
+  line-height: 1.2 !important;
+}
+
 /* Fallback: ensure panel floats above content */
-.cdk-overlay-pane.search-items_panel,
-.cdk-overlay-pane.search-items_panel * {
+.search-items_panel,
+.search-items_panel * {
   isolation: isolate !important;
 }

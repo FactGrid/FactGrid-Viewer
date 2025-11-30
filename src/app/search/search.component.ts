@@ -219,16 +219,18 @@ export class SearchComponent implements OnInit, OnDestroy {
     const overlaySub = this.overlayOpen$?.subscribe();
     if (overlaySub) this.subscriptions.push(overlaySub);
 
-    // Check for CDK overlay panes after component init
-    setTimeout(() => {
-      const panes = document.querySelectorAll('.cdk-overlay-pane');
-      console.log('[SearchComponent] CDK overlay panes found:', panes.length, panes);
-    }, 1000);
   }
 
   onItemRowClick(itemId: string, event?: MouseEvent) {
     if (event) {
-      event.preventDefault();
+      // allow Ctrl/Cmd/Shift or middle-click to open in new tab/window - don't block default in that case
+      const isModifiedClick = event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1;
+      if (!isModifiedClick) {
+        event.preventDefault();
+      } else {
+        // If the user wanted a new tab/window, let the browser handle it.
+        return;
+      }
     }
     this.clickedItemId = itemId;
     // Changement de couleur temporaire (par exemple 200ms)
@@ -349,8 +351,26 @@ export class SearchComponent implements OnInit, OnDestroy {
   private fetchAutocompleteEntities(
     searchTerm: string,
     lang: string,
-    maxResults: number = 50
+    maxResults: number = 50,
+    selectedProjectId?: string
   ): Observable<{ items: WikibaseEntity[]; total: number }> {
+    // If a project is selected, use Cirrus search (action=query list=search) with
+    // property filters (haswbstatement:P131=...) to restrict results to items in that project.
+    if (selectedProjectId && selectedProjectId !== 'all' && selectedProjectId !== '-' && selectedProjectId !== 'Q0') {
+      const filters = this.buildSearchFilters(selectedProjectId, searchTerm);
+      const srsearch = filters.join(' ');
+      // getQidsList returns page titles (e.g. Q123). Use it to then fetch entities data.
+      return this.request.getQidsList(srsearch, maxResults).pipe(
+        switchMap((titles: string[]) => {
+          const ids = (titles || []).map((t) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
+          return this.fetchEntities(ids).pipe(
+            map((items) => ({ items, total: items.length }))
+          );
+        })
+      );
+    }
+
+    // Default: use the faster wbsearchentities path when no project filter is active.
     return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
       map((res: any) => {
         const total = res.searchinfo?.totalhits ?? res.search?.length ?? 0;
@@ -383,7 +403,9 @@ export class SearchComponent implements OnInit, OnDestroy {
           this.resetSearchState();
           return of([] as WikibaseEntity[]);
         }
-        return this.fetchAutocompleteEntities(searchTerm, this.lang.selectedLang, 50).pipe(
+        const selected = this.selectedResearchField.getSelectedResearchField();
+        const selectedId = selected?.id;
+        return this.fetchAutocompleteEntities(searchTerm, this.lang.selectedLang, 50, selectedId).pipe(
           map(({ items }) => {
             this.updateItemsList(items);
             return items;
@@ -510,18 +532,10 @@ export class SearchComponent implements OnInit, OnDestroy {
     );
     // overlayOpen$ suit la condition utilisée dans le template et logge sa valeur
     this.overlayOpen$ = combineLatest([this.filteredItems$, this.searchInputValue$]).pipe(
-      tap(([items, input]) => console.log('[SearchComponent] overlayOpen$ inputs - items:', items?.length, 'input:', input)),
       map(([items, input]) => !!(items && items.length > 0 && (input || '').length > 0)),
-      tap((open) => console.log('[SearchComponent] overlayOpen$ computed:', open))
+
       // overlayOpen state computed
     );
-    // Log once when overlay opens (single, non-repeating diagnostic)
-    const overlayOnceSub = this.overlayOpen$.pipe(filter((v) => !!v), take(1)).subscribe(() =>
-      console.log('[SearchComponent] overlay opened (one-time)')
-    );
-    this.subscriptions.push(overlayOnceSub);
-    const sub = this.filteredItems$.subscribe();
-    this.subscriptions.push(sub);
   }
 
   // hintValue/pages removed for compact-only mode

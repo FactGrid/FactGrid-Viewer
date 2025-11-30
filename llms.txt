@@ -1,0 +1,43 @@
+FactGrid-Viewer — fiche pour agents LLM
+--------------------------------------
+But
+- UI Angular pour naviguer la base FactGrid (Wikibase).
+
+Stack principal
+- Angular 20, Angular Material, RxJS, Leaflet.
+- Node LTS recommandé (ex. 20.x).
+
+Points d’entrée importants
+- src/app/display/display.component.ts       (vue principale / layout)
+- src/app/search/                            (recherche, advanced-search)
+- src/app/services/request.service.ts        (APIs / téléchargement)
+- src/styles.scss                            (styles globaux)
+- package.json / package-lock.json           (dépendances & scripts)
+- .github/workflows/ci.yml                   (CI build/test)
+
+Commandes de développement
+- npm ci                 # installation propre (après clone)
+- npm install            # si lockfile à synchroniser
+- ng serve               # dev server
+- npm run build          # build production
+- npm test               # tests unitaires
+
+Contraintes & notes
+- Mettre Node en version LTS (nvm recommandé).
+- Eviter d’exposer des outils de dev locaux (ex: MCP/PM2) en production.
+- Si des résolutions de dépendances échouent : npm install --legacy-peer-deps (usage temporaire).
+
+Exemples de prompts utiles
+- "Résume l'architecture des composants de la vue display.component"
+- "Liste les modules chargés paresseusement et leurs rôles"
+- "Où sont gérées les images et la logique d'ouverture d'une image ?"
+- "Propose une optimisation pour réduire la taille du chunk display.component"
+
+Comment les agents doivent l’utiliser
+- Ce fichier est une source de contexte courte ; les agents locaux/IDE (ex. Copilot) le liront si :
+  - l’extension/agent a accès au workspace, et
+  - il ouvre ou référence explicitement llms.txt.
+- Pour une ingestion automatique, configurez l’outil d’indexation/agent pour inclure ce fichier dans le contexte du repo.
+
+Maintenir à jour
+- Rester bref et vérifier après modifications structurelles majeures.

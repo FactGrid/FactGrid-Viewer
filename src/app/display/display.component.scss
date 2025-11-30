@@ -4,6 +4,12 @@
    live in `src/styles.scss`.
 */
 
+// Déclarations globales de spacing (doivent être définies avant tout usage)
+$compact-gap: 4px;
+$compact-card-padding: 6px;
+$compact-card-margin: 4px;
+$card-top-offset: 8px;
+
 /* Show / hide helpers used by the template */
 .hide-division {
   display: none;
@@ -874,12 +880,42 @@ body {
 }
 
 .child2 {
-  display: flex;
+  display: grid; /* Changer en grid pour aligner */
   flex: 1 1 0;
   min-width: 280px;
   max-width: 380px;
   flex-flow: column;
   gap: var(--spacing-md);
+  padding: 0; /* Même padding */
+}
+
+/* Offset commun pour aligner le bord supérieur des premières cartes dans child1 et child2 */
+$card-top-offset: 8px;
+
+// Grille principale (child1)
+.thematic-cards-grid {
+  display: grid;
+  gap: $compact-gap;
+  padding: 0;
+  padding-top: $card-top-offset; // appliquer l'offset ici
+}
+
+// child2 doit utiliser la même grille pour aligner la première rangée
+.child2 {
+  display: grid;
+  gap: $compact-gap;
+  padding: 0; // padding-top déplacé dans .child2 .thematic-cards-grid
+  padding-top: 0;
+  align-items: start;
+  grid-auto-rows: min-content;
+}
+
+// Si child2 contient sa propre .thematic-cards-grid, appliquer l'offset + mêmes règles
+.child2 .thematic-cards-grid {
+  display: grid;
+  gap: $compact-gap;
+  padding: 0;
+  padding-top: $card-top-offset; // même top offset qu'en child1
 }
 
 @media (max-width: 813px) {

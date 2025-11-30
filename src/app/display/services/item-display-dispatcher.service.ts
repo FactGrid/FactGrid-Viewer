@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { BlockDisplayService } from './block-display.service';
 //import { IframesDisplayService } from './iframes-display.service';
+import { TechnicalitiesDisplayService } from './technicalities-display.service';
 import { WikiDisplayService } from './wiki-display.service';
+
 
 export interface DisplayFlags {
   isPlace: boolean;
@@ -19,13 +21,16 @@ export interface DisplayFlags {
   isInfoList: boolean;
   isFrames: boolean;
   isExternalLinks: boolean;
+  isInfo: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ItemDisplayDispatcherService {
+  
   private blockDisplay = inject(BlockDisplayService);
   private wikiDisplay = inject(WikiDisplayService);
-  // private iframesDisplay = inject(IframesDisplayService);
+ // private iframesDisplay = inject(IframesDisplayService);
+  private technicalitiesDisplay = inject(TechnicalitiesDisplayService);
 
   dispatch(item: any, target: any): DisplayFlags {
     const claims = item[0].claims;
@@ -34,10 +39,13 @@ export class ItemDisplayDispatcherService {
     target.excludedProperties = [];
     this.blockDisplay.setExcludedProperties(item, target.excludedProperties);
 
-    // Header
-    target.headerDetail = [];
-    this.blockDisplay.setHeaderDisplay(item, target.headerDetail);
-
+    // Info
+    target.info = [];
+    let isInfo = false;
+    this.blockDisplay.setInfoDisplay(item, target.info);
+    console.log(target.info);
+    isInfo= target.info.length > 0
+    
     // Place
     target.locationAndSituation = [];
     let isPlace = false;
@@ -87,17 +95,29 @@ export class ItemDisplayDispatcherService {
       isOrg = target.locationAndContext.length > 0;
     }
 
-    // InfoList (remplie entièrement par setInfoDisplay)
-    this.blockDisplay.setInfoDisplay(item, target);
-    target.infoList = {
-      instancesList: target.instancesList,
-      subclassesList: target.subclassesList,
-      classesList: target.classesList,
-      natureOfList: target.natureOfList,
-      technicalities: target.infoProperties, // alias pour compatibilité
-      infoProperties: target.infoProperties,
-    };
-    // isInfoList sera défini plus bas, une seule fois
+    // Activity
+    target.activityDetail = [];
+    let isActivity = false;
+    if (claims.P2?.activity !== undefined) {
+      this.blockDisplay.setActivityDisplay(item, target.activityDetail);
+      isActivity = target.activityDetail.length > 0;
+    }
+
+    // Event
+    target.eventDetail = [];
+    let isEvent = false;
+    if (claims.P2?.event !== undefined) {
+      this.blockDisplay.setEventDisplay(item, target.eventDetail);
+      isEvent = target.eventDetail.length > 0;
+    }
+
+    // Document
+    target.documentDetail = [];
+    let isDocument = false;
+    if (claims.P2?.document !== undefined) {
+      this.blockDisplay.setDocumentDisplay(item, target.documentDetail);
+      isDocument = target.documentDetail.length > 0;
+    }
 
     // Sources
     target.sourcesList = [];
@@ -128,50 +148,36 @@ export class ItemDisplayDispatcherService {
       isOther = target.otherClaims.length > 0;
     }
 
-    // Item info
+
 
     // MainList
     target.mainList = [];
     let isMain = false;
-    let isActivity = false;
-    let isDocument = false;
-    let isEvent = false;
 
     if (claims.P2 === undefined) {
       if (claims.P3 !== undefined) {
         target.mainList.push(claims.P3);
       }
     } else {
-      // Concaténer toutes les sections sauf lifeAndFamily
-      let allSections = [].concat(
-        target.locationAndContext || [],
-        target.locationAndSituation || [],
-        target.activityDetail || [],
-        target.eventDetail || [],
-        target.documentDetail || [],
-        target.otherClaims || []
+      target.mainList = []
+        .concat(
+          target.lifeAndFamily || [],
+          target.locationAndContext || [],
+          target.locationAndSituation || [],
+          target.activityDetail || [],
+          target.eventDetail || [],
+          target.documentDetail || [],
+          target.otherClaims || []
       );
-      // Exclure les propriétés qui sont dans technicalities (par propertyId)
-      this.blockDisplay.setInfoDisplay(item, target); // S'assurer que infoList est à jour
-      let technicalityProps = [];
-      let tempTechnicalities = [];
-      //  this.blockDisplay.setTechnicalitiesDisplay(item, tempTechnicalities);
-      //  if (tempTechnicalities.length > 0) {
-      //    technicalityProps = tempTechnicalities.map(t => t.propertyId);
-      //  }
-      // Filtrer chaque entrée de allSections pour retirer celles dont la propriété est dans technicalityProps
-      target.mainList = allSections.filter((section) => {
-        // section peut être un tableau de claims, on vérifie le propertyId
-        if (
-          Array.isArray(section) &&
-          section.length > 0 &&
-          section[0].mainsnak &&
-          section[0].mainsnak.property
-        ) {
-          return !technicalityProps.includes(section[0].mainsnak.property);
+
+ /*     Object.keys(claims).forEach(key => {
+        if (key.startsWith('Q') && Array.isArray(claims[key])) {
+          // Par exemple, pour les ajouter à mainList :
+          target.mainList.push(claims[key]);
         }
-        return true;
       });
+      */
+
     }
     isMain = target.mainList.length > 0;
     if (claims.P2 !== undefined && claims.P2[0]?.mainsnak?.label !== undefined) {
@@ -179,6 +185,8 @@ export class ItemDisplayDispatcherService {
     }
 
     // ... après la construction de target.mainList
+
+
 
     let isFrames = false;
 
@@ -189,13 +197,29 @@ export class ItemDisplayDispatcherService {
     isFrames = target.iframes.length > 0;
     */
 
-    // InfoList (flag unique pour l'affichage)
-    const isInfoList =
+    // InfoList
+   
+    this.blockDisplay.setItemInfoDisplay(item, target);
+
+    let technicalities: any[] = [];
+    this.technicalitiesDisplay.setTechnicalitiesDisplay(item, technicalities);
+
+    target.infoList = {
+      instancesList: target.instancesList,
+      subclassesList: target.subclassesList,
+      classesList: target.classesList,
+      natureOfList: target.natureOfList,
+      technicalities: technicalities
+    };
+
+    // Flag unique pour l'affichage
+    let isInfoList =
       (target.infoList.instancesList && target.infoList.instancesList.length > 0) ||
       (target.infoList.subclassesList && target.infoList.subclassesList.length > 0) ||
       (target.infoList.classesList && target.infoList.classesList.length > 0) ||
       (target.infoList.natureOfList && target.infoList.natureOfList.length > 0) ||
       (target.infoList.technicalities && target.infoList.technicalities.length > 0);
+
 
     // Wikis
     target.wikis = [];
@@ -203,7 +227,9 @@ export class ItemDisplayDispatcherService {
     this.wikiDisplay.setWikiDisplay(item, target.wikis);
     isWikis = target.wikis.length > 0;
 
+
     // ... (autres propriétés comme dans votre code)
+
 
     // Retourne les flags utiles
     return {
@@ -218,10 +244,11 @@ export class ItemDisplayDispatcherService {
       isOrg,
       isOther,
       isInfoList,
+      isInfo,
       isMain,
       isWikis,
       isFrames,
-      isExternalLinks,
+      isExternalLinks
     };
   }
 }

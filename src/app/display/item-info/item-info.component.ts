@@ -52,7 +52,35 @@ export class ItemInfoComponent implements OnChanges {
   readonly virtualThreshold = 20;
   readonly rowHeight = 36;
 
-  trackListKey = (index: number, L: any) => L?.item?.id ?? L?.itemLabel?.value ?? index;
+  // Track function: returns a stable, unique key for an item.
+  // Treat empty strings as missing values (avoid returning '')
+  trackListKey = (index: number, L: any) => {
+    const id = L?.item?.id ?? L?.item?.value ?? L?.mainsnak?.datavalue?.value?.id;
+    if (id) return id;
+    const label = (L?.itemLabel?.value ?? L?.itemLabel ?? '').toString().trim();
+    if (label) return label;
+    // fallback: use index (unique per iteration) — stable only for append-only lists
+    return index;
+  };
+
+  // Track function for technicalities inner statements
+  trackTechKey = (index: number, val: any) => {
+    const id =
+      val?.mainsnak?.datavalue?.value?.id ?? val?.mainsnak?.datavalue?.value ?? val;
+    if (id && (typeof id !== 'string' || id.toString().trim() !== '')) return id;
+    const label = (val?.mainsnak?.label ?? val?.itemLabel ?? '').toString().trim();
+    if (label) return label;
+    return index;
+  };
+
+  // Track function for technicalities outer list (tech)
+  trackTechPropKey = (index: number, tech: any) => {
+    const id = tech?.propertyId ?? tech?.property ?? '';
+    if (id && (typeof id !== 'string' || id.toString().trim() !== '')) return id;
+    const label = (tech?.propertyLabel ?? tech?.label ?? '').toString().trim();
+    if (label) return label;
+    return index;
+  };
 
   getViewportPx(len: number): string {
     const max = 320; // px

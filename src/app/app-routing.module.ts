@@ -30,13 +30,7 @@ const routes: Routes = [
     loadComponent: () =>
       import('./paris-search/paris-search.component').then((mod) => mod.ParisSearchComponent),
   },
-  {
-    path: 'harmonia_universalis',
-    loadComponent: () =>
-      import('./harmonia-universalis/harmonia-universalis.component').then(
-        (mod) => mod.HarmoniaUniversalisComponent
-      ),
-  },
+
   {
     path: 'advanced_search',
     loadComponent: () =>

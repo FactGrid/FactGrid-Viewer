@@ -2,16 +2,14 @@
   <div class="search-field-col">
     <div class="compact-dual-search">
       <!-- Projet (affiché uniquement si showResearchField true) -->
-      <div
-        class="compact-search-wrapper compact-project"
-        [class.invisible-project]="!showResearchField"
-        matTooltip="{{ projectDisplayValue || projectsInput }}"
-      >
-        @if (showResearchField) {
+      @if (showResearchField) {
+        <div class="compact-search-wrapper compact-project" matTooltip="{{ projectDisplayValue || projectsInput }}">
           <div class="compact-search-field plain">
             <span class="compact-icon" aria-hidden>⚙</span>
             <input
               #projectInputCompact
+              #projectOrigin="cdkOverlayOrigin"
+              cdkOverlayOrigin
               class="compact-search-input"
               [placeholder]="projectsInput"
               [value]="projectDisplayValue"
@@ -36,17 +34,26 @@
           </div>
 
           @let projects = filteredResearchFields$ | async;
-          @if (showProjectDropdown && projects) {
-            <div class="compact-project-dropdown">
-              @for (project of projects; track project.id) {
-                <div class="compact-project-option" (mousedown)="selectProjectCompact(project)">
-                  {{ project.name }}
-                </div>
-              }
+          <ng-template
+            cdkConnectedOverlay
+            [cdkConnectedOverlayOrigin]="projectOrigin"
+            [cdkConnectedOverlayOpen]="showProjectDropdown && (projects?.length > 0)"
+            [cdkConnectedOverlayHasBackdrop]="false"
+            [cdkConnectedOverlayPositions]="[{originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8}]"
+            [cdkConnectedOverlayPanelClass]="['search-items_panel', 'compact-overlay-panel', 'compact-project-panel']"
+          >
+            <div class="search-items_inner">
+              <div class="compact-project-dropdown">
+                @for (project of projects; track project.id) {
+                  <div class="compact-project-option" (mousedown)="selectProjectCompact(project)">
+                    {{ project.name }}
+                  </div>
+                }
+              </div>
             </div>
-          }
-        }
-      </div>
+          </ng-template>
+        </div>
+      }
 
       <!-- Input item compact -->
       <div class="compact-search-wrapper">
@@ -72,18 +79,25 @@
             [cdkConnectedOverlayOrigin]="compactOrigin"
             [cdkConnectedOverlayOpen]="overlayOpen$ | async"
             [cdkConnectedOverlayHasBackdrop]="false"
-            [cdkConnectedOverlayPositions]="[{originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top'}]"
-            panelClass="search-items_panel compact-overlay-panel"
+            [cdkConnectedOverlayPositions]="[{originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8}]"
+            [cdkConnectedOverlayPanelClass]="['search-items_panel', 'compact-overlay-panel']"
           >
             <div class="search-items_inner">
               <div class="compact-suggestions">
                 <ul>
                   @for (item of filteredItems$ | async; track item.id) {
-                    <li class="compact-suggestion-item" (click)="onItemRowClick(item.id, $event)">
-                      <div class="item-label">{{ item.label }}</div>
-                      @if (item.description) {
-                        <div class="item-description">{{ item.description }}</div>
-                      }
+                    <li class="compact-suggestion-item" [class.clicked]="clickedItemId === item.id">
+                      <a
+                        class="compact-suggestion-link"
+                        [routerLink]="['/item', item.id]"
+                        (click)="onItemRowClick(item.id, $event)"
+                        aria-label="{{ item.label }} — ouvrir"
+                      >
+                        <div class="item-label">{{ item.label }}</div>
+                        @if (item.description) {
+                          <div class="item-description">{{ item.description }}</div>
+                        }
+                      </a>
                     </li>
                   }
                 </ul>

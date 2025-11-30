@@ -1,0 +1,11 @@
+{
+  "files.exclude": {
+    "llms.txt": false
+  },
+  "search.exclude": {
+    "llms.txt": false
+  },
+  "files.associations": {
+    "llms.txt": "markdown"
+  }
+}

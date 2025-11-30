@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
-import { saveAs } from 'file-saver-es';
+import { saveAs } from 'file-saver';
 import { expand, map, reduce, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -202,13 +202,14 @@ export class RequestService {
     );
   }
 
-  getQidsList(search: string): Observable<string[]> {
+  getQidsList(search: string, limit: number = 500): Observable<string[]> {
     const baseParams = new HttpParams()
       .set('action', 'query')
       .set('list', 'search')
       .set('srsearch', search)
       .set('format', 'json')
-      .set('srlimit', '5000')
+      .set('srlimit', String(limit))
+      .set('srnamespace', '120')
       .set('origin', '*');
 
     const fetch = (sroffset?: number) => {

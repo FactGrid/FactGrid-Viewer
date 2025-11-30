@@ -62,7 +62,6 @@ export class AppComponent implements OnInit {
   ];
 
   specialPages = [
-    { name: 'Harmonia Universalis', address: 'harmonia_universalis' },
     { name: 'Paris', address: 'paris' },
   ];
 

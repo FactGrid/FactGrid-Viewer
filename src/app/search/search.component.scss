@@ -133,13 +133,20 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 /* fixed compact input width: stays visually equal when single or paired
    but adapts to container size to avoid horizontal overflow. */
 :host {
-  --compact-input-width: 190px; /* default preferred width */
+  /* Increase preferred width so two compact inputs appear wider on desktop
+     while remaining responsive on small screens */
+  --compact-input-width: 260px; /* legacy preferred width */
+  --compact-input-min-width: 180px;
+  --compact-input-max-width: 520px;
 }
 
 .compact-search-field {
-  /* pick the smaller of the preferred width and half of the available
-     space (minus gap) so two fields never overflow their container */
-  flex: 0 0 min(var(--compact-input-width), calc((100% - 8px) / 2));
+    /* flexible layout: by default each input can grow to half the available
+      space but respects sensible min/max values to avoid being too small
+      or excessively wide on very large screens */
+    flex: 1 1 calc((100% - 8px) / 2);
+    min-width: var(--compact-input-min-width);
+    max-width: var(--compact-input-max-width);
   min-width: 0; /* allow shrinking on narrow containers */
   height: 40px;
   display: flex;
@@ -160,22 +167,23 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 
 
 .compact-search-field .compact-search-input {
-  padding-right: 44px; /* extra room for clear button */
+  /* Make extra room for the clear button and avoid text overlap */
+  padding-right: 64px; /* increased from 44px */
 }
 
 .compact-search-field .compact-clear-btn {
   position: absolute;
-  right: 6px;
+  right: 8px; /* place clear slightly further from edge */
   top: 50%;
   transform: translateY(-50%);
   background: #fff; /* ensure white background so it never overlays input content visually */
   border: none;
-  padding: 6px 8px;
+  padding: 6px 10px; /* slightly more padding for better hit area */
   cursor: pointer;
   font-size: 13px;
   color: #666;
   line-height: 1;
-  z-index: 3; /* sit above input content */
+  z-index: 4; /* sit above input content */
   border-left: 1px solid #eee; /* visual separation */
   border-radius: 0 6px 6px 0;
   box-sizing: content-box;
@@ -200,18 +208,19 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   font-size: 14px;
 }
 
-.compact-search-field .compact-search-input {
+  .compact-search-field .compact-search-input {
   border: none;
   outline: none;
-  padding: 6px 4px;
+  /* keep right padding large to avoid clear-button overlap */
+  padding: 6px 64px 6px 4px;
   font-size: 13px;
   width: 100%;
   background: transparent;
   box-sizing: border-box;
 }
 
-/* If screen too small, stack the inputs and let them take full width */
-@media (max-width: 480px) {
+/* If screen too small (tablet/phone), stack the inputs and let them take full width */
+@media (max-width: 700px) {
   .compact-dual-search {
     flex-direction: column;
     max-width: 100%;
@@ -226,12 +235,14 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 }
 
 .compact-search-field .compact-clear-btn {
-  background: transparent;
+  background: #fff; /* ensure visible on white fields */
   border: none;
-  padding: 4px 6px;
+  padding: 6px 10px; /* comfortable hit area */
   cursor: pointer;
   font-size: 13px;
   color: #666;
+  border-left: 1px solid #eee;
+  border-radius: 0 6px 6px 0;
 }
 
 .compact-clear-btn:hover {
@@ -263,10 +274,31 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
    `src/styles/overlay-search.scss`. Voir ce fichier pour les règles
    `.search-items_panel`, `.compact-overlay-panel`, `.compact-suggestions`, etc. */
 
+.compact-search-wrapper {
+  position: relative;
+}
+
+.compact-project-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(31, 45, 64, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(31, 45, 64, 0.12);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  z-index: 1400;
+  box-sizing: border-box;
+  padding: 8px 12px;
+}
+
 .compact-project-option {
   padding: 8px 12px;
   cursor: pointer;
   border-bottom: 1px solid #eee;
+  background: transparent;
 }
 
 .compact-project-option:hover {
