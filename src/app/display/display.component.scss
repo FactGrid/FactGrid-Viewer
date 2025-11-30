@@ -990,6 +990,11 @@ $card-top-offset: 8px;
   .info-themed-content .itemDescription {
     padding-left: 40px;
   }
+
+  /* align FactGrid label/link with title/description on desktop */
+  .factgrid-global {
+    padding-left: 40px; /* same left inset as itemTitle */
+  }
 }
 
 /* ========================================
