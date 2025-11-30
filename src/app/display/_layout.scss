@@ -87,6 +87,9 @@ body {
 .parent {
   display: flex;
   padding-bottom: var(--spacing-xl);
+  /* align with main display styles: leave horizontal gutters so cards don't touch viewport */
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
   flex-wrap: nowrap;
   width: 100%;
   box-sizing: border-box;
@@ -113,6 +116,9 @@ body {
 @media (max-width: 813px) {
   .parent {
     flex-flow: column;
+    /* a smaller gutter on very narrow screens */
+    padding-left: var(--spacing-xs);
+    padding-right: var(--spacing-xs);
     gap: var(--spacing-sm);
   }
 

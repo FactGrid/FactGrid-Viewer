@@ -1035,6 +1035,9 @@
      will retain spacing between cards. */
   :host ::ng-deep .parent {
     gap: 0 !important;
+    /* keep consistent horizontal gutters when stacked on mobile */
+    padding-left: var(--spacing-xs) !important;
+    padding-right: var(--spacing-xs) !important;
   }
 
   /* Add the same left/right gutters that child1 receives so child2 cards

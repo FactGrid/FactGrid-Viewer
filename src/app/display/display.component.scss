@@ -867,6 +867,9 @@ body {
 .parent {
   display: flex;
   padding-bottom: var(--spacing-xl);
+  /* Leave breathing room at left/right so cards don't stick to viewport edges */
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
   flex-wrap: nowrap;
   width: 100%;
   box-sizing: border-box;
@@ -921,6 +924,9 @@ $card-top-offset: 8px;
 @media (max-width: 813px) {
   .parent {
     flex-flow: column;
+    /* reduce horizontal padding on narrow screens for better use of space */
+    padding-left: var(--spacing-xs);
+    padding-right: var(--spacing-xs);
     gap: var(--spacing-sm);
   }
 
