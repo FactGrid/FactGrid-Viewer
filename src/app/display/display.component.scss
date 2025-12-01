@@ -940,6 +940,36 @@ $card-top-offset: 8px;
   }
 }
 
+/* Enforce left inset for selected rows and info content inside child2 from the component stylesheet
+   to guarantee higher specificity and avoid being overridden by other rules. */
+@media (max-width: 813px) {
+  .child2 .info-card-content,
+  .child2 .selectedItemRow,
+  .child2 .selectedItemLink {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    box-sizing: border-box !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+  .child2 .info-card-content .img2,
+  .child2 .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
+}
+
+@media (min-width: 1280px) {
+  .child2 .info-card-content,
+  .child2 .selectedItemRow,
+  .child2 .selectedItemLink {
+    padding-left: 24px !important;
+    padding-right: 12px !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    box-sizing: border-box !important;
+  }
+  .child2 .info-card-content .img2,
+  .child2 .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
+}
+
 @media (min-width: 1280px) {
   .child1 {
     flex: 3 1 0;
