@@ -38,3 +38,6 @@ This reduces duplication and fragile styles, improves encapsulation (move away f
 Add any screenshots you want here before creating the PR.
 
 If you'd like, I can: (A) push this branch and open the PR now, or (B) leave everything local for more refinement (recommended).
+
+## Notes about formatting
+During the last step I ran ESLint/Prettier auto-fixes across the repository and committed the results locally (no push). Some files were auto-formatted — there is still one lint error remaining (a parsing error in `src/app/project-selector/project-selector.component.html`) that requires manual attention and was not auto-fixable. These formatting fixes are included in the local commits and will be pushed only when you request it.
