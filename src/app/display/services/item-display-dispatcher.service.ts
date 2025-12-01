@@ -117,6 +117,11 @@ export class ItemDisplayDispatcherService {
       isEvent = target.eventDetail.length > 0;
     }
 
+    // Only show Event card for persons. If the subject is not a person, treat as not an event.
+    if (!isPerson) {
+      isEvent = false;
+    }
+
     // Document
     target.documentDetail = [];
     let isDocument = false;
@@ -164,11 +169,12 @@ export class ItemDisplayDispatcherService {
       }
     } else {
       target.mainList = [].concat(
-        target.lifeAndFamily || [],
+        //  target.lifeAndFamily || [],
         target.locationAndContext || [],
         target.locationAndSituation || [],
         target.activityDetail || [],
-        target.eventDetail || [],
+        // For person items we want Event as a standalone card; do NOT include eventDetail in mainList for persons
+        ...(isPerson ? [] : target.eventDetail || []),
         target.documentDetail || [],
         target.otherClaims || []
       );

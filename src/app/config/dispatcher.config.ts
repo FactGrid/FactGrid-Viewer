@@ -91,6 +91,9 @@ export const EVENT_DISPLAY_PROPERTIES = [
   { property: 'P106', comment: 'date' },
   { property: 'P66', comment: 'institution signing responsible' },
   { property: 'P133', comment: 'participants' },
+  { property: 'P580', comment: 'escape/emigration to' },
+  { property: 'P83', comment: 'place (residence)' },
+  { property: 'P296', comment: 'sejour' },
 ];
 
 export const EXCLUDED_DISPLAY_PROPERTIES = [
@@ -143,7 +146,6 @@ export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P82', comment: 'birthplace' },
   { property: 'P290', comment: 'life span (at least) from' },
   { property: 'P186', comment: 'medical conditions' },
-  { property: 'P580', comment: 'escape/emigration to' },
   { property: 'P38', comment: 'deathday' },
   { property: 'P168', comment: 'deathplace' },
   { property: 'P162', comment: 'cause of death' },
@@ -158,8 +160,6 @@ export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P150', comment: 'brother or sister-in-law' },
   { property: 'Q400624', comment: 'children' },
   { property: 'P172', comment: 'religion' },
-  { property: 'P83', comment: 'place (residence)' },
-  { property: 'P296', comment: 'sejour' },
   { property: 'P208', comment: 'address' },
   { property: 'P1267', comment: 'signature' },
 ];
@@ -193,6 +193,7 @@ export const SOCIABILITY_DISPLAY_PROPERTIES = [
   { property: 'P497', comment: 'interested in' },
   { property: 'P167', comment: 'contributor to' },
   { property: 'P278', comment: 'subscriptions signed' },
+  { property: 'P513', comment: 'patients' },
 ];
 
 export const INFO_DISPLAY_PROPERTIES = [
