@@ -111,4 +111,9 @@ export class ProjectSelectorComponent {
     this.searchResearchField.setValue(field);
     this.projectChanged.emit(field);
   }
+
+  trackById(index: number, item: any): any {
+    // Provide a stable key for *ngFor-like templates / @for track expressions
+    return item?.id ?? index;
+  }
 }
