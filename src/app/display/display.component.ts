@@ -117,6 +117,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   description: string;
   aliases: string[];
   mainTitle: string;
+  mainIcon: string;
+  personIcon: string;
+  personTitle: string;
   main: any;
   career: any;
   sociability: any;
@@ -245,6 +248,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   externalLinksTitle: string = 'External links';
   formerVisitsTitle: string = 'you have visited:';
   careerTitle: string;
+  // Title strings (localized) used by the template for card headers
+  trainingTitle: string;
+  sociabilityTitle: string;
+  eventTitle: string;
   factGridQuery: string = 'FactGrid query';
   clickToDisplay: string = 'click to display';
   clickToDownload: string = 'click to download';
@@ -296,6 +303,21 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.clickToDownload = this.lang.getTranslation('clickToDownLoad', this.lang.selectedLang);
     this.clickToDisplay = this.lang.getTranslation('clickToDisplay', this.lang.selectedLang);
     this.stemma = this.lang.getTranslation('stemma', this.lang.selectedLang);
+
+    // Provide sensible default titles until dispatcher overrides them
+    this.trainingTitle =
+      this.lang.getTranslation('subtitle_education', this.lang.selectedLang) ||
+      this.lang.getTranslation('training', this.lang.selectedLang) ||
+      'Education';
+    this.sociabilityTitle =
+      this.lang.getTranslation('subtitle_sociability_and_culture', this.lang.selectedLang) ||
+      'Sociability & Culture';
+    this.eventTitle = this.lang.getTranslation('subtitle_event', this.lang.selectedLang) || 'Event';
+    // default for main card icon (dispatcher can override for person case)
+    this.mainIcon = 'star';
+    // default person card icon (displayed on the Life & Family card)
+    this.personIcon = 'person';
+    this.personTitle = this.lang.getTranslation('subtitle_life_and_family', this.lang.selectedLang) || 'Life and family';
 
     // Abonnement aux commandes du drawer
     this.subscription0 = this.route.paramMap.subscribe((params) => {
@@ -422,9 +444,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.hideList();
       }
       this.natureOf = this.claims.P2[0].mainsnak.datavalue.value.id;
-      this.event = this.claims.P2.event;
-      this.listTitle = this.claims.P2.listTitle;
-      this.main = this.claims.P2.main;
       if (this.mainTitle == 'Humain') {
         this.mainTitle = 'Personne';
       }
@@ -445,6 +464,13 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.claimsEnricher.enrich(this.item);
       const flags = this.itemDisplayDispatcher.dispatch(this.item, this);
       Object.assign(this, flags);
+
+      // Recompute display-level shortcuts from enriched claims now that P2 flags
+      // and translated subtitles are available. We read these AFTER enrichment
+      // so top-level properties like P242 cause P2.event to be marked.
+      this.event = this.claims.P2?.event;
+      this.listTitle = this.claims.P2?.listTitle;
+      this.main = this.claims.P2?.main;
 
       // Carte
       if (this.claims.P48) {
