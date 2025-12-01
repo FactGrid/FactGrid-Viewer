@@ -59,7 +59,17 @@
 
 /* Additional compact content rules (migrated from child2 partial) */
 .thematic-card--compact .externalLinksText {
-  padding: 2px 4px !important;
+  /* Make each external/wiki link line block-level, give a small vertical gap
+     and an inset so items don't sit flush against the card edge. Keep the
+     horizontal padding small by default; larger insets are applied for
+     desktop via media queries below. */
+  display: block !important;
+  padding: 2px 4px !important; /* top/right/bottom/left will be overridden by media queries */
+  margin-bottom: 6px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
 }
 
 .thematic-card--compact .visited-list .selectedItemLink {
@@ -132,6 +142,15 @@
 .thematic-card--compact .listStyle {
   margin: 0 0 6px 0 !important;
   padding: 0 0 0 8px !important;
+}
+
+@media (min-width: 1280px) {
+  /* On large screens increase left inset on external/wiki line items to align
+     with the larger card content inset we use elsewhere. */
+  .thematic-card--compact .externalLinksText {
+    padding-left: 24px !important;
+    padding-right: 12px !important;
+  }
 }
 
 .thematic-card--compact .listStyle:first-child {
