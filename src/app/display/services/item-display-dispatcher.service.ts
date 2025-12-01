@@ -113,11 +113,29 @@ export class ItemDisplayDispatcherService {
     target.eventDetail = [];
     let isEvent = false;
     if (claims.P2?.event !== undefined) {
+      // Try to populate event detail from top-level claims (P47, P106, ...)
       this.blockDisplay.setEventDisplay(item, target.eventDetail);
+
+      // If we didn't find any top-level event claims but P2.event exists, use P2.event as a fallback
+      // -> create a minimal synthetic claim so the generic-list-display can render it (string case or array)
+      const p2Event = claims.P2.event;
+      const hasP2Event =
+        p2Event !== undefined &&
+        (Array.isArray(p2Event) ? p2Event.length > 0 : String(p2Event).trim().length > 0);
+
+      if (target.eventDetail.length === 0 && hasP2Event) {
+        // Ensure eventDetail is an array of claim-arrays as expected by GenericListDisplay
+        const synthetic = {
+          mainsnak: { datatype: 'string', datavalue: { value: p2Event } },
+        };
+        target.eventDetail.push([synthetic]);
+      }
+
+      // Determine isEvent based on whether we have any eventDetail entries (either real or synthetic)
       isEvent = target.eventDetail.length > 0;
     }
 
-    // Only show Event card for persons. If the subject is not a person, treat as not an event.
+    // Only show Event card for persons.
     if (!isPerson) {
       isEvent = false;
     }
