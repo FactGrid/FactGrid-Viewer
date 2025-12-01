@@ -44,6 +44,7 @@ import { DrawerService } from '../services/drawer.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { ItemDisplayDispatcherService } from './services/item-display-dispatcher.service';
+import { ClaimsEnricherService } from './services/claims-enricher.service';
 import { RouterModule } from '@angular/router';
 import { SearchComponent } from '../search/search.component';
 import { SelectedLangService } from '../selected-lang.service';
@@ -98,6 +99,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private backList = inject(BackListService);
   private backListDetails = inject(BackListDetailsService);
   private itemDisplayDispatcher = inject(ItemDisplayDispatcherService);
+  private claimsEnricher = inject(ClaimsEnricherService);
   private changeTranscript = inject(TranscriptionService);
   private transcript = inject(TranscriptDisplayService);
   private iframesDisplay = inject(IframesDisplayService);
@@ -439,7 +441,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isAliases === true;
       }
 
-      // Flags d'affichage
+      // Enrich claims (add presence flags on P2 etc.) then compute flags for display
+      this.claimsEnricher.enrich(this.item);
       const flags = this.itemDisplayDispatcher.dispatch(this.item, this);
       Object.assign(this, flags);
 
