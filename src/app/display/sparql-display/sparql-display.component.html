@@ -21,8 +21,7 @@
         } @else {
           <div class="sparql-div statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              {{ L.itemLabel?.value
-              }}@if (L.itemDescription) {<span class="sparql-description">, {{ L.itemDescription.value }}</span>}
+              {{ L.itemText || L.itemLabel?.value || '' }}
             </a>
             @if (L.year) {<span>, {{ L.year.value }}</span>}
           </div>
