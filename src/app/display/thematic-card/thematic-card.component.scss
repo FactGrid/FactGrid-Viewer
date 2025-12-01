@@ -360,6 +360,39 @@ header.card-header.has-custom {
   animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Prevent horizontal overflow in card content (long links, statements, SPARQL outputs).
+   Ensure all textual content wraps and respects card width. This addresses right-side
+   overflow cases seen in child2 cards (externalLinks/wikis) and SPARQL cards in child1. */
+.thematic-card,
+.thematic-card * {
+  box-sizing: border-box !important;
+}
+
+.thematic-card .card-body,
+.thematic-card .body-inner,
+.thematic-card .info-card-content,
+.thematic-card .cardBackground,
+.thematic-card .externalLinksText,
+.thematic-card .listStyle,
+.thematic-card .statementStyle,
+.thematic-card .visited-list {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+}
+
+/* Links should wrap instead of causing horizontal overflow */
+.thematic-card a,
+.thematic-card .externalLinksText a,
+.thematic-card .wiki-themed-card a {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+  display: inline-block !important; /* allow wrapping inside container */
+  max-width: 100% !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
