@@ -128,6 +128,12 @@
                 </app-thematic-card>
               }
 
+              @if (isEvent) {
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="event">
+                  <app-generic-list-display [title]="event" [items]="eventDetail"></app-generic-list-display>
+                </app-thematic-card>
+              }
+
               @if (isCulture) {
                 <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cultureTitle">
                   <app-generic-list-display [title]="cultureTitle" [items]="culture"></app-generic-list-display>
