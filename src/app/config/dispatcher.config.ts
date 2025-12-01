@@ -16,8 +16,7 @@ export const CAREER_DISPLAY_PROPERTIES = [
   { property: 'P165', comment: 'activities' },
   { property: 'P865', comment: 'professional address' },
   { property: 'P315', comment: 'employer' },
-  { property: 'P242', comment: 'events witness' },
-  { property: 'P119', comment: 'active participant to' },
+  // moved event-related properties (P242/P119) to EVENT_DISPLAY_PROPERTIES
   { property: 'P776', comment: 'business partner' },
 ];
 
@@ -90,6 +89,8 @@ export const EVENT_DISPLAY_PROPERTIES = [
   { property: 'P47', comment: 'localisation' },
   { property: 'P106', comment: 'date' },
   { property: 'P66', comment: 'institution signing responsible' },
+  { property: 'P119', comment: 'active participant to' },
+  { property: 'P242', comment: 'events witness' },
   { property: 'P133', comment: 'participants' },
   { property: 'P580', comment: 'escape/emigration to' },
   { property: 'P83', comment: 'place (residence)' },
@@ -233,8 +234,6 @@ export const CAREER_DISPLAY_PROPERTIES = [
   { property: 'P865', comment: 'professional address' },
   { property: 'P315', comment: 'employer' },
   { property: 'P673', comment: 'income' },
-
-  { property: 'P119', comment: 'active participant to' },
   { property: 'P776', comment: 'business partner' },
 ];
 
@@ -307,6 +306,8 @@ export const EVENT_DISPLAY_PROPERTIES = [
   { property: 'P47', comment: 'localisation' },
   { property: 'P106', comment: 'date' },
   { property: 'P66', comment: 'institution signing responsible' },
+  { property: 'P119', comment: 'active participant to' },
+  { property: 'P242', comment: 'events witness' },
   { property: 'P133', comment: 'participants' },
 ];
 

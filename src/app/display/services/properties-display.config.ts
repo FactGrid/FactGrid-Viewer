@@ -16,8 +16,7 @@ export const CAREER_DISPLAY_PROPERTIES = [
   { property: 'P165', comment: 'activities' },
   { property: 'P865', comment: 'professional address' },
   { property: 'P315', comment: 'employer' },
-  { property: 'P242', comment: 'events witness' },
-  { property: 'P119', comment: 'active participant to' },
+  // moved P242 and P119 from career into Event properties
   { property: 'P776', comment: 'business partner' },
 ];
 
@@ -90,6 +89,8 @@ export const EVENT_DISPLAY_PROPERTIES = [
   { property: 'P47', comment: 'localisation' },
   { property: 'P106', comment: 'date' },
   { property: 'P66', comment: 'institution signing responsible' },
+  { property: 'P119', comment: 'active participant to' },
+  { property: 'P242', comment: 'events witness' },
   { property: 'P133', comment: 'participants' },
 ];
 
