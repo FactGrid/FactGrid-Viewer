@@ -60,9 +60,11 @@ export class ItemDisplayDispatcherService {
     let isTraining = false;
     let isPerson = false;
     // detect Q7 anywhere in P2 entries (some items may use multiple P2 entries)
+    // be permissive: P2 can have various shapes, so string-search the value as a fallback
     const p2IsQ7 =
-      Array.isArray(claims.P2) &&
-      claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7');
+      (Array.isArray(claims.P2) &&
+        claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7')) ||
+      (claims.P2 && JSON.stringify(claims.P2).includes('"Q7"'));
     if (claims.P2?.person !== undefined || p2IsQ7) {
       isPerson = true;
       this.blockDisplay.setPersonDisplay(item, target.lifeAndFamily);
