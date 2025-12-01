@@ -696,6 +696,30 @@
   padding: 2px 4px !important;
 }
 
+/* Add extra breathing room on the right for child2 lists (external links, wikis, former visits)
+   Small increase for mobile, larger in desktop to avoid text touching the right viewport edge. */
+@media (max-width: 813px) {
+  :host ::ng-deep .child2 .externalLinksText,
+  :host ::ng-deep .child2 .externalLinksPadding,
+  :host ::ng-deep .child2 .selectedItemLink,
+  :host ::ng-deep .child2 .selectedItemRow,
+  :host ::ng-deep .child2 .visited-list,
+  :host ::ng-deep .child2 .visited-list li {
+    padding-right: 8px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  :host ::ng-deep .child2 .externalLinksText,
+  :host ::ng-deep .child2 .externalLinksPadding,
+  :host ::ng-deep .child2 .selectedItemLink,
+  :host ::ng-deep .child2 .selectedItemRow,
+  :host ::ng-deep .child2 .visited-list,
+  :host ::ng-deep .child2 .visited-list li {
+    padding-right: 24px !important; /* larger on desktop */
+  }
+}
+
 :host ::ng-deep .child2 .divisionTitle {
   font-size: 1.25rem !important;
   padding-top: 2px !important;
