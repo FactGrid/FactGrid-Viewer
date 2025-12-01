@@ -738,6 +738,43 @@
   }
 }
 
+/* The previous selectors didn't target some mat-card variants (info-card-content etc.).
+   Ensure the inner card content and the selectedItem rows/links in child2 get a left inset
+   so labels are not flush to the left edge. Exclude image containers. */
+@media (max-width: 813px) {
+  :host ::ng-deep .child2 .info-card-content,
+  :host ::ng-deep .child2 .selectedItemRow,
+  :host ::ng-deep .child2 .selectedItemLink {
+    padding-left: 8px !important;
+    box-sizing: border-box !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+  /* keep images flush */
+  :host ::ng-deep .child2 .info-card-content .img2,
+  :host ::ng-deep .child2 .info-card-content img {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  :host ::ng-deep .child2 .info-card-content,
+  :host ::ng-deep .child2 .selectedItemRow,
+  :host ::ng-deep .child2 .selectedItemLink {
+    padding-left: 24px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+  :host ::ng-deep .child2 .info-card-content .img2,
+  :host ::ng-deep .child2 .info-card-content img {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
 /* Ensure the card body inner container in child2 has a left inset so labels
    are visually separated from the left edge. Do not affect image-only cards. */
 @media (max-width: 813px) {
