@@ -114,39 +114,20 @@ export class ItemDisplayDispatcherService {
     // Event
     target.eventDetail = [];
     let isEvent = false;
-    // Call setEventDisplay if either P2.event exists OR if one of the top-level event properties
-    // is present (e.g. P47,P106,P66,P133,P119,P242). Some items (like Q1455) store event
-    // information in top-level properties instead of under P2.event.
+
+    // Event — keep handling simple & consistent with Activity: try to build eventDetail
+    // when either P2.event is present or top-level event properties exist.
     const topLevelEventProps = ['P47', 'P106', 'P66', 'P133', 'P119', 'P242'];
     const hasTopLevelEvent = topLevelEventProps.some((p) => claims[p] !== undefined);
 
-    if (hasTopLevelEvent || claims.P2?.event !== undefined) {
-      // Try to populate event detail from top-level claims (P47, P106, ...)
+    if (claims.P2?.event !== undefined || hasTopLevelEvent) {
       this.blockDisplay.setEventDisplay(item, target.eventDetail);
-
-      // If we didn't find any top-level event claims but P2.event exists, use P2.event as a fallback
-      // -> create a minimal synthetic claim so the generic-list-display can render it (string case or array)
-      const p2Event = claims.P2 ? claims.P2.event : undefined;
-      const hasP2Event =
-        p2Event !== undefined &&
-        (Array.isArray(p2Event) ? p2Event.length > 0 : String(p2Event).trim().length > 0);
-
-      if (target.eventDetail.length === 0 && hasP2Event) {
-        // Ensure eventDetail is an array of claim-arrays as expected by GenericListDisplay
-        const synthetic = {
-          mainsnak: { datatype: 'string', datavalue: { value: p2Event } },
-        };
-        target.eventDetail.push([synthetic]);
-      }
-
-      // Determine isEvent based on whether we have any eventDetail entries (either real or synthetic)
       isEvent = target.eventDetail.length > 0;
     }
 
     // Only show Event card for persons.
-    if (!isPerson) {
-      isEvent = false;
-    }
+    // Only show Event card for persons.
+    if (!isPerson) isEvent = false;
 
     // Document
     target.documentDetail = [];
