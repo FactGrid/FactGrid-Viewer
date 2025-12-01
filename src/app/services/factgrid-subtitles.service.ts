@@ -62,8 +62,6 @@ export class FactgridSubtitlesService {
     //to add a subtitle with a condition on the value of a property (in general the property P2)
     let j = number;
     if (re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q7') {
-      //person
-      re.claims[propertyId].person = 'person';
       if (lang === 'en') {
         re.claims[propertyId].main = 'Life and family';
       } else if (lang === 'de') {
@@ -168,8 +166,7 @@ export class FactgridSubtitlesService {
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21925' ||
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q164344'
     ) {
-      //place
-      re.claims[propertyId].place = 'place';
+      //place (title localized below)
       re.claims[propertyId].main = 'Place';
       if (lang === 'en') {
         re.claims[propertyId].main = 'Place';
@@ -211,7 +208,6 @@ export class FactgridSubtitlesService {
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q140806' ||
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q11214'
     ) {
-      re.claims[propertyId].org = 'org';
       if (lang === 'en') {
         re.claims[propertyId].main = 'Organisation';
       } else if (lang === 'de') {
@@ -231,8 +227,7 @@ export class FactgridSubtitlesService {
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q20' ||
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q257227'
     ) {
-      //publication
-      re.claims[propertyId].document = 'publication';
+      //publication (localized title set below)
       if (lang === 'en') {
         re.claims[propertyId].main = 'Print publication';
       } else if (lang === 'de') {
@@ -254,7 +249,6 @@ export class FactgridSubtitlesService {
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21909' ||
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q37073'
     ) {
-      re.claims[propertyId].activity = 'activity';
       if (lang === 'en') {
         re.claims[propertyId].main = 'Activity';
       } else if (lang === 'de') {
@@ -273,7 +267,6 @@ export class FactgridSubtitlesService {
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q10671' || //document
       re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21407'
     ) {
-      re.claims[propertyId].document = 'document';
       if (lang === 'en') {
         re.claims[propertyId].main = 'Document';
       } else if (lang === 'de') {
