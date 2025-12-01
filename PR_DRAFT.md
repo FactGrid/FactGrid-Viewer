@@ -39,5 +39,8 @@ Add any screenshots you want here before creating the PR.
 
 If you'd like, I can: (A) push this branch and open the PR now, or (B) leave everything local for more refinement (recommended).
 
+## Recent small fixes applied locally
+- Adjusted the compact variant so `externalLinksText` / wiki lines inside right-column cards get a left inset and vertical spacing (fixes items being flush and lacking gaps). This should address the child2 formatting issue for External Links and Wikis.
+
 ## Notes about formatting
 During the last step I ran ESLint/Prettier auto-fixes across the repository and committed the results locally (no push). Some files were auto-formatted — there is still one lint error remaining (a parsing error in `src/app/project-selector/project-selector.component.html`) that requires manual attention and was not auto-fixable. These formatting fixes are included in the local commits and will be pushed only when you request it.
