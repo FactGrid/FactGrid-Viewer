@@ -943,7 +943,8 @@ $card-top-offset: 8px;
 /* Enforce left inset for selected rows and info content inside child2 from the component stylesheet
    to guarantee higher specificity and avoid being overridden by other rules. */
 @media (max-width: 813px) {
-  /* Give the inner card content the inset — rows inside the card must not add extra left padding */
+  /* Prefer modifier selector for compact cards in child2; keep child2 fallback */
+  .thematic-card--compact .info-card-content,
   .child2 .info-card-content {
     padding-left: 8px !important;
     padding-right: 8px !important;
@@ -956,7 +957,8 @@ $card-top-offset: 8px;
 }
 
 @media (min-width: 1280px) {
-  /* Desktop: the inner card content provides the larger left inset, rows should not add more */
+  /* Desktop: prefer compact modifier for inner card content inset; keep child2 fallback */
+  .thematic-card--compact .info-card-content,
   .child2 .info-card-content {
     padding-left: 24px !important;
     padding-right: 12px !important;
@@ -964,6 +966,8 @@ $card-top-offset: 8px;
     word-break: break-word !important;
     box-sizing: border-box !important;
   }
+  .thematic-card--compact .info-card-content .img2,
+  .thematic-card--compact .info-card-content img,
   .child2 .info-card-content .img2,
   .child2 .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
 }
@@ -990,14 +994,17 @@ $card-top-offset: 8px;
   }
 }
 
-/* override selected row and link padding inside child2 so they don't duplicate the
-   overall inset coming from the card content/body-inner (prevents 2x padding). */
+/* override selected row and link padding inside compact cards so they don't duplicate the
+   overall inset coming from the card content/body-inner (prevents 2x padding). Prefer
+   the modifier selector so non-child2 code can also use compact cards. */
 @media (max-width: 813px) {
+  .thematic-card--compact .selectedItemRow,
   .child2 .selectedItemRow {
     padding-left: 0 !important;
     padding-right: 0 !important;
     box-sizing: border-box !important;
   }
+  .thematic-card--compact .selectedItemLink,
   .child2 .selectedItemLink {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -1005,11 +1012,13 @@ $card-top-offset: 8px;
 }
 
 @media (min-width: 1280px) {
+  .thematic-card--compact .selectedItemRow,
   .child2 .selectedItemRow {
     padding-left: 0 !important;
     padding-right: 0 !important;
     box-sizing: border-box !important;
   }
+  .thematic-card--compact .selectedItemLink,
   .child2 .selectedItemLink {
     padding-left: 0 !important;
     padding-right: 0 !important;

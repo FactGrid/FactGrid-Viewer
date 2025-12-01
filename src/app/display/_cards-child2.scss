@@ -7,6 +7,12 @@
 @import './_cards-mixins.scss';
 
 /* Tight paddings for the right column (child2) to align with compact layout */
+:host ::ng-deep app-thematic-card.thematic-card--compact,
+:host ::ng-deep app-thematic-card.thematic-card--compact .card-body,
+:host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content,
+:host ::ng-deep app-thematic-card.thematic-card--compact .externalLinksPadding,
+:host ::ng-deep app-thematic-card.thematic-card--compact .externalLinksText,
+:host ::ng-deep app-thematic-card.thematic-card--compact .selectedListTitle,
 :host ::ng-deep .child2 app-thematic-card,
 :host ::ng-deep .child2 app-thematic-card .card-body,
 :host ::ng-deep .child2 .info-card-content,
@@ -24,6 +30,10 @@
 
 @media (max-width: 813px) {
   /* Mobile: add a small left inset for child2 text items and ensure they can wrap */
+  :host ::ng-deep app-thematic-card.thematic-card--compact .externalLinksText,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .externalLinksPadding,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .visited-list,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .visited-list li,
   :host ::ng-deep .child2 .externalLinksText,
   :host ::ng-deep .child2 .externalLinksPadding,
   :host ::ng-deep .child2 .visited-list,
@@ -51,6 +61,8 @@
     box-sizing: border-box !important;
   }
   /* For Wikis card anchors specifically ensure links break cleanly */
+  :host ::ng-deep app-thematic-card.thematic-card--compact .externalLinksText a,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .wiki-themed-card a,
   :host ::ng-deep .child2 .externalLinksText a,
   :host ::ng-deep .child2 .wiki-themed-card a {
     overflow-wrap: anywhere !important;
@@ -62,10 +74,13 @@
   /* Prefer modifier-based selector for compact cards; keep child2 fallback */
   :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner,
   :host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content,
+  :host ::ng-deep .child2 app-thematic-card .body-inner,
   :host ::ng-deep .child2 .info-card-content {
     @include card-body-inset(8px, 8px);
   }
   /* keep images flush */
+  :host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content .img2,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content img,
   :host ::ng-deep .child2 .info-card-content .img2,
   :host ::ng-deep .child2 .info-card-content img {
     padding-left: 0 !important;
@@ -99,6 +114,10 @@
 
   /* Ensure the 'You have visited' / visited list card itself is visible on mobile
      regardless of other layout rules (prevents accidental hiding / overflow). */
+  :host ::ng-deep app-thematic-card.thematic-card--compact .thematic-cards-grid,
+  :host ::ng-deep app-thematic-card.thematic-card--compact,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .card-body,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content,
   :host ::ng-deep .child2 .thematic-cards-grid,
   :host ::ng-deep .child2 app-thematic-card,
   :host ::ng-deep .child2 app-thematic-card .card-body,
@@ -112,6 +131,8 @@
   :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner {
     @include card-body-inset(24px, 12px);
   }
+  :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner .img2,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner img,
   :host ::ng-deep .child2 .body-inner .img2,
   :host ::ng-deep .child2 .body-inner img {
     padding-left: 0 !important;
@@ -123,6 +144,7 @@
    card body-inner / info-card-content provides the overall inset. This avoids
    double-padding (mat-card-content padding + row padding) and keeps the total
    inset consistent at 8px (mobile) / 24px (desktop). */
+:host ::ng-deep app-thematic-card.thematic-card--compact .selectedItemRow,
 :host ::ng-deep .child2 .selectedItemRow {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -130,17 +152,21 @@
   gap: 4px !important;
 }
 
+:host ::ng-deep app-thematic-card.thematic-card--compact a.selectedItemLink,
 :host ::ng-deep .child2 a.selectedItemLink {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
+:host ::ng-deep app-thematic-card.thematic-card--compact .divisionTitle,
 :host ::ng-deep .child2 .divisionTitle {
   font-size: 1.25rem !important;
   padding-top: 2px !important;
   line-height: 1 !important;
 }
 
+:host ::ng-deep app-thematic-card.thematic-card--compact .visited-list,
+:host ::ng-deep app-thematic-card.thematic-card--compact .visited-list li,
 :host ::ng-deep .child2 .visited-list,
 :host ::ng-deep .child2 .visited-list li {
   margin: 0 !important;
@@ -174,6 +200,10 @@
 }
 
 /* Tighten vertical spacing and line-height for child2 lists (external, wikis, visited) */
+:host ::ng-deep app-thematic-card.thematic-card--compact .listStyle .statementStyle,
+:host ::ng-deep app-thematic-card.thematic-card--compact .visited-list .statementStyle,
+:host ::ng-deep app-thematic-card.thematic-card--compact .wiki-themed-card .statementStyle,
+:host ::ng-deep app-thematic-card.thematic-card--compact .external-themed-card .statementStyle,
 :host ::ng-deep .child2 .listStyle .statementStyle,
 :host ::ng-deep .child2 .visited-list .statementStyle,
 :host ::ng-deep .child2 .wiki-themed-card .statementStyle,
@@ -186,17 +216,20 @@
 }
 
 /* Slightly increase separator space between successive list entries to avoid cramping */
+:host ::ng-deep app-thematic-card.thematic-card--compact .listStyle,
 :host ::ng-deep .child2 .listStyle {
   margin: 0 0 6px 0 !important;
   padding: 0 0 0 8px !important; /* add left inset so items are not flush with card edge */
 }
 
 /* Add a little top margin for the first list item to create breathing room under the header */
+:host ::ng-deep app-thematic-card.thematic-card--compact .listStyle:first-child,
 :host ::ng-deep .child2 .listStyle:first-child {
   margin-top: 6px !important;
 }
 
 /* Ensure visited-list first element also gets top spacing when wrapped in visited-list container */
+:host ::ng-deep app-thematic-card.thematic-card--compact .visited-list .listStyle:first-child,
 :host ::ng-deep .child2 .visited-list .listStyle:first-child {
   margin-top: 6px !important;
 }
@@ -210,6 +243,7 @@
   border-radius: 4px;
 }
 
+:host ::ng-deep app-thematic-card.thematic-card--compact a.selectedItemLink:hover,
 :host ::ng-deep .child2 a.selectedItemLink:hover {
   color: var(--color-primary, #3f51b5) !important;
   cursor: pointer;
@@ -217,12 +251,15 @@
 }
 
 /* Ensure child2 uses same inter-card gap as thematic-cards-grid in child1 */
+:host ::ng-deep app-thematic-card.thematic-card--compact .child2,
 :host ::ng-deep .child2 {
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important; /* same as .thematic-cards-grid */
 }
 
+:host ::ng-deep app-thematic-card.thematic-card--compact > app-thematic-card,
+:host ::ng-deep app-thematic-card.thematic-card--compact app-thematic-card,
 :host ::ng-deep .child2 > app-thematic-card,
 :host ::ng-deep .child2 app-thematic-card {
   margin: 0 !important; /* rely on gap for spacing */
