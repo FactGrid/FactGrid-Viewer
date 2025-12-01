@@ -5,6 +5,7 @@ import { TechnicalitiesDisplayService } from './technicalities-display.service';
 import { WikiDisplayService } from './wiki-display.service';
 
 export interface DisplayFlags {
+  isPerson: boolean;
   isPlace: boolean;
   isCareer: boolean;
   isSociability: boolean;
@@ -52,12 +53,18 @@ export class ItemDisplayDispatcherService {
       isPlace = target.locationAndSituation.length > 0;
     }
 
-    // Person
+    // Person — detect either the parsed "person" marker or the P2 value Q7
     target.lifeAndFamily = [];
     let isCareer = false;
     let isSociability = false;
     let isTraining = false;
-    if (claims.P2?.person !== undefined) {
+    let isPerson = false;
+    // detect Q7 anywhere in P2 entries (some items may use multiple P2 entries)
+    const p2IsQ7 =
+      Array.isArray(claims.P2) &&
+      claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7');
+    if (claims.P2?.person !== undefined || p2IsQ7) {
+      isPerson = true;
       this.blockDisplay.setPersonDisplay(item, target.lifeAndFamily);
 
       // Career
@@ -84,6 +91,7 @@ export class ItemDisplayDispatcherService {
         target.training = claims.P2.training;
       }
     }
+    // ensure isPerson is available to consumers
 
     // Organization
     target.locationAndContext = [];
@@ -222,6 +230,7 @@ export class ItemDisplayDispatcherService {
 
     // Retourne les flags utiles
     return {
+      isPerson,
       isPlace,
       isCareer,
       isSociability,
