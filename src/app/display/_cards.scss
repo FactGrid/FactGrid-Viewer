@@ -702,8 +702,6 @@
   /* Mobile: add a small left inset for child2 text items and ensure they can wrap */
   :host ::ng-deep .child2 .externalLinksText,
   :host ::ng-deep .child2 .externalLinksPadding,
-  :host ::ng-deep .child2 .selectedItemLink,
-  :host ::ng-deep .child2 .selectedItemRow,
   :host ::ng-deep .child2 .visited-list,
   :host ::ng-deep .child2 .visited-list li {
     padding-left: 8px !important;
@@ -719,8 +717,6 @@
   /* Desktop: give a larger left inset and ensure no horizontal overflow on the right */
   :host ::ng-deep .child2 .externalLinksText,
   :host ::ng-deep .child2 .externalLinksPadding,
-  :host ::ng-deep .child2 .selectedItemLink,
-  :host ::ng-deep .child2 .selectedItemRow,
   :host ::ng-deep .child2 .visited-list,
   :host ::ng-deep .child2 .visited-list li {
     padding-left: 24px !important; /* larger left gap to match page alignment */
@@ -743,7 +739,6 @@
    so labels are not flush to the left edge. Exclude image containers. */
 @media (max-width: 813px) {
   :host ::ng-deep .child2 .info-card-content,
-  :host ::ng-deep .child2 .selectedItemRow,
   :host ::ng-deep .child2 .selectedItemLink {
     padding-left: 8px !important;
     box-sizing: border-box !important;
@@ -760,7 +755,6 @@
 
 @media (min-width: 1280px) {
   :host ::ng-deep .child2 .info-card-content,
-  :host ::ng-deep .child2 .selectedItemRow,
   :host ::ng-deep .child2 .selectedItemLink {
     padding-left: 24px !important;
     padding-right: 12px !important;
@@ -787,6 +781,16 @@
     padding-left: 0 !important;
     margin-left: 0 !important;
   }
+
+  /* Ensure the 'You have visited' / visited list card itself is visible on mobile
+     regardless of other layout rules (prevents accidental hiding / overflow). */
+  :host ::ng-deep .child2 .thematic-cards-grid,
+  :host ::ng-deep .child2 app-thematic-card,
+  :host ::ng-deep .child2 app-thematic-card .card-body,
+  :host ::ng-deep .child2 .info-card-content {
+    display: block !important;
+    visibility: visible !important;
+  }
 }
 
 @media (min-width: 1280px) {
@@ -799,6 +803,22 @@
     padding-left: 0 !important;
     margin-left: 0 !important;
   }
+}
+
+/* Ensure selected rows inside child2 do not add extra left padding - the
+   card body-inner / info-card-content provides the overall inset. This avoids
+   double-padding (mat-card-content padding + row padding) and keeps the total
+   inset consistent at 8px (mobile) / 24px (desktop). */
+:host ::ng-deep .child2 .selectedItemRow {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 2px 0 !important; /* keep vertical spacing */
+  gap: 4px !important;
+}
+
+:host ::ng-deep .child2 a.selectedItemLink {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 :host ::ng-deep .child2 .divisionTitle {
