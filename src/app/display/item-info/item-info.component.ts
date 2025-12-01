@@ -1,4 +1,12 @@
-import { Component, Input, OnChanges, SimpleChanges, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -65,8 +73,7 @@ export class ItemInfoComponent implements OnChanges {
 
   // Track function for technicalities inner statements
   trackTechKey = (index: number, val: any) => {
-    const id =
-      val?.mainsnak?.datavalue?.value?.id ?? val?.mainsnak?.datavalue?.value ?? val;
+    const id = val?.mainsnak?.datavalue?.value?.id ?? val?.mainsnak?.datavalue?.value ?? val;
     if (id && (typeof id !== 'string' || id.toString().trim() !== '')) return id;
     const label = (val?.mainsnak?.label ?? val?.itemLabel ?? '').toString().trim();
     if (label) return label;

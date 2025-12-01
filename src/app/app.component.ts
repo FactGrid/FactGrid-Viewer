@@ -61,9 +61,7 @@ export class AppComponent implements OnInit {
     { name: 'Svenska', code: 'se' },
   ];
 
-  specialPages = [
-    { name: 'Paris', address: 'paris' },
-  ];
+  specialPages = [{ name: 'Paris', address: 'paris' }];
 
   researchFields: any[] = [];
 

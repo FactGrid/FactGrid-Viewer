@@ -86,7 +86,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   subtitle: string;
   private sparqlDisplayService = inject(SparqlDisplayService);
   constructor(private cdr: ChangeDetectorRef) {}
-  
 
   public from: string;
 
@@ -226,7 +225,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Titres/listes calculés au niveau parent pour les cartes SPARQL (via le service)
   sparqlCards$: Observable<SparqlAllCardsState> | null = null;
-  
 
   // Subscriptions
   subscription0: Subscription;
@@ -339,7 +337,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ItemInfo lazy host(s)
   @ViewChild('itemInfoHost', { read: ViewContainerRef }) itemInfoHost?: ViewContainerRef;
-  @ViewChild('itemInfoHostHidden', { read: ViewContainerRef }) itemInfoHostHidden?: ViewContainerRef;
+  @ViewChild('itemInfoHostHidden', { read: ViewContainerRef })
+  itemInfoHostHidden?: ViewContainerRef;
 
   itemInfoLoading = false;
   itemInfoLoaded = false;
@@ -564,9 +563,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               technicalities: existingTech,
               infoProperties: existingInfoProps,
             };
-              // Try to lazy-load ItemInfo component(s) now that infoList is available
-              this.loadItemInfoAt(0);
-              this.loadItemInfoAt(1);
+            // Try to lazy-load ItemInfo component(s) now that infoList is available
+            this.loadItemInfoAt(0);
+            this.loadItemInfoAt(1);
           } else {
             // Pas encore de données brutes: conserver l'état actuel (techniques visibles) mais continuer à poller
             this.instancesList = curInst;
@@ -591,9 +590,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
             technicalities: existingTech,
             infoProperties: existingInfoProps,
           };
-            // ensure the info component is loaded where present
-            this.loadItemInfoAt(0);
-            this.loadItemInfoAt(1);
+          // ensure the info component is loaded where present
+          this.loadItemInfoAt(0);
+          this.loadItemInfoAt(1);
         } else {
           // Rien à appliquer pour le moment => poursuivre le polling
           return false;
@@ -621,11 +620,11 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
           // Subscribe and create the SPARQL components dynamically when data arrives
           this.sparqlCardsSubscription = this.sparqlCards$.subscribe((cards) => {
             if (!cards) return;
-              if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
-              if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
-              if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
-              if (cards.sparql3?.list?.length) this.loadSparqlAt(3, cards.sparql3);
-              if (cards.sparql4?.list?.length) this.loadSparqlAt(4, cards.sparql4);
+            if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
+            if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
+            if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
+            if (cards.sparql3?.list?.length) this.loadSparqlAt(3, cards.sparql3);
+            if (cards.sparql4?.list?.length) this.loadSparqlAt(4, cards.sparql4);
           });
         } else {
           this.sparql$ = null;
@@ -633,7 +632,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       };
       waitForSparqlObservable();
-      
 
       // Spinner
       this.isSpinner = false;
@@ -744,7 +742,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.sparqlComponentRefs[index] = ref as NgComponentRef<any>;
       // trigger change detection in case host was created after view init
-      try { this.cdr.detectChanges(); } catch {}
+      try {
+        this.cdr.detectChanges();
+      } catch {}
     } catch (e) {
       // swallow import error to avoid breaking display
     }
@@ -780,18 +780,21 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
           (ref as any).setInput('infoList', this.infoList);
         } else {
           ref.instance.infoList = this.infoList;
-          try { ref.changeDetectorRef.detectChanges(); } catch {}
+          try {
+            ref.changeDetectorRef.detectChanges();
+          } catch {}
         }
-      } catch (err) {
-      }
+      } catch (err) {}
 
       this.itemInfoRefs[index] = ref as NgComponentRef<any>;
       this.itemInfoLoading = false;
       this.itemInfoLoaded = true;
-      try { this.cdr.detectChanges(); } catch {}
+      try {
+        this.cdr.detectChanges();
+      } catch {}
     } catch (e) {
-        // setInput fallback failed silently
-        
+      // setInput fallback failed silently
+
       // swallow lazy-load errors silently; avoid noisy console in production
       this.itemInfoLoading = false;
     }
@@ -813,7 +816,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sparqlSubscription?.unsubscribe();
     this.sparqlCardsSubscription?.unsubscribe();
     this.selectedResearchFieldSubscription?.unsubscribe();
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
 
     // Destroy any dynamically created component refs
     this.sparqlComponentRefs.forEach((ref) => {

@@ -45,9 +45,7 @@ describe('SetLanguageService', () => {
         aliases: {},
         datatype: 'external-id',
         claims: {
-          P236: [
-            { mainsnak: { datavalue: { value: 'http://example.org/external' } } },
-          ],
+          P236: [{ mainsnak: { datavalue: { value: 'http://example.org/external' } } }],
         },
       },
     ];

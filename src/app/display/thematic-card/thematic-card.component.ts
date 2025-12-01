@@ -16,7 +16,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
     class: 'thematic-card',
     '[class.thematic-card--compact]': 'compact',
     '[class.thematic-card--flush]': 'flush',
-    '[class.thematic-card--image-only]': 'imageOnly'
+    '[class.thematic-card--image-only]': 'imageOnly',
   },
   animations: [
     trigger('collapseExpand', [

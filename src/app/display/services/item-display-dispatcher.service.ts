@@ -4,7 +4,6 @@ import { BlockDisplayService } from './block-display.service';
 import { TechnicalitiesDisplayService } from './technicalities-display.service';
 import { WikiDisplayService } from './wiki-display.service';
 
-
 export interface DisplayFlags {
   isPlace: boolean;
   isCareer: boolean;
@@ -26,10 +25,9 @@ export interface DisplayFlags {
 
 @Injectable({ providedIn: 'root' })
 export class ItemDisplayDispatcherService {
-  
   private blockDisplay = inject(BlockDisplayService);
   private wikiDisplay = inject(WikiDisplayService);
- // private iframesDisplay = inject(IframesDisplayService);
+  // private iframesDisplay = inject(IframesDisplayService);
   private technicalitiesDisplay = inject(TechnicalitiesDisplayService);
 
   dispatch(item: any, target: any): DisplayFlags {
@@ -44,8 +42,8 @@ export class ItemDisplayDispatcherService {
     let isInfo = false;
     this.blockDisplay.setInfoDisplay(item, target.info);
     console.log(target.info);
-    isInfo= target.info.length > 0
-    
+    isInfo = target.info.length > 0;
+
     // Place
     target.locationAndSituation = [];
     let isPlace = false;
@@ -148,8 +146,6 @@ export class ItemDisplayDispatcherService {
       isOther = target.otherClaims.length > 0;
     }
 
-
-
     // MainList
     target.mainList = [];
     let isMain = false;
@@ -159,25 +155,23 @@ export class ItemDisplayDispatcherService {
         target.mainList.push(claims.P3);
       }
     } else {
-      target.mainList = []
-        .concat(
-          target.lifeAndFamily || [],
-          target.locationAndContext || [],
-          target.locationAndSituation || [],
-          target.activityDetail || [],
-          target.eventDetail || [],
-          target.documentDetail || [],
-          target.otherClaims || []
+      target.mainList = [].concat(
+        target.lifeAndFamily || [],
+        target.locationAndContext || [],
+        target.locationAndSituation || [],
+        target.activityDetail || [],
+        target.eventDetail || [],
+        target.documentDetail || [],
+        target.otherClaims || []
       );
 
- /*     Object.keys(claims).forEach(key => {
+      /*     Object.keys(claims).forEach(key => {
         if (key.startsWith('Q') && Array.isArray(claims[key])) {
           // Par exemple, pour les ajouter à mainList :
           target.mainList.push(claims[key]);
         }
       });
       */
-
     }
     isMain = target.mainList.length > 0;
     if (claims.P2 !== undefined && claims.P2[0]?.mainsnak?.label !== undefined) {
@@ -185,8 +179,6 @@ export class ItemDisplayDispatcherService {
     }
 
     // ... après la construction de target.mainList
-
-
 
     let isFrames = false;
 
@@ -198,7 +190,7 @@ export class ItemDisplayDispatcherService {
     */
 
     // InfoList
-   
+
     this.blockDisplay.setItemInfoDisplay(item, target);
 
     let technicalities: any[] = [];
@@ -209,7 +201,7 @@ export class ItemDisplayDispatcherService {
       subclassesList: target.subclassesList,
       classesList: target.classesList,
       natureOfList: target.natureOfList,
-      technicalities: technicalities
+      technicalities: technicalities,
     };
 
     // Flag unique pour l'affichage
@@ -220,16 +212,13 @@ export class ItemDisplayDispatcherService {
       (target.infoList.natureOfList && target.infoList.natureOfList.length > 0) ||
       (target.infoList.technicalities && target.infoList.technicalities.length > 0);
 
-
     // Wikis
     target.wikis = [];
     let isWikis = false;
     this.wikiDisplay.setWikiDisplay(item, target.wikis);
     isWikis = target.wikis.length > 0;
 
-
     // ... (autres propriétés comme dans votre code)
-
 
     // Retourne les flags utiles
     return {
@@ -248,7 +237,7 @@ export class ItemDisplayDispatcherService {
       isMain,
       isWikis,
       isFrames,
-      isExternalLinks
+      isExternalLinks,
     };
   }
 }

@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
   Output,
   EventEmitter,
+  AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -92,7 +93,7 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
 })
-export class SearchComponent implements OnInit, OnDestroy {
+export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   // ========== SERVICES ==========
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly request = inject(RequestService);
@@ -181,7 +182,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     // no-op; ViewChild is available for manual overlay positioning
   }
 
-
   togglePeopleFilter() {
     if (this.filterPeople === 'people') {
       this.filterPeople = null;
@@ -218,13 +218,13 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     const overlaySub = this.overlayOpen$?.subscribe();
     if (overlaySub) this.subscriptions.push(overlaySub);
-
   }
 
   onItemRowClick(itemId: string, event?: MouseEvent) {
     if (event) {
       // allow Ctrl/Cmd/Shift or middle-click to open in new tab/window - don't block default in that case
-      const isModifiedClick = event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1;
+      const isModifiedClick =
+        event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1;
       if (!isModifiedClick) {
         event.preventDefault();
       } else {
@@ -356,16 +356,21 @@ export class SearchComponent implements OnInit, OnDestroy {
   ): Observable<{ items: WikibaseEntity[]; total: number }> {
     // If a project is selected, use Cirrus search (action=query list=search) with
     // property filters (haswbstatement:P131=...) to restrict results to items in that project.
-    if (selectedProjectId && selectedProjectId !== 'all' && selectedProjectId !== '-' && selectedProjectId !== 'Q0') {
+    if (
+      selectedProjectId &&
+      selectedProjectId !== 'all' &&
+      selectedProjectId !== '-' &&
+      selectedProjectId !== 'Q0'
+    ) {
       const filters = this.buildSearchFilters(selectedProjectId, searchTerm);
       const srsearch = filters.join(' ');
       // getQidsList returns page titles (e.g. Q123). Use it to then fetch entities data.
       return this.request.getQidsList(srsearch, maxResults).pipe(
         switchMap((titles: string[]) => {
-          const ids = (titles || []).map((t) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
-          return this.fetchEntities(ids).pipe(
-            map((items) => ({ items, total: items.length }))
-          );
+          const ids = (titles || [])
+            .map((t) => (t ? String(t).split(':').pop() : ''))
+            .filter(Boolean);
+          return this.fetchEntities(ids).pipe(map((items) => ({ items, total: items.length })));
         })
       );
     }
@@ -392,32 +397,39 @@ export class SearchComponent implements OnInit, OnDestroy {
    */
   private initSearchResults() {
     // Compact-only search pipeline: simple autocomplete + update items list
-    const sub = this.searchInput.valueChanges.pipe(
-      startWith(this.searchInput.value || ''),
-      tap((label) => (this.isSearching = !!label && label.length > 0)),
-      debounceTime(250),
-      switchMap((label) => {
-        const searchTerm = normalizeString(label as string);
-        if (!searchTerm) {
-          this.searchCache.invalidateCache();
-          this.resetSearchState();
-          return of([] as WikibaseEntity[]);
-        }
-        const selected = this.selectedResearchField.getSelectedResearchField();
-        const selectedId = selected?.id;
-        return this.fetchAutocompleteEntities(searchTerm, this.lang.selectedLang, 50, selectedId).pipe(
-          map(({ items }) => {
-            this.updateItemsList(items);
-            return items;
-          }),
-          catchError((err) => {
-            console.error('[SearchComponent] fetchAutocompleteEntities error', err);
+    const sub = this.searchInput.valueChanges
+      .pipe(
+        startWith(this.searchInput.value || ''),
+        tap((label) => (this.isSearching = !!label && label.length > 0)),
+        debounceTime(250),
+        switchMap((label) => {
+          const searchTerm = normalizeString(label as string);
+          if (!searchTerm) {
+            this.searchCache.invalidateCache();
             this.resetSearchState();
             return of([] as WikibaseEntity[]);
-          })
-        );
-      })
-    ).subscribe();
+          }
+          const selected = this.selectedResearchField.getSelectedResearchField();
+          const selectedId = selected?.id;
+          return this.fetchAutocompleteEntities(
+            searchTerm,
+            this.lang.selectedLang,
+            50,
+            selectedId
+          ).pipe(
+            map(({ items }) => {
+              this.updateItemsList(items);
+              return items;
+            }),
+            catchError((err) => {
+              console.error('[SearchComponent] fetchAutocompleteEntities error', err);
+              this.resetSearchState();
+              return of([] as WikibaseEntity[]);
+            })
+          );
+        })
+      )
+      .subscribe();
     this.subscriptions.push(sub);
   }
 
@@ -532,7 +544,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     );
     // overlayOpen$ suit la condition utilisée dans le template et logge sa valeur
     this.overlayOpen$ = combineLatest([this.filteredItems$, this.searchInputValue$]).pipe(
-      map(([items, input]) => !!(items && items.length > 0 && (input || '').length > 0)),
+      map(([items, input]) => !!(items && items.length > 0 && (input || '').length > 0))
 
       // overlayOpen state computed
     );

@@ -1,4 +1,3 @@
-
 export const PLACE_DISPLAY_PROPERTIES = [
   { property: 'P48', comment: 'geographic coordinates' },
   { property: 'P58', comment: 'number of inhabitants' },
@@ -8,10 +7,11 @@ export const PLACE_DISPLAY_PROPERTIES = [
   { property: 'P461', comment: 'named after' },
   { property: 'P140', comment: 'Illuminati code name (ng ser)' },
   { property: 'P139', comment: 'Illuminati code name of' },
-  { property: 'P267', comment: 'organisational context' }
+  { property: 'P267', comment: 'organisational context' },
 ];
 
-export const CAREER_DISPLAY_PROPERTIES = [ //by display order
+export const CAREER_DISPLAY_PROPERTIES = [
+  //by display order
   { property: 'P164', comment: 'position' },
   { property: 'P165', comment: 'activities' },
   { property: 'P865', comment: 'professional address' },
@@ -21,11 +21,13 @@ export const CAREER_DISPLAY_PROPERTIES = [ //by display order
   { property: 'P776', comment: 'business partner' },
 ];
 
-export const ACTIVITY_DISPLAY_PROPERTIES = [ //by display order
+export const ACTIVITY_DISPLAY_PROPERTIES = [
+  //by display order
   { property: 'P267', comment: 'organisational context' },
 ];
 
-export const DOCUMENT_DISPLAY_PROPERTIES = [ //by display order
+export const DOCUMENT_DISPLAY_PROPERTIES = [
+  //by display order
   { property: 'P21', comment: 'author' },
   { property: 'P20', comment: 'author as (misleadingly) stated' },
   { property: 'P561', comment: 'quality of author identification' },
@@ -81,18 +83,18 @@ export const EDUCATION_DISPLAY_PROPERTIES = [
   { property: 'P160', comment: 'educating institutions' },
   { property: 'P304', comment: 'subjects studied at university' },
   { property: 'P170', comment: 'academic degree' },
-  { property: 'P161', comment: 'teachers' }
+  { property: 'P161', comment: 'teachers' },
 ];
 
 export const EVENT_DISPLAY_PROPERTIES = [
   { property: 'P47', comment: 'localisation' },
   { property: 'P106', comment: 'date' },
   { property: 'P66', comment: 'institution signing responsible' },
-  { property: 'P133', comment: 'participants' }
+  { property: 'P133', comment: 'participants' },
 ];
 
 export const EXCLUDED_DISPLAY_PROPERTIES = [
-  { property:'P899', comment:"object type propertyies"} // Ajoutez ici les identifiants des propriétés à ne pas afficher
+  { property: 'P899', comment: 'object type propertyies' }, // Ajoutez ici les identifiants des propriétés à ne pas afficher
   // ...
 ];
 
@@ -121,14 +123,14 @@ export const ORG_DISPLAY_PROPERTIES = [
   { property: 'P319', comment: 'organisational roof' },
   { property: 'P267', comment: 'organisational context' },
   { property: 'P430', comment: 'grand lodge (masonic lodge)' },
-  { property: 'P422', comment: 'subclass' }
+  { property: 'P422', comment: 'subclass' },
 ];
 
 export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P154', comment: 'sex' },
   { property: 'P247', comment: 'name' },
-  { property: "Q266694", comment: 'birth name' },
-  { property: "Q468366", comment: 'married name' },
+  { property: 'Q266694', comment: 'birth name' },
+  { property: 'Q468366', comment: 'married name' },
   { property: 'P248', comment: 'forenames' },
   { property: 'P140', comment: 'Illuminati code name' },
   { property: 'P139', comment: 'Illuminati code name of' },
@@ -190,7 +192,7 @@ export const SOCIABILITY_DISPLAY_PROPERTIES = [
   { property: 'P447', comment: 'masonic degree' },
   { property: 'P497', comment: 'interested in' },
   { property: 'P167', comment: 'contributor to' },
-  { property: 'P278', comment: 'subscriptions signed' }
+  { property: 'P278', comment: 'subscriptions signed' },
 ];
 
 export const INFO_DISPLAY_PROPERTIES = [
@@ -200,7 +202,7 @@ export const INFO_DISPLAY_PROPERTIES = [
   { property: 'P97', comment: 'field of research' },
   { property: 'P131', comment: 'research projects that contributed to this data set' },
   { property: 'P994', comment: 'PhiloBiblon vocabulary term' },
-  { property: 'P1132', comment: 'FactGrid keyword' }
+  { property: 'P1132', comment: 'FactGrid keyword' },
 ];
 
 export const SOURCES_DISPLAY_PROPERTIES = [
@@ -208,7 +210,7 @@ export const SOURCES_DISPLAY_PROPERTIES = [
   { property: 'P51', comment: 'primary source' },
   { property: 'P143', comment: 'mentioned in' },
   { property: 'P185', comment: 'archives at' },
-  { property: 'P146', comment: 'on line information' }
+  { property: 'P146', comment: 'on line information' },
 ];
 
 /*export const PLACE_DISPLAY_PROPERTIES = [

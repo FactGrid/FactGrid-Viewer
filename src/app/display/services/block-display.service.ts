@@ -12,18 +12,21 @@ import {
   INFO_DISPLAY_PROPERTIES,
   SOURCES_DISPLAY_PROPERTIES,
   EXTERNAL_LINKS_DISPLAY_PROPERTIES,
-  EXCLUDED_DISPLAY_PROPERTIES
+  EXCLUDED_DISPLAY_PROPERTIES,
 } from '../../config/dispatcher.config';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BlockDisplayService {
-
   /**
    * Méthode générique pour peupler un tableau à partir d'une constante de propriétés.
    */
-  private populateDisplay(item: any, targetArray: any[], properties: { property: string }[]): any[] {
+  private populateDisplay(
+    item: any,
+    targetArray: any[],
+    properties: { property: string }[]
+  ): any[] {
     for (const { property } of properties) {
       if (item[0].claims[property] !== undefined) {
         item[1].splice(item[1].indexOf(property), 1);
@@ -32,7 +35,6 @@ export class BlockDisplayService {
     }
     return targetArray;
   }
-
 
   setExcludedProperties(item: any, excludedProperties: any[]): any[] {
     return this.populateDisplay(item, excludedProperties, EXCLUDED_DISPLAY_PROPERTIES);
@@ -82,9 +84,6 @@ export class BlockDisplayService {
     return this.populateDisplay(item, sourcesList, SOURCES_DISPLAY_PROPERTIES);
   }
 
- 
-
-
   setItemInfoDisplay(item: any, target: any): void {
     const infoList = item[0]?.infoList || [];
 
@@ -92,10 +91,7 @@ export class BlockDisplayService {
     target.subclassesList = Array.isArray(infoList[1]) ? [...infoList[1]] : [];
     target.classesList = Array.isArray(infoList[2]) ? [...infoList[2]] : [];
     target.natureOfList = Array.isArray(infoList[3]) ? [...infoList[3]] : [];
-
   }
-
-
 
   setExternalLinksDisplay(item: any, externalLinks: any[]): any[] {
     return this.setUrlDisplay(item, externalLinks);
@@ -106,7 +102,7 @@ export class BlockDisplayService {
     for (const prop of properties) {
       if (prop === 'P1306' || prop === 'P650') continue; // Exclure les propriétés obsolètes
       const claim = item[0].claims[prop];
-      if (!claim || claim.datatype !== "external-id") continue;
+      if (!claim || claim.datatype !== 'external-id') continue;
 
       // Retirer la propriété de l'affichage général
       item[1].splice(item[1].indexOf(prop), 1);
@@ -125,21 +121,26 @@ export class BlockDisplayService {
     if (!claim) return;
 
     if (claim.externalLink !== undefined) {
-      claim.url = claim.externalLink.replace("$1", claim[0].mainsnak.datavalue.value);
+      claim.url = claim.externalLink.replace('$1', claim[0].mainsnak.datavalue.value);
     }
 
     if (item[0].claims.P76 !== undefined) {
-      item[0].claims.P76.url = "https://explore.gnd.network/gnd/" + item[0].claims.P76[0].mainsnak.datavalue.value;
+      item[0].claims.P76.url =
+        'https://explore.gnd.network/gnd/' + item[0].claims.P76[0].mainsnak.datavalue.value;
     }
     if (item[0].claims.P368 !== undefined) {
-      item[0].claims.P368.url = 'http://gateway-bayern.de/VD16+' + item[0].claims.P368[0].mainsnak.datavalue.value;
+      item[0].claims.P368.url =
+        'http://gateway-bayern.de/VD16+' + item[0].claims.P368[0].mainsnak.datavalue.value;
     }
     if (item[0].claims.P369 !== undefined) {
-      item[0].claims.P369.url = 'https://kxp.k10plus.de/DB=1.28/CMD?ACT=SRCHA&IKT=8079&TRM=%27:' +
-        item[0].claims.P369[0].mainsnak.datavalue.value + "%27";
+      item[0].claims.P369.url =
+        'https://kxp.k10plus.de/DB=1.28/CMD?ACT=SRCHA&IKT=8079&TRM=%27:' +
+        item[0].claims.P369[0].mainsnak.datavalue.value +
+        '%27';
     }
     if (item[0].claims.P370 !== undefined) {
-      item[0].claims.P370.url = 'https://kxp.k10plus.de/DB=1.65/CMD?ACT=SRCHA&IKT=8080&TRM=VD18' +
+      item[0].claims.P370.url =
+        'https://kxp.k10plus.de/DB=1.65/CMD?ACT=SRCHA&IKT=8080&TRM=VD18' +
         item[0].claims.P370[0].mainsnak.datavalue.value;
     }
     if (item[0].claims.P650 !== undefined) {
@@ -149,23 +150,21 @@ export class BlockDisplayService {
       let parish = value.slice(5, 7);
       let es = value.slice(7, 9);
       if (item[0].claims.P650.externalLink !== undefined) {
-        let url = item[0].claims.P650.externalLink.replace("$1", province)
-          .replace("$2", municipality)
-          .replace("$3", parish)
-          .replace("$4", es)
-          .replace("$5", "00");
-        console.log("URL for P650:", url); // Debug log
+        let url = item[0].claims.P650.externalLink
+          .replace('$1', province)
+          .replace('$2', municipality)
+          .replace('$3', parish)
+          .replace('$4', es)
+          .replace('$5', '00');
+        console.log('URL for P650:', url); // Debug log
         item[0].claims.P650.url = url;
       }
     }
     if (item[0].claims.P882 !== undefined) {
-      item[0].claims.P882.url = 'https://drw-www.adw.uni-heidelberg.de/drw-cgi/zeige?index=lemmata&term=' +
-        item[0].claims.P882[0].mainsnak.datavalue.value + '&darstellung=V';
+      item[0].claims.P882.url =
+        'https://drw-www.adw.uni-heidelberg.de/drw-cgi/zeige?index=lemmata&term=' +
+        item[0].claims.P882[0].mainsnak.datavalue.value +
+        '&darstellung=V';
     }
   }
-
-
 }
-
-
-

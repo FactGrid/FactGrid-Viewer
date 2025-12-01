@@ -57,7 +57,9 @@ describe('ItemInfoComponent', () => {
     it('trackTechPropKey prefers propertyId/property/label then index', () => {
       expect(component.trackTechPropKey(0, { propertyId: 'P42' } as any)).toBe('P42');
       expect(component.trackTechPropKey(1, { property: 'P100' } as any)).toBe('P100');
-      expect(component.trackTechPropKey(2, { propertyLabel: 'prop label' } as any)).toBe('prop label');
+      expect(component.trackTechPropKey(2, { propertyLabel: 'prop label' } as any)).toBe(
+        'prop label'
+      );
       expect(component.trackTechPropKey(3, {} as any)).toBe(3);
     });
   });
