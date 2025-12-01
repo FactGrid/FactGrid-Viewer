@@ -12,7 +12,12 @@ import { trigger, transition, style, animate } from '@angular/animations';
   templateUrl: './thematic-card.component.html',
   styleUrls: ['./thematic-card.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  host: { class: 'thematic-card', '[class.thematic-card--compact]': 'compact' },
+  host: {
+    class: 'thematic-card',
+    '[class.thematic-card--compact]': 'compact',
+    '[class.thematic-card--flush]': 'flush',
+    '[class.thematic-card--image-only]': 'imageOnly'
+  },
   animations: [
     trigger('collapseExpand', [
       transition(':enter', [
@@ -37,6 +42,8 @@ export class ThematicCardComponent implements AfterContentInit {
   isCollapsed: boolean = false;
   hasProjectedHeader: boolean = false;
   @Input() compact: boolean = false;
+  @Input() flush: boolean = false;
+  @Input() imageOnly: boolean = false;
 
   constructor(private el: ElementRef<HTMLElement>) {}
 

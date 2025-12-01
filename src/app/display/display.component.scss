@@ -943,7 +943,7 @@ $card-top-offset: 8px;
 /* Enforce left inset for selected rows and info content inside child2 from the component stylesheet
    to guarantee higher specificity and avoid being overridden by other rules. */
 @media (max-width: 813px) {
-  /* Prefer modifier selector for compact cards in child2; keep child2 fallback */
+  /* Compact cards control their own inset via .thematic-card--compact */
   .thematic-card--compact .info-card-content {
     padding-left: 8px !important;
     padding-right: 8px !important;
@@ -951,24 +951,20 @@ $card-top-offset: 8px;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
   }
-  .child2 .info-card-content .img2,
-  .child2 .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
 }
 
 @media (min-width: 1280px) {
-  /* Desktop: prefer compact modifier for inner card content inset; keep child2 fallback */
-  .thematic-card--compact .info-card-content,
-  .child2 .info-card-content {
+  /* Desktop: compact variant defines the larger inner inset */
+  .thematic-card--compact .info-card-content {
     padding-left: 24px !important;
     padding-right: 12px !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
     box-sizing: border-box !important;
   }
+  /* Images inside compact cards are flush; handled by the component styles */
   .thematic-card--compact .info-card-content .img2,
-  .thematic-card--compact .info-card-content img,
-  .child2 .info-card-content .img2,
-  .child2 .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
+  .thematic-card--compact .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
 }
 
 @media (min-width: 1280px) {
@@ -996,29 +992,10 @@ $card-top-offset: 8px;
 /* override selected row and link padding inside compact cards so they don't duplicate the
    overall inset coming from the card content/body-inner (prevents 2x padding). Prefer
    the modifier selector so non-child2 code can also use compact cards. */
-@media (max-width: 813px) {
-  .thematic-card--compact .selectedItemRow {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    box-sizing: border-box !important;
-  }
-  .thematic-card--compact .selectedItemLink {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .thematic-card--compact .selectedItemRow {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    box-sizing: border-box !important;
-  }
-  .thematic-card--compact .selectedItemLink {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-}
+/* Selected row / link padding is now handled inside ThematicCard under the
+   `.thematic-card--compact` modifier. Keeping container-level duplication
+   would be redundant and hard to maintain so it's removed in favor of the
+   component-level rule. */
 
 /* Desktop: increase inner padding for card content so text has more breathing room */
 @media (min-width: 1280px) {

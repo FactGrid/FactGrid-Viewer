@@ -83,7 +83,7 @@
 
                      <!-- Nouvelle carte pour les images en mode mobile -->
               @if (isMobile && isPicture) {
-                <app-thematic-card [collapsible]="false" title="Images">
+                <app-thematic-card [collapsible]="false" title="Images" [imageOnly]="true">
                   <div class="img-mobile">
                     @for (picture of pictures; track trackById(picture)) {
                       <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />
@@ -281,7 +281,7 @@
         <div class="child2">
           <div class="thematic-cards-grid">
           @if (!isMobile && isPicture) {
-            <app-thematic-card [collapsible]="false" title="Images" [compact]="true">
+            <app-thematic-card [collapsible]="false" title="Images" [imageOnly]="true">
               <div class="img2">
                 @for (picture of pictures; track trackById(picture)) {
                   <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />

@@ -35,8 +35,8 @@
 
 /* Modifier class for compact variant (used by child2 / small right-column cards) */
 .thematic-card--compact {
-  /* reduce outer padding and default inner paddings for compact cards */
-  padding: 6px !important;
+  /* compact variant — smaller padding inside the card */
+  padding: 4px !important;
 
   header.card-header {
     padding: 6px 8px !important;
@@ -54,6 +54,153 @@
   img {
     padding-left: 0 !important;
     margin-left: 0 !important;
+  }
+}
+
+/* Additional compact content rules (migrated from child2 partial) */
+.thematic-card--compact .externalLinksText {
+  padding: 2px 4px !important;
+}
+
+.thematic-card--compact .visited-list .selectedItemLink {
+  display: block !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: 2px 6px !important;
+  box-sizing: border-box !important;
+}
+
+/* Child2-specific compact-list tweaks (migrated from _cards-child2.scss)
+   These are small typography/spacing rules for compact cards commonly used
+   in the right column. Keeping them here avoids ::ng-deep container selectors
+   and prefers modifier-first rules. */
+.thematic-card--compact .selectedItemRow {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 2px 0 !important;
+  gap: 4px !important;
+}
+
+.thematic-card--compact .divisionTitle {
+  font-size: 1.25rem !important;
+  padding-top: 2px !important;
+  line-height: 1 !important;
+}
+
+.thematic-card--compact .visited-list,
+.thematic-card--compact .visited-list li {
+  margin: 0 !important;
+  padding: 2px 0 !important;
+}
+
+.thematic-card--compact .visited-list .listStyle {
+  margin: 0 0 2px 0;
+  padding: 0 0;
+  border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+}
+
+.thematic-card--compact .visited-list .propertyStyle {
+  font-weight: 600;
+  color: #111;
+  font-size: 0.95rem;
+  display: inline;
+  margin-right: 4px;
+  padding: 0 1px;
+  white-space: normal;
+}
+
+.thematic-card--compact .visited-list .statementStyle {
+  padding: 2px 0 2px 0 !important;
+  font-size: 0.94rem;
+  color: #1f2d40;
+  line-height: 1.12;
+  margin: 1px 0 !important;
+  display: block;
+}
+
+.thematic-card--compact .listStyle .statementStyle,
+.thematic-card--compact .visited-list .statementStyle,
+.thematic-card--compact .wiki-themed-card .statementStyle,
+.thematic-card--compact .external-themed-card .statementStyle {
+  line-height: 1.14 !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  margin: 2px 0 !important;
+  font-size: 0.95rem;
+}
+
+.thematic-card--compact .listStyle {
+  margin: 0 0 6px 0 !important;
+  padding: 0 0 0 8px !important;
+}
+
+.thematic-card--compact .listStyle:first-child {
+  margin-top: 6px !important;
+}
+
+.thematic-card--compact .visited-list .listStyle:first-child {
+  margin-top: 6px !important;
+}
+
+.thematic-card--compact .visited-list .selectedItemLink .selectedItemText,
+.thematic-card--compact .visited-list .selectedItemLink.linkedItemText,
+.thematic-card--compact .visited-list a.selectedItemLink {
+  display: block !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  line-height: 1.18 !important;
+}
+
+/* Flush variant: no extra padding, useful when the parent supplies layout/gutters */
+.thematic-card--flush {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  header.card-header {
+    padding: 6px 6px !important;
+    border-bottom: 1px solid transparent !important;
+  }
+
+  .card-body {
+    padding: 4px 6px !important;
+  }
+}
+
+/* Image-only variant: make images flush and remove body padding so thumbnails
+   are shown edge-to-edge inside the card. Useful for image galleries in child2 */
+.thematic-card--image-only {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+
+  .card-body {
+    padding: 0 !important;
+  }
+
+  .body-inner {
+    padding: 0 !important;
+  }
+
+  .img2,
+  img[mat-card-image],
+  img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    object-fit: contain !important;
+  }
+
+  /* Keep header compact but visible */
+  header.card-header {
+    padding: 6px 8px !important;
   }
 }
 
