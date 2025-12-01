@@ -738,6 +738,32 @@
   }
 }
 
+/* Ensure the card body inner container in child2 has a left inset so labels
+   are visually separated from the left edge. Do not affect image-only cards. */
+@media (max-width: 813px) {
+  :host ::ng-deep .child2 app-thematic-card .body-inner {
+    padding-left: 8px !important;
+  }
+  /* Keep image containers flush (no added inset) */
+  :host ::ng-deep .child2 .body-inner .img2,
+  :host ::ng-deep .child2 .body-inner img {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  :host ::ng-deep .child2 app-thematic-card .body-inner {
+    padding-left: 24px !important; /* larger on desktop */
+    box-sizing: border-box !important;
+  }
+  :host ::ng-deep .child2 .body-inner .img2,
+  :host ::ng-deep .child2 .body-inner img {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
 :host ::ng-deep .child2 .divisionTitle {
   font-size: 1.25rem !important;
   padding-top: 2px !important;
