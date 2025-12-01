@@ -7,6 +7,8 @@
   border: 1px solid rgba(179, 198, 224, 0.8);
 }
 
+@import './_cards-mixins.scss';
+
 :host ::ng-deep app-thematic-card.info-themed-card:hover {
   background: rgba(255, 255, 255, 0.95);
 }

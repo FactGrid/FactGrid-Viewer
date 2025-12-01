@@ -1,0 +1,31 @@
+/* Reusable mixins for thematic card variations used by child1/child2
+   - card-body-inset: applies left/right insets and wrapping rules
+   - body-image-exclude: resets left inset for image containers inside cards
+*/
+
+@mixin card-body-inset($left: 8px, $right: 8px) {
+  padding-left: $left !important;
+  padding-right: $right !important;
+  box-sizing: border-box !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+}
+
+@mixin body-image-exclude() {
+  .img2,
+  img {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* Helper for forcing child2 compact card body inset values */
+@mixin card-body-inset-responsive($mobile-left: 8px, $desktop-left: 24px, $desktop-right: 12px) {
+  @media (max-width: 813px) {
+    @include card-body-inset($mobile-left, $mobile-left);
+  }
+  @media (min-width: 1280px) {
+    @include card-body-inset($desktop-left, $desktop-right);
+  }
+}

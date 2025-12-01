@@ -281,7 +281,7 @@
         <div class="child2">
           <div class="thematic-cards-grid">
           @if (!isMobile && isPicture) {
-            <app-thematic-card [collapsible]="false" title="Images">
+            <app-thematic-card [collapsible]="false" title="Images" [compact]="true">
               <div class="img2">
                 @for (picture of pictures; track trackById(picture)) {
                   <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />
@@ -291,7 +291,7 @@
           }
 
           @if (isExternalLinks) {
-            <app-thematic-card [collapsible]="true" title="{{ externalLinksTitle }}">
+            <app-thematic-card [collapsible]="true" title="{{ externalLinksTitle }}" [compact]="true">
               <div class="externalLinksPadding">
                 <hr />
               </div>
@@ -304,7 +304,7 @@
           }
 
           @if (isWikis) {
-            <app-thematic-card [collapsible]="true" title="Wikis">
+            <app-thematic-card [collapsible]="true" title="Wikis" [compact]="true">
               <div class="externalLinksPadding">
                 <hr />
               </div>
@@ -316,7 +316,7 @@
             </app-thematic-card>
           }
 
-          <app-thematic-card [collapsible]="true" title="{{ formerVisitsTitle }}">
+          <app-thematic-card [collapsible]="true" title="{{ formerVisitsTitle }}" [compact]="true">
             <div class="info-card-header selectedListTitle">
               <mat-icon class="icon blue-text">history</mat-icon>
               {{ formerVisitsTitle }}

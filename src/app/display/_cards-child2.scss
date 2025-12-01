@@ -4,6 +4,8 @@
    rules, separate from the more general thematic-card rules used in child1.
 */
 
+@import './_cards-mixins.scss';
+
 /* Tight paddings for the right column (child2) to align with compact layout */
 :host ::ng-deep .child2 app-thematic-card,
 :host ::ng-deep .child2 app-thematic-card .card-body,
@@ -57,12 +59,11 @@
 }
 
 @media (max-width: 813px) {
-  :host ::ng-deep .child2 .info-card-content,
-  :host ::ng-deep .child2 .selectedItemLink {
-    padding-left: 8px !important;
-    box-sizing: border-box !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
+  /* Prefer modifier-based selector for compact cards; keep child2 fallback */
+  :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content,
+  :host ::ng-deep .child2 .info-card-content {
+    @include card-body-inset(8px, 8px);
   }
   /* keep images flush */
   :host ::ng-deep .child2 .info-card-content .img2,
@@ -73,13 +74,10 @@
 }
 
 @media (min-width: 1280px) {
-  :host ::ng-deep .child2 .info-card-content,
-  :host ::ng-deep .child2 .selectedItemLink {
-    padding-left: 24px !important;
-    padding-right: 12px !important;
-    box-sizing: border-box !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
+  :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner,
+  :host ::ng-deep app-thematic-card.thematic-card--compact .info-card-content,
+  :host ::ng-deep .child2 .info-card-content {
+    @include card-body-inset(24px, 12px);
   }
   :host ::ng-deep .child2 .info-card-content .img2,
   :host ::ng-deep .child2 .info-card-content img {
@@ -89,8 +87,8 @@
 }
 
 @media (max-width: 813px) {
-  :host ::ng-deep .child2 app-thematic-card .body-inner {
-    padding-left: 8px !important;
+  :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner {
+    @include card-body-inset(8px, 8px);
   }
   /* Keep image containers flush (no added inset) */
   :host ::ng-deep .child2 .body-inner .img2,
@@ -111,9 +109,8 @@
 }
 
 @media (min-width: 1280px) {
-  :host ::ng-deep .child2 app-thematic-card .body-inner {
-    padding-left: 24px !important; /* larger on desktop */
-    box-sizing: border-box !important;
+  :host ::ng-deep app-thematic-card.thematic-card--compact .body-inner {
+    @include card-body-inset(24px, 12px);
   }
   :host ::ng-deep .child2 .body-inner .img2,
   :host ::ng-deep .child2 .body-inner img {
