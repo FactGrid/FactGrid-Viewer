@@ -699,24 +699,42 @@
 /* Add extra breathing room on the right for child2 lists (external links, wikis, former visits)
    Small increase for mobile, larger in desktop to avoid text touching the right viewport edge. */
 @media (max-width: 813px) {
+  /* Mobile: add a small left inset for child2 text items and ensure they can wrap */
   :host ::ng-deep .child2 .externalLinksText,
   :host ::ng-deep .child2 .externalLinksPadding,
   :host ::ng-deep .child2 .selectedItemLink,
   :host ::ng-deep .child2 .selectedItemRow,
   :host ::ng-deep .child2 .visited-list,
   :host ::ng-deep .child2 .visited-list li {
-    padding-right: 8px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important; /* keep small right padding so text doesn't hit viewport */
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
   }
 }
 
 @media (min-width: 1280px) {
+  /* Desktop: give a larger left inset and ensure no horizontal overflow on the right */
   :host ::ng-deep .child2 .externalLinksText,
   :host ::ng-deep .child2 .externalLinksPadding,
   :host ::ng-deep .child2 .selectedItemLink,
   :host ::ng-deep .child2 .selectedItemRow,
   :host ::ng-deep .child2 .visited-list,
   :host ::ng-deep .child2 .visited-list li {
-    padding-right: 24px !important; /* larger on desktop */
+    padding-left: 24px !important; /* larger left gap to match page alignment */
+    padding-right: 12px !important; /* small right padding to avoid touching the edge */
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+  }
+  /* For Wikis card anchors specifically ensure links break cleanly */
+  :host ::ng-deep .child2 .externalLinksText a,
+  :host ::ng-deep .child2 .wiki-themed-card a {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
   }
 }
 
