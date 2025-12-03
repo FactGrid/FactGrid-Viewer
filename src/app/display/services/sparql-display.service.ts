@@ -68,6 +68,16 @@ export class SparqlDisplayService {
           return langService.getTranslation('currentAddress', langService.selectedLang);
         }
         return '';
+      case 'sparql4':
+        // sparql4 is used for Q8 / GOV results: Q8 actually maps to
+        // buildings/monuments in our vocabulary (buildingTitle), not
+        // the generic locationHeader.
+        if (sparqlSubject === 'Q8') {
+          return langService.getTranslation('buildingTitle', langService.selectedLang);
+        } else if (sparqlSubject === 'GOV') {
+          return langService.getTranslation('workTitle', langService.selectedLang);
+        }
+        return '';
       default:
         return '';
     }
@@ -126,7 +136,14 @@ export class SparqlDisplayService {
     return sparql$.pipe(
       map((data: any[][]) => {
         const buildCard = (index: number, type: SparqlDisplayType): SparqlCardState => {
-          const raw = data && data[index];
+            const raw = data && data[index];
+            // Helpful debug: show raw list lengths so we can trace where items get dropped
+            try {
+              const rawLen = raw?.[1]?.length ?? 'undef';
+              console.debug('[SparqlDisplay] buildCard', { index, type, subject: raw?.[0] || '', rawLen });
+            } catch (e) {
+              /* ignore logging failures */
+            }
           if (!raw || !raw[1] || !raw[1].length) {
             return { subject: '', list: [], title: '' };
           }
@@ -134,6 +151,11 @@ export class SparqlDisplayService {
           const rawList = raw[1];
           const transformed = this.transformData(type, rawList);
           const list = this.removeDuplicates(transformed);
+          try {
+            console.debug('[SparqlDisplay] buildCard result', { index, type, subject, rawLen: rawList.length, transformedLen: transformed.length, finalLen: list.length });
+          } catch (e) {
+            /* ignore */
+          }
           const title = this.getTitle(type, subject, langService, list);
           return { subject, list, title };
         };
@@ -143,8 +165,7 @@ export class SparqlDisplayService {
           sparql1: buildCard(1, 'sparql1'),
           sparql2: buildCard(2, 'sparql2'),
           sparql3: buildCard(3, 'sparql3'),
-          // sparql4 ne dépend pas du type pour le moment, on réutilise 'sparql3' par défaut
-          sparql4: buildCard(4, 'sparql3'),
+          sparql4: buildCard(4, 'sparql4'),
         };
       })
     );

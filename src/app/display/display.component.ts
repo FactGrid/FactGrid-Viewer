@@ -52,6 +52,8 @@ import {
   SelectedResearchFieldService,
   ResearchField,
 } from '../services/selected-research-field.service';
+import { SearchCacheService } from '../services/search-cache.service';
+import { RequestService } from '../services/request.service';
 
 @Component({
   selector: 'app-display',
@@ -181,6 +183,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   isList = false;
   isOrg = false;
   isPlace = false;
+  isMap = false;
   isIframes = false;
   isStemma = false;
   isFamilyTree = false;
@@ -358,6 +361,66 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Keep references to created components to manage lifecycle
   private sparqlComponentRefs: Array<NgComponentRef<any> | null> = [null, null, null, null, null];
+  // cache threshold for storing large SPARQL lists
+  private sparqlCacheThreshold = 300; // only cache lists >= this length
+  // use central SearchCacheService for generic cache storage
+  private searchCache = inject(SearchCacheService);
+  private request = inject(RequestService);
+
+  // --- Image caption helpers (Commons) -------------------------------------------------
+  private filenameFromUrl(url?: string) {
+    if (!url) return null;
+    try {
+      if (/^File:/i.test(url)) return url;
+      const u = new URL(url);
+      const last = u.pathname.split('/').pop() || '';
+      if (!last) return null;
+      return `File:${decodeURIComponent(last)}`;
+    } catch (e) {
+      const last = url.split('/').pop() || url;
+      return `File:${decodeURIComponent(last)}`;
+    }
+  }
+
+  toggleCaption(picture: any) {
+    if (!picture) return;
+    // toggle if already loaded
+    if (picture.captionVisible && !picture.captionLoading) {
+      picture.captionVisible = false;
+      return;
+    }
+    if (picture.captionHtml) {
+      // already loaded, just toggle visible
+      picture.captionVisible = !picture.captionVisible;
+      return;
+    }
+
+    // fetch caption
+    picture.captionLoading = true;
+    const candidate = picture.full || picture.thumbnail || picture.uniqueKey;
+    const fileName = this.filenameFromUrl(candidate);
+    this.request.getCommonsImageMetadata(fileName || candidate).subscribe((meta) => {
+      picture.captionLoading = false;
+      if (meta && meta.descriptionHtml) {
+        try {
+          picture.captionHtml = this.sanitizer.bypassSecurityTrustHtml(meta.descriptionHtml);
+        } catch (e) {
+          picture.captionHtml = meta.descriptionHtml;
+        }
+      } else {
+        picture.captionHtml = null;
+      }
+      picture.captionVisible = true;
+      // ensure change detection updates
+      try {
+        this.cdr.detectChanges();
+      } catch {}
+    }, () => {
+      picture.captionLoading = false;
+      picture.captionHtml = null;
+      picture.captionVisible = true;
+    });
+  }
 
   // ItemInfo lazy host(s)
   @ViewChild('itemInfoHost', { read: ViewContainerRef }) itemInfoHost?: ViewContainerRef;
@@ -423,6 +486,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isWikis =
         this.isExternalLinks =
         this.isInfo =
+        this.isMap =
           false;
 
       if (!item || !Array.isArray(item) || item.length === 0) {
@@ -430,6 +494,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
       this.item = item;
+      // Ensure any previously created dynamic SPARQL components and subscriptions
+      // are destroyed when switching items so new components can be created for
+      // the newly selected item.
+      this.clearSparqlComponents();
       console.log('Item loaded:', this.item);
       this.setList.addToSelectedItemsList(item[0]);
       this.claims = item[0].claims;
@@ -453,6 +521,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.urlId = this.factGridUrl + this.id;
 
       this.id = this.item[0].id;
+      // Try to pre-load cached SPARQL lists for this item (if any).
+      // Doing this before SPARQL observable resolution helps when navigating back
+      // to an item that previously had expensive long lists.
+      this.loadCachedSparqlComponents();
       this.label = this.item[0].label;
       this.description = this.item[0].description;
       this.aliases = this.item[0].aliases;
@@ -495,6 +567,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         )
           this.zoom = 16;
         this.coords = this.claims.P48[0].mainsnak.datavalue.value;
+        // mark presence of map data so template can show map card
+        this.isMap = true;
         this.latitude = this.coords.latitude;
         this.longitude = this.coords.longitude;
         this.router.navigate([this.latitude, this.longitude, this.zoom], {
@@ -649,6 +723,15 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
           // Subscribe and create the SPARQL components dynamically when data arrives
           this.sparqlCardsSubscription = this.sparqlCards$.subscribe((cards) => {
             if (!cards) return;
+            try {
+              console.debug('[Display] sparqlCards arrived', {
+                sparql0: cards.sparql0?.list?.length ?? 0,
+                sparql1: cards.sparql1?.list?.length ?? 0,
+                sparql2: cards.sparql2?.list?.length ?? 0,
+                sparql3: cards.sparql3?.list?.length ?? 0,
+                sparql4: cards.sparql4?.list?.length ?? 0,
+              });
+            } catch (e) {}
             if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
             if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
             if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
@@ -661,6 +744,34 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       };
       waitForSparqlObservable();
+
+      // Some type hints (sparql batch ASK results) are attached asynchronously
+      // to item[0].sparqlFlags by ItemSparqlService. When these flags arrive
+      // we should re-run the enrichment + dispatch so blocks that depend on
+      // P2 detection (e.g. organisation detection driven by Q12Test) get
+      // surfaced into the mainList and UI without user navigation.
+      const applySparqlFlags = () => {
+        if (this.item && this.item[0] && (this.item[0] as any).sparqlFlags) {
+          // re-enrich and re-dispatch so display state reflects new signals
+          this.claimsEnricher.enrich(this.item);
+          const flagsAfter = this.itemDisplayDispatcher.dispatch(this.item, this);
+          Object.assign(this, flagsAfter);
+          // also recompute some convenience fields used elsewhere
+          this.event = this.claims.P2?.event;
+          this.listTitle = this.claims.P2?.listTitle;
+          this.main = this.claims.P2?.main;
+          return true;
+        }
+        return false;
+      };
+
+      if (!applySparqlFlags()) {
+        const checkSparqlFlags = () => {
+          if (applySparqlFlags()) return;
+          setTimeout(checkSparqlFlags, 100);
+        };
+        checkSparqlFlags();
+      }
 
       // Spinner
       this.isSpinner = false;
@@ -684,6 +795,23 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   openImage(url: string): void {
     if (url) {
       window.open(url, '_blank');
+    }
+  }
+
+  /**
+   * Open the item page on FactGrid so the user can add missing properties
+   * (e.g. P2). Use the route param id if present, otherwise fall back to
+   * the component id or FactGrid root.
+   */
+  addInFactGrid(): void {
+    const idToOpen = this.itemId || this.id;
+    const url = idToOpen ? `${this.factGridUrl}${idToOpen}` : 'https://database.factgrid.de';
+    try {
+      // Use noopener,noreferrer for security when opening external links
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (e) {
+      // As a fallback, navigate in-page if popups are blocked
+      window.location.href = url;
     }
   }
 
@@ -718,8 +846,91 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         return;
       }
-      // already loaded
-      if (this.sparqlComponentRefs[index]) return;
+      // If a component already exists for this index, update its inputs
+      // so it can react to new data instead of being destroyed/recreated.
+      const existingRef = this.sparqlComponentRefs[index];
+      if (existingRef) {
+        try {
+                if (card) {
+            // prefer setInput when available (Ivy)
+            // setInput triggers ngOnChanges automatically
+            // @ts-ignore
+            if (typeof (existingRef as any).setInput === 'function') {
+              (existingRef as any).setInput('sparqlType', `sparql${index}`);
+              (existingRef as any).setInput('sparqlData', card.list);
+              (existingRef as any).setInput('sparqlSubject', card.subject);
+              (existingRef as any).setInput('langService', this.lang);
+              (existingRef as any).setInput('parentTitle', card.title);
+                } else {
+                  console.debug('[Display] loadSparqlAt: clearing component', { index, prevLength: Array.isArray(existingRef.instance?.sparqlData) ? existingRef.instance.sparqlData.length : 'unknown' });
+              // fallback: assign to instance and call ngOnChanges manually
+              try {
+                // capture previous values before overwrite so ngOnChanges receives
+                // a meaningful previous/new payload
+                const prevData = existingRef.instance.sparqlData;
+                const prevSubject = existingRef.instance.sparqlSubject;
+
+                existingRef.instance.sparqlType = `sparql${index}`;
+                existingRef.instance.sparqlData = card.list;
+                existingRef.instance.sparqlSubject = card.subject;
+                existingRef.instance.langService = this.lang;
+                existingRef.instance.parentTitle = card.title;
+
+                // build SimpleChanges so ngOnChanges runs properly
+                const changes: any = {};
+                changes['sparqlData'] = new SimpleChange(prevData, card.list, false);
+                changes['sparqlSubject'] = new SimpleChange(prevSubject, card.subject, false);
+                try {
+                  if (typeof existingRef.instance.ngOnChanges === 'function') {
+                    existingRef.instance.ngOnChanges(changes);
+                  }
+                } catch (e) {
+                  // ignore
+                }
+
+                try {
+                  existingRef.changeDetectorRef.detectChanges();
+                } catch {}
+              } catch (err) {
+                // ignore shape mismatch
+              }
+            }
+          } else {
+            // No card data -> clear the existing component
+            try {
+              if (typeof (existingRef as any).setInput === 'function') {
+                (existingRef as any).setInput('sparqlData', []);
+                (existingRef as any).setInput('sparqlSubject', undefined);
+              } else {
+                existingRef.instance.sparqlData = [];
+                existingRef.instance.sparqlSubject = '';
+                try {
+                  if (typeof existingRef.instance.ngOnChanges === 'function') {
+                    existingRef.instance.ngOnChanges({ sparqlData: new SimpleChange(undefined, [], false) });
+                  }
+                } catch {}
+                try {
+                  existingRef.changeDetectorRef.detectChanges();
+                } catch {}
+              }
+            } catch {}
+          }
+        } catch (e) {
+          // ignore update failures and fallback to re-creation below
+        }
+        // component updated, no need to (re)create
+        // Store large lists in cache so we can show them quickly if the user
+        // returns to this item soon.
+        try {
+          if (card && card.list && Array.isArray(card.list) && card.list.length >= this.sparqlCacheThreshold && this.id) {
+            try {
+              const key = `${this.id}::${index}::${card.subject || ''}`;
+              this.searchCache.setItem(key, { list: card.list, subject: card.subject, title: card.title }, undefined, undefined);
+            } catch {}
+          }
+        } catch {}
+        return;
+      }
       host.clear();
       const module = await import('./sparql-display/sparql-display.component');
       const Comp = module.SparqlDisplayComponent;
@@ -745,10 +956,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               ref.instance.langService = this.lang;
               ref.instance.parentTitle = card.title;
 
-              // create minimal SimpleChanges payload so ngOnChanges runs
-              const changes: any = {};
-              changes['sparqlData'] = new SimpleChange(undefined, card.list, true);
-              changes['sparqlSubject'] = new SimpleChange(undefined, card.subject, true);
+                // create minimal SimpleChanges payload so ngOnChanges runs
+                const changes: any = {};
+                changes['sparqlData'] = new SimpleChange(undefined, card.list, true);
+                changes['sparqlSubject'] = new SimpleChange(undefined, card.subject, true);
               try {
                 if (typeof ref.instance.ngOnChanges === 'function') {
                   ref.instance.ngOnChanges(changes);
@@ -770,12 +981,64 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       this.sparqlComponentRefs[index] = ref as NgComponentRef<any>;
+      // Cache very large lists so we can restore them quickly on reload/back
+      try {
+        if (card && card.list && Array.isArray(card.list) && card.list.length >= this.sparqlCacheThreshold && this.id) {
+          try {
+            const key = `${this.id}::${index}::${card.subject || ''}`;
+            this.searchCache.setItem(key, { list: card.list, subject: card.subject, title: card.title }, undefined, undefined);
+          } catch {}
+        }
+      } catch {}
       // trigger change detection in case host was created after view init
       try {
         this.cdr.detectChanges();
       } catch {}
     } catch (e) {
       // swallow import error to avoid breaking display
+    }
+  }
+
+  /**
+   * Clear any previously-created SPARQL components and subscriptions.
+   * Called when a new item is loaded so components are recreated for the
+   * newly selected item.
+   */
+  private clearSparqlComponents(): void {
+    // Unsubscribe from cards subscription to avoid duplicate handling
+    try {
+      this.sparqlCardsSubscription?.unsubscribe();
+    } catch {}
+
+    // Destroy any dynamically created components and reset refs
+    this.sparqlComponentRefs.forEach((ref, idx) => {
+      try {
+        ref?.destroy();
+      } catch {}
+      this.sparqlComponentRefs[idx] = null;
+    });
+
+    // Clear the hosts if available (removes DOM content)
+    for (let i = 0; i < this.sparqlComponentRefs.length; i++) {
+      try {
+        const host = this[`sparqlDisplay${i}Host`] as ViewContainerRef | undefined;
+        host?.clear();
+      } catch {}
+    }
+  }
+
+  private loadCachedSparqlComponents(): void {
+    // Try to create/update components using cached data for the current item
+    if (!this.id) return;
+    for (let idx = 0; idx < this.sparqlComponentRefs.length; idx++) {
+      try {
+        const prefix = `${this.id}::${idx}::`;
+        const cached: any = this.searchCache.getItemByPrefix(prefix);
+        if (cached && cached.list && cached.list.length) {
+          const card = { subject: cached.subject || '', list: cached.list, title: cached.title || '' };
+          void this.loadSparqlAt(idx, card);
+        }
+      } catch {}
     }
   }
 

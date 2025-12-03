@@ -78,6 +78,7 @@ export class ItemSparqlService {
   }
 
   itemSparql(item): Observable<any> {
+    console.debug('[ItemSparql] itemSparql() start for', item?.id);
     // Ne PAS initialiser item.sparql avec of(undefined) pour éviter d'émettre/compléter avant les vraies données
     return this.batchAskQuery(item.id).pipe(
       switchMap((batch) => {
@@ -137,6 +138,11 @@ export class ItemSparqlService {
           switchMap(([test1, test2]) => this.selectSparql4(test1, test2, item)),
           startWith([undefined, undefined])
         );
+
+        // attach the batch-level test results to the item so other services
+        // can synchronously consult the precomputed ASK flags (eg. Q12Test)
+        // when the SPARQL Observables themselves resolve asynchronously.
+        (item as any).sparqlFlags = batch;
 
         item.sparql = forkJoin([
           this.sparql0$,
@@ -200,6 +206,7 @@ export class ItemSparqlService {
   }
 
   selectSparql0(test1, test2, item) {
+    console.debug('[ItemSparql] selectSparql0', { itemId: item?.id, test1, test2 });
     let result: Observable<any[]>;
     if (test1 === true) {
       result = this.superclassSparql(test1, item);
@@ -212,6 +219,7 @@ export class ItemSparqlService {
   }
 
   selectSparql1(test1, test2, test3, test4, test5, test6, item) {
+    console.debug('[ItemSparql] selectSparql1', { itemId: item?.id, test1, test2, test3, test4, test5, test6 });
     let result: Observable<any[]>;
     if (test5 === true) {
       result = this.Q16200Sparql(item);
@@ -232,6 +240,7 @@ export class ItemSparqlService {
   }
 
   selectSparql2(test1, test2, item) {
+    console.debug('[ItemSparql] selectSparql2', { itemId: item?.id, test1, test2 });
     let result: Observable<any[]>;
     if (test1 === true) {
       result = this.Q140759Sparql(test1, item);
@@ -244,6 +253,7 @@ export class ItemSparqlService {
   }
 
   selectSparql3(test1, test2, test3, test4, item) {
+    console.debug('[ItemSparql] selectSparql3', { itemId: item?.id, test1, test2, test3, test4 });
     let result: Observable<any[]>;
     if (test1 === true) {
       result = this.masterSparql(test1, item);
@@ -264,6 +274,7 @@ export class ItemSparqlService {
   }
 
   selectSparql4(test1, test2, item) {
+    console.debug('[ItemSparql] selectSparql4', { itemId: item?.id, test1, test2 });
     let result: Observable<any[]>;
     if (test1 === true) {
       result = this.Q8Sparql(item);
@@ -557,6 +568,14 @@ export class ItemSparqlService {
 
   sparqlQuery(sparql) {
     sparql = this.newSparqlAdress(sparql);
+    // log the actual sparql query URL (truncate long queries for readability)
+    try {
+      const short = sparql?.length && sparql.length > 200 ? sparql.slice(0, 200) + '…' : sparql;
+      console.debug('[ItemSparql] sparqlQuery ->', short);
+    } catch (e) {
+      // defensive: don't throw from logging
+      console.debug('[ItemSparql] sparqlQuery -> (unable to format url)');
+    }
     return this.request.getList(sparql).pipe(map((res) => this.listFromSparql(res)));
   }
 
@@ -643,6 +662,14 @@ export class ItemSparqlService {
   }
 
   listFromSparql(res) {
+    // Track incoming SPARQL result shape & length to detect where lists vanish
+    try {
+      const len = res?.results?.bindings?.length ?? 'undefined';
+      console.debug('[ItemSparql] listFromSparql called, incoming bindings length =', len);
+    } catch (e) {
+      console.debug('[ItemSparql] listFromSparql called, error reading length');
+    }
+
     if (res !== undefined) {
       if (res.results !== undefined) {
         for (let i = 0; i < res.results.bindings.length; i++) {
@@ -662,6 +689,13 @@ export class ItemSparqlService {
             ignorePunctuation: true,
           });
         });
+        // After sorting, log first few ids (if any) for tracing
+        try {
+          const summaries = res.results.bindings.slice(0, 5).map((b) => ({ id: b.item?.id, label: b.fLabel?.value || b.itemLabel?.value }));
+          console.debug('[ItemSparql] listFromSparql sorted preview =', summaries);
+        } catch (e) {
+          /* ignore */
+        }
       }
     } else {
       res = {
