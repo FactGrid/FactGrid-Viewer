@@ -363,6 +363,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private sparqlComponentRefs: Array<NgComponentRef<any> | null> = [null, null, null, null, null];
   // cache threshold for storing large SPARQL lists
   private sparqlCacheThreshold = 300; // only cache lists >= this length
+  // Focused console debug filter: set to specific item id or '*' for verbose
+  private readonly DEBUG_ITEM: string = 'Q38612';
   // use central SearchCacheService for generic cache storage
   private searchCache = inject(SearchCacheService);
   private request = inject(RequestService);
@@ -724,13 +726,15 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
           this.sparqlCardsSubscription = this.sparqlCards$.subscribe((cards) => {
             if (!cards) return;
             try {
-              console.debug('[Display] sparqlCards arrived', {
-                sparql0: cards.sparql0?.list?.length ?? 0,
-                sparql1: cards.sparql1?.list?.length ?? 0,
-                sparql2: cards.sparql2?.list?.length ?? 0,
-                sparql3: cards.sparql3?.list?.length ?? 0,
-                sparql4: cards.sparql4?.list?.length ?? 0,
-              });
+              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+                console.debug('[Display] sparqlCards arrived', {
+                  sparql0: cards.sparql0?.list?.length ?? 0,
+                  sparql1: cards.sparql1?.list?.length ?? 0,
+                  sparql2: cards.sparql2?.list?.length ?? 0,
+                  sparql3: cards.sparql3?.list?.length ?? 0,
+                  sparql4: cards.sparql4?.list?.length ?? 0,
+                });
+              }
             } catch (e) {}
             if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
             if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
@@ -836,13 +840,24 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async loadSparqlAt(index: number, card: any, attempt = 0): Promise<void> {
     try {
-      console.debug('[Display] loadSparqlAt start', { index, itemId: this.id, cardLen: Array.isArray(card?.list) ? card.list.length : 'none' });
+      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+        console.debug('[Display] loadSparqlAt start', { index, itemId: this.id, cardLen: Array.isArray(card?.list) ? card.list.length : 'none' });
+      }
       const host = this[`sparqlDisplay${index}Host`] as ViewContainerRef | undefined;
+      // extra diagnostics: log host presence and attempt number so we can see
+      // whether the template anchor is present or delayed by ngIf / collapse logic
+      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+        console.debug('[Display] loadSparqlAt host check', { index, itemId: this.id, attempt, hostPresent: !!host, hostType: host?.constructor?.name || 'none' });
+      }
       // The host element may not be present yet when called from the subscription
       // (template is rendered after async data). Retry a few times before giving up.
       if (!host) {
         if (attempt < 10) {
           // small delay then retry
+          // log the retry so we can count how many attempts are needed
+          if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+            console.debug('[Display] loadSparqlAt host missing - retrying', { index, itemId: this.id, attempt });
+          }
           setTimeout(() => this.loadSparqlAt(index, card, attempt + 1), 50);
         }
         return;
@@ -851,9 +866,14 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       // so it can react to new data instead of being destroyed/recreated.
       const existingRef = this.sparqlComponentRefs[index];
       if (existingRef) {
-        try {
+        if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+          console.debug('[Display] existing component ref found', { index, itemId: this.id, prevLength: Array.isArray(existingRef.instance?.sparqlData) ? existingRef.instance.sparqlData.length : 'unknown' });
+        }
+            try {
                 if (card) {
-                  console.debug('[Display] update existing component inputs', { index, id: this.id, newLen: Array.isArray(card.list) ? card.list.length : 0 });
+              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+                console.debug('[Display] update existing component inputs', { index, id: this.id, newLen: Array.isArray(card.list) ? card.list.length : 0, setInputAvailable: typeof (existingRef as any).setInput === 'function' });
+              }
             // prefer setInput when available (Ivy)
             // setInput triggers ngOnChanges automatically
             // @ts-ignore
@@ -864,7 +884,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               (existingRef as any).setInput('langService', this.lang);
               (existingRef as any).setInput('parentTitle', card.title);
                 } else {
-                  console.debug('[Display] loadSparqlAt: clearing component', { index, prevLength: Array.isArray(existingRef.instance?.sparqlData) ? existingRef.instance.sparqlData.length : 'unknown' });
+                  if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+                    console.debug('[Display] loadSparqlAt: clearing component', { index, prevLength: Array.isArray(existingRef.instance?.sparqlData) ? existingRef.instance.sparqlData.length : 'unknown' });
+                  }
               // fallback: assign to instance and call ngOnChanges manually
               try {
                 // capture previous values before overwrite so ngOnChanges receives
@@ -933,15 +955,21 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch {}
         return;
       }
+      // We're about to create the dynamic component. Log host details before creation
+      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+        console.debug('[Display] creating component - host ready', { index, itemId: this.id, cardLen: Array.isArray(card?.list) ? card.list.length : 'none' });
+      }
       host.clear();
       const module = await import('./sparql-display/sparql-display.component');
       const Comp = module.SparqlDisplayComponent;
       const ref = host.createComponent(Comp);
       // set inputs using setInput() when available (safer) or by assigning instance and forcing CD
-      try {
+          try {
           if (card) {
             try {
-              console.debug('[Display] creating component at index', { index, id: this.id, listLen: Array.isArray(card.list) ? card.list.length : 0 });
+              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+                console.debug('[Display] creating component at index', { index, id: this.id, listLen: Array.isArray(card.list) ? card.list.length : 0 });
+              }
             } catch {}
           // prefer setInput if runtime provides it (Ivy)
           // setInput ensures ngOnChanges is executed as expected
@@ -977,6 +1005,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
                 ref.changeDetectorRef.detectChanges();
               } catch {}
             } catch (err) {
+              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
+                console.debug('[Display] error while creating component', { index, id: this.id, error: String(err) });
+              }
               // ignore if instance shape doesn't match
             }
           }
