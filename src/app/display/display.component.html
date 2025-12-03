@@ -65,7 +65,7 @@
           @if (item) {
             <div class="thematic-cards-grid">
 
-              <app-thematic-card [collapsible]="false" class="info-themed-card">
+              <app-thematic-card [collapsible]="false" class="info-themed-card" [resetKey]="id">
                 <div class="info-themed-content">
                   <div class="itemTitle">{{ label }}</div>
                   @if (aliases?.length) {
@@ -81,80 +81,81 @@
                 </div>
               </app-thematic-card>
 
+              <!-- Map child route: render only when coordinates are available -->
+              @if (isMap) {
+                <app-thematic-card [collapsible]="false" icon="map" [resetKey]="id">
+                  <div class="map-host">
+                    <router-outlet></router-outlet>
+                  </div>
+                </app-thematic-card>
+              }
+
                      <!-- Nouvelle carte pour les images en mode mobile -->
               @if (isMobile && isPicture) {
-                <app-thematic-card [collapsible]="false" title="Images" [imageOnly]="true">
+                <app-thematic-card [collapsible]="false" icon="image" [imageOnly]="true" [resetKey]="id">
                   <div class="img-mobile">
                     @for (picture of pictures; track trackById(picture)) {
-                      <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />
+                      <div class="picture-block">
+                        <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />
+                        <div class="img-footer">
+                          <button mat-icon-button class="caption-toggle" aria-label="légende" (click)="toggleCaption(picture)">
+                            <mat-icon aria-hidden="false" aria-label="légende">comment</mat-icon>
+                            <mat-spinner *ngIf="picture.captionLoading" diameter="18"></mat-spinner>
+                          </button>
+                          <div *ngIf="picture.captionVisible" class="picture-caption" [innerHTML]="picture.captionHtml ? picture.captionHtml : 'Pas de légende disponible.'"></div>
+                        </div>
+                      </div>
                     }
                   </div>
                 </app-thematic-card>
               }
 
-              @if (isIdentity) {
-                <app-thematic-card [collapsible]="true" [title]="identityTitle">
-                  <app-generic-list-display [title]="identityTitle" [items]="identity"></app-generic-list-display>
-                </app-thematic-card>
-              }
-
               @if (isPerson) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="'Biographie'">
-                  <app-generic-list-display [title]="'Biographie'" [items]="lifeAndFamily"></app-generic-list-display>
-                </app-thematic-card>
-              }
-
-              @if (trans !== '') {
-                <app-thematic-card>
-                  <app-text-display [trans]="trans"></app-text-display>
+                <app-thematic-card [collapsible]="true" [icon]="personIcon" [resetKey]="id">
+                  <app-generic-list-display [title]="personTitle" [items]="lifeAndFamily"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isTraining) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="training">
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="trainingTitle" [resetKey]="id">
                   <app-generic-list-display [title]="training" [items]="education"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isCareer) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerTitle">
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerTitle" [resetKey]="id">
                   <app-generic-list-display [title]="careerTitle" [items]="careerAndActivities"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isSociability) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sociabilityTitle">
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sociabilityTitle" [resetKey]="id">
                   <app-generic-list-display [title]="sociabilityTitle" [items]="sociabilityAndCulture"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isEvent) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="event">
-                  <app-generic-list-display [title]="event" [items]="eventDetail"></app-generic-list-display>
-                </app-thematic-card>
-              }
-
-              @if (isCulture) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cultureTitle">
-                  <app-generic-list-display [title]="cultureTitle" [items]="culture"></app-generic-list-display>
-                </app-thematic-card>
-              }
-
-              @if (isCareerStatement) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerStatementTitle">
-                  <app-generic-list-display [title]="careerStatementTitle" [items]="careerStatementDetail"></app-generic-list-display>
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="eventTitle" [resetKey]="id">
+                  <app-generic-list-display [title]="eventTitle" [items]="eventDetail"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isMain) {
-                <app-thematic-card collapsible="true" [title]="mainTitle" icon="star" [startCollapsed]="lifeAndFamily?.length">
+                <app-thematic-card collapsible="true" [title]="mainTitle" [startCollapsed]="lifeAndFamily?.length" [resetKey]="id">
                   <div class="thematic-card-header-bar"></div>
                   <app-generic-list-display [title]="''" [items]="mainList"></app-generic-list-display>
                 </app-thematic-card>
               }
 
+            @if (isOther) {
+                    <app-thematic-card collapsible="true" [icon]="'more_horiz'" [startCollapsed]="true" [resetKey]="id">
+                    <div class="thematic-card-header-bar"></div>
+                    <app-generic-list-display [title]="''" [items]="otherClaims"></app-generic-list-display>
+                  </app-thematic-card>
+              }
+
               @if (isIframes) {
-                <app-thematic-card>
+                <app-thematic-card [resetKey]="id">
                   <app-iframes-display [iframeGroups]="iframeGroups"></app-iframes-display>
                 </app-thematic-card>
               }
@@ -162,49 +163,49 @@
               <ng-container *ngIf="sparqlCards$ | async as cards">
                 @if (cards) {
                 @if (cards.sparql0.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql0.list?.length" [title]="cards.sparql0.title" [showHeader]="true">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql0.list?.length" [title]="cards.sparql0.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
-                    <ng-container #sparqlDisplay0></ng-container>
+                    <ng-template #sparqlDisplay0></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql1.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql1.list?.length" [title]="cards.sparql1.title" [showHeader]="true">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql1.list?.length" [title]="cards.sparql1.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
-                    <ng-container #sparqlDisplay1></ng-container>
+                    <ng-template #sparqlDisplay1></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql2.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql2.list?.length" [title]="cards.sparql2.title" [showHeader]="true">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql2.list?.length" [title]="cards.sparql2.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
-                    <ng-container #sparqlDisplay2></ng-container>
+                    <ng-template #sparqlDisplay2></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql3.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql3.list?.length" [title]="cards.sparql3.title" [showHeader]="true">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql3.list?.length" [title]="cards.sparql3.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
-                    <ng-container #sparqlDisplay3></ng-container>
+                    <ng-template #sparqlDisplay3></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql4.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql4.list?.length" [title]="cards.sparql4.title" [showHeader]="true">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql4.list?.length" [title]="cards.sparql4.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
-                    <ng-container #sparqlDisplay4></ng-container>
+                    <ng-template #sparqlDisplay4></ng-template>
                   </app-thematic-card>
                 }
               }
             </ng-container>
 
               @if (showSources) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sources">
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sources" [resetKey]="id">
                   <app-generic-list-display [title]="sources" [items]="sourcesList"></app-generic-list-display>
                 </app-thematic-card>
               }
 
-              <app-thematic-card [collapsible]="true" [startCollapsed]="true" title="Informations sur l'élément">
+              <app-thematic-card [collapsible]="true" [startCollapsed]="true" icon="info" [resetKey]="id">
                   <app-generic-list-display [items]="info"></app-generic-list-display>
                   @if (itemInfoLoading) {
                     <div class="item-info-loading">
@@ -287,10 +288,19 @@
         <div class="child2">
           <div class="thematic-cards-grid">
           @if (!isMobile && isPicture) {
-            <app-thematic-card [collapsible]="false" title="Images" [imageOnly]="true">
+            <app-thematic-card [collapsible]="false" icon="image" [imageOnly]="true">
               <div class="img2">
                 @for (picture of pictures; track trackById(picture)) {
-                  <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />
+                  <div class="picture-block">
+                    <img mat-card-image [src]="picture.thumbnail" [attr.data-src]="picture.full" loading="lazy" alt="Image description" (load)="onThumbnailLoad(picture)" (click)="openImage(picture.full)" />
+                    <div class="img-footer">
+                      <button mat-icon-button class="caption-toggle" aria-label="légende" (click)="toggleCaption(picture)">
+                        <mat-icon aria-hidden="false" aria-label="légende">comment</mat-icon>
+                        <mat-spinner *ngIf="picture.captionLoading" diameter="18"></mat-spinner>
+                      </button>
+                      <div *ngIf="picture.captionVisible" class="picture-caption" [innerHTML]="picture.captionHtml ? picture.captionHtml : 'Pas de légende disponible.'"></div>
+                    </div>
+                  </div>
                 }
               </div>
             </app-thematic-card>
@@ -322,11 +332,8 @@
             </app-thematic-card>
           }
 
-          <app-thematic-card [collapsible]="true" title="{{ formerVisitsTitle }}" [compact]="true">
-            <div class="info-card-header selectedListTitle">
-              <mat-icon class="icon blue-text">history</mat-icon>
-              {{ formerVisitsTitle }}
-            </div>
+          <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [compact]="true" icon="history">
+            <div card-header class="selectedListTitle">{{ formerVisitsTitle }}</div>
             <mat-card-content class="info-card-content">
               @if (selectedItemsList?.length === 0) {
                 <div class="itemDescription">Aucune visite précédente.</div>
