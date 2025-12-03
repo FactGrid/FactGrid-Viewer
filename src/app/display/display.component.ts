@@ -836,6 +836,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async loadSparqlAt(index: number, card: any, attempt = 0): Promise<void> {
     try {
+      console.debug('[Display] loadSparqlAt start', { index, itemId: this.id, cardLen: Array.isArray(card?.list) ? card.list.length : 'none' });
       const host = this[`sparqlDisplay${index}Host`] as ViewContainerRef | undefined;
       // The host element may not be present yet when called from the subscription
       // (template is rendered after async data). Retry a few times before giving up.
@@ -852,6 +853,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       if (existingRef) {
         try {
                 if (card) {
+                  console.debug('[Display] update existing component inputs', { index, id: this.id, newLen: Array.isArray(card.list) ? card.list.length : 0 });
             // prefer setInput when available (Ivy)
             // setInput triggers ngOnChanges automatically
             // @ts-ignore
@@ -937,7 +939,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       const ref = host.createComponent(Comp);
       // set inputs using setInput() when available (safer) or by assigning instance and forcing CD
       try {
-        if (card) {
+          if (card) {
+            try {
+              console.debug('[Display] creating component at index', { index, id: this.id, listLen: Array.isArray(card.list) ? card.list.length : 0 });
+            } catch {}
           // prefer setInput if runtime provides it (Ivy)
           // setInput ensures ngOnChanges is executed as expected
           // @ts-ignore - setInput is present on ComponentRef in newer Angular versions

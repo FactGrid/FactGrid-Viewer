@@ -104,9 +104,19 @@ export class SparqlDisplayService {
    */
   removeDuplicates(data: any[]): any[] {
     if (!data) return [];
-    return [
-      ...new Map(data.reverse().map((v) => [JSON.stringify([v.itemText]), v])).values(),
-    ].reverse();
+    // preserve last occurrence for duplicates (reverse behaviour) and calculate how many were removed
+    const reversed = data.reverse();
+    const mapEntries: [string, any][] = reversed.map((v) => [JSON.stringify([v.itemText]), v] as [string, any]);
+    const unique = [...new Map<string, any>(mapEntries).values()].reverse();
+    try {
+      const removed = data.length - unique.length;
+      if (removed > 0) {
+        console.debug('[SparqlDisplay] removeDuplicates removed', removed, 'items (from', data.length, 'to', unique.length, ')');
+      }
+    } catch (e) {
+      // ignore logging errors
+    }
+    return unique;
   }
 
   /**
