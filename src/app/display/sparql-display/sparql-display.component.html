@@ -1,11 +1,60 @@
 <div class="cardBackground" [ngClass]="isList ? 'show-division' : 'hide-division'">
+  <!-- Temporary debug panel: shows list length and sample items (helpful when tracing Q38612) -->
+  @if (list && list.length) {
+    <div class="sg-debug-panel" aria-hidden="false">
+      <div class="sg-debug-header">DEBUG — list length: <strong>{{ list.length }}</strong></div>
+      <div class="sg-debug-sample">
+        @for (dbgItem of list.slice(0, 10); track dbgItem.item?.id) {
+          <span class="debug-item">{{ dbgItem.item?.id || dbgItem.item?.value || 'unknown' }} — {{ dbgItem.itemLabel?.value || dbgItem.itemText || '—' }}</span>
+        }
+      </div>
+    </div>
+  }
   
   @if (isSearch) {
     <div class="searchFormPadding">
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="filterField">
         <input matInput (keyup)="applyFilter($event)" placeholder="Search" />
       </mat-form-field>
-      <span>&nbsp;&nbsp;&nbsp;{{ list.length }}</span>
+      <span class="list-count">{{ list.length }}</span>
+      <div class="sparql-actions">
+        <button
+          mat-icon-button
+          color="primary"
+          class="download-btn internalLink"
+          (click)="onClickDownload(langService?.csv)"
+          [disabled]="!langService?.csv || !list?.length"
+          matTooltip="Download CSV"
+          aria-label="Download CSV"
+          title="Download CSV"
+        >
+          <mat-icon class="icon blue-text" [inline]="true">file_download</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (!isSearch) {
+    <!-- show a compact header with count + download when no search filter is shown -->
+    <div class="searchFormPadding compact">
+      <mat-form-field appearance="outline" class="filterField compactField">
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search" />
+      </mat-form-field>
+      <span class="list-count">{{ list.length }}</span>
+      <div class="sparql-actions">
+        <button
+          mat-icon-button
+          color="primary"
+          class="download-btn internalLink"
+          (click)="onClickDownload(langService?.csv)"
+          [disabled]="!langService?.csv || !list?.length"
+          matTooltip="Download CSV"
+          aria-label="Download CSV"
+          title="Download CSV"
+        >
+          <mat-icon class="icon blue-text" [inline]="true">file_download</mat-icon>
+        </button>
+      </div>
     </div>
   }
 
@@ -19,11 +68,20 @@
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         } @else {
-          <div class="sparql-div statementStyle">
+          <div class="sparql-div sparql-card statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              {{ L.itemText || L.itemLabel?.value || '' }}
+              <span class="sparql-label">{{ L.itemLabel?.value || L.itemText || '' }}</span>
+              @if (L.itemDescription?.value) {
+                <span class="sparql-description">
+                  {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
+                </span>
+              }
             </a>
-            @if (L.year) {<span>, {{ L.year.value }}</span>}
+            @if (!L.itemDescription?.value && L.year?.value) {
+              <div class="sparql-meta">
+                <span class="sparql-year">{{ L.year.value }}</span>
+              </div>
+            }
           </div>
         }
       }
@@ -34,25 +92,31 @@
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         } @else {
-          <div class="sparql-div statementStyle">
+          <div class="sparql-div sparql-card statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              {{ L.itemLabel?.value
-              }}@if (L.itemDescription) {<span class="sparql-description">, {{ L.itemDescription.value }}</span>}
+              <span class="sparql-label">{{ L.itemLabel?.value || '' }}</span>
+              @if (L.itemDescription?.value) {
+                <span class="sparql-description">
+                  {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
+                </span>
+              }
             </a>
-            @if (L.year) {<span>, {{ L.year.value }}</span>}
+            @if (!L.itemDescription?.value && L.year?.value) {
+              <div class="sparql-meta">
+                <span class="sparql-year">{{ L.year.value }}</span>
+              </div>
+            }
           </div>
         }
       }
     </div>
   }
-  <span>
-    <button
-      mat-icon-button
-      color="primary"
-      class="internalLink"
-      (click)="onClickDownload(langService?.csv)"
-    >
-      <mat-icon color="primary" [inline]="true">download</mat-icon></button
-    >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  </span>
+  <!-- download button moved to header (near filter) -->
+
+  <!-- Empty state: when the SPARQL card contains no rows, show a small hint -->
+  @if (!list || list.length === 0) {
+    <div class="sparql-empty">
+      <p class="muted">{{ langService?.getTranslation('no_results', langService?.selectedLang) || 'No results' }}</p>
+    </div>
+  }
 </div>
