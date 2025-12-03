@@ -13,20 +13,28 @@
       }
 
       @for (L of list; track L) {
-        <div class="sparql-div statementStyle">
-          @if (L.itemLabel.value) {
-            <label>
-              {{ L.itemLabel.value }}
-              <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"
-                ><mat-icon color="primary" [inline]="true">open_in_new</mat-icon></mat-icon-button
-              >&nbsp;&nbsp;&nbsp;
-              @if (L.itemDescription) {
-                <span>, {{ L.itemDescription.value }}</span>
-              }
-              @if (L.year) {
-                <span>, {{ L.year.value }}</span>
-              }
-            </label>
+        <div class="sparql-div sparql-card statementStyle">
+          @if (L.itemLabel?.value) {
+            <div class="sparql-card-content">
+              <a class="sparql-link" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+                <span class="sparql-label">{{ L.itemLabel.value }}</span>
+                @if (L.itemDescription?.value) {
+                  <span class="sparql-description">
+                    {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
+                  </span>
+                }
+              </a>
+              <div class="sparql-card-actions">
+                <button mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+                  <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
+                </button>
+              </div>
+            </div>
+            @if (!L.itemDescription?.value && L.year?.value) {
+              <div class="sparql-meta">
+                <span class="sparql-year">{{ L.year.value }}</span>
+              </div>
+            }
           }
           <hr />
         </div>

@@ -27,6 +27,11 @@
   text-decoration: none;
 }
 
+.factgrid-link:active {
+  text-decoration: underline !important;
+  color: #000 !important;
+}
+
 /* Supprimer l'espace entre le lien et le séparateur */
 .linkedItemText + .description-text,
 .linkedItemText + .description-text:before {
@@ -41,6 +46,29 @@
 
 .hover-bg-light {
   padding: 0 !important;
+
+:host ::ng-deep button.references-toggle-btn,
+:host ::ng-deep .references-toggle-btn.mdc-button,
+:host ::ng-deep .references-toggle-btn.mat-mdc-button,
+:host ::ng-deep .references-toggle-btn.mat-mdc-button-base {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+:host ::ng-deep .references-toggle-btn .mat-button-focus-overlay,
+:host ::ng-deep .references-toggle-btn .mat-mdc-focus-indicator,
+:host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple,
+:host ::ng-deep .references-toggle-btn .mat-mdc-button-persistent-ripple,
+:host ::ng-deep .references-toggle-btn .mat-mdc-button-touch-target,
+:host ::ng-deep .references-toggle-btn .mdc-button__focus-ring,
+:host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple,
+:host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple:after {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
   margin: 0 !important;
 }
 // Bloc pour forcer l'affichage des références sur une nouvelle ligne
@@ -80,6 +108,7 @@
   padding-top: 0;
   padding-bottom: 0;
   min-height: 0;
+  box-shadow: none !important;
   line-height: 1.2;
 }
 // Indentation pour le bouton Références afin d'aligner avec les références
@@ -98,6 +127,17 @@
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
+
+  .mat-button-focus-overlay,
+  .mat-ripple-element,
+  .mdc-button__touch,
+  .mdc-button__focus-ring,
+  .mat-mdc-focus-indicator,
+  .mdc-button__ripple {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
   overflow: visible;
   box-sizing: border-box;
   padding: 0; /* contenu interne géré localement; padding de carte centralisé */
@@ -299,9 +339,9 @@
   font-size: 0.85rem; /* même taille que les qualifiers */
   line-height: 1.25; /* compaction verticale */
   font-weight: 400; /* poids normal */
-  color: #ad1457;
-  background-color: rgba(173, 20, 87, 0.03);
-  border: 1px solid rgba(173, 20, 87, 0.18);
+  color: #000 !important;
+  background-color: #fff !important;
+  border: none !important;
   border-radius: 4px;
   min-height: 0; /* supprime hauteur forcée */
   display: inline-flex;
@@ -312,8 +352,8 @@
     border-color 120ms ease;
 
   &:hover {
-    background-color: rgba(173, 20, 87, 0.08);
-    border-color: rgba(173, 20, 87, 0.26);
+    background-color: #f0f0f0 !important;
+    border: none !important;
   }
 }
 
@@ -323,7 +363,7 @@
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 6px solid var(--color-accent, #cc5500) !important;
+  border-top: 6px solid #000 !important;
   margin-right: 8px;
   transition: transform 150ms ease;
   vertical-align: middle;
@@ -334,7 +374,7 @@
 }
 
 .references-label {
-  color: #111 !important;
+  color: #000 !important;
   font-style: italic;
   font-weight: 400;
   font-size: 0.95em;

@@ -114,6 +114,8 @@ $my-theme: mat.m2-define-light-theme(
   &.mat-primary,
   &.mat-accent,
   &.mat-warn,
+
+  
   &.mat-button-disabled {
     &.mat-button-disabled {
       $palette: if($property == 'color', $foreground, $background);
@@ -282,6 +284,21 @@ body {
 .mat-autocomplete-panel .mat-option:hover,
 .mat-autocomplete-panel .mat-option.mat-active {
   background: #f5f5f5;
+}
+
+/* ---------------------------------------------------------------------------
+   Global override for SPARQL cards (applied last to win over deep/host rules)
+   Keep this narrow and targeted to avoid affecting other list displays.
+--------------------------------------------------------------------------- */
+app-sparql-display .sparql-div.sparql-card,
+app-sparql-display .sparql-card {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+app-sparql-display .sparql-card .sparql-link {
+  white-space: normal !important;
 }
 
 .mat-form-field input.mat-input-element.search-input-style {

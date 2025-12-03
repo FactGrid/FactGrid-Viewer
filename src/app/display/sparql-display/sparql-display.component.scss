@@ -322,32 +322,3 @@ mat-card {
     max-height: 500px;
   }
 }
-
-/* ========================================
-   DEBUG PANEL (temporary)
-   ======================================== */
-.sg-debug-panel {
-  border-radius: 6px;
-  background: rgba(20, 20, 20, 0.03);
-  padding: 8px 10px;
-  margin-bottom: 10px;
-  border: 1px dashed rgba(34, 197, 94, 0.14);
-  font-size: 0.85rem;
-  color: #0f172a;
-}
-.sg-debug-header {
-  font-weight: 700;
-  color: #0b5; /* green-y tint */
-  margin-bottom: 6px;
-}
-.sg-debug-sample {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.debug-item {
-  background: rgba(0, 0, 0, 0.03);
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(16, 185, 129, 0.06);
-}

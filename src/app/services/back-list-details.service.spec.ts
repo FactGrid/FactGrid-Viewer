@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { BackListDetailsService } from './back-list-details.service';
 
@@ -6,7 +7,7 @@ describe('BackListDetailsService', () => {
   let service: BackListDetailsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
     service = TestBed.inject(BackListDetailsService);
   });
 

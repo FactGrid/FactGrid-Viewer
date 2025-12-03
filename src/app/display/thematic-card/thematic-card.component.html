@@ -1,4 +1,5 @@
-@if (showHeader || title || hasProjectedHeader || collapsible) {
+<!-- include icon in outer guard so icon-only cards still render a header -->
+@if (showHeader || title || hasProjectedHeader || collapsible || icon) {
   <header class="card-header" [class.has-custom]="hasProjectedHeader">
     @if (hasProjectedHeader) {
       <ng-content select="[card-header]"></ng-content>
@@ -29,11 +30,12 @@
 }
 <section class="card-body" [class.collapsed]="isCollapsed">
   @if (!loading) {
-    @if (!isCollapsed) {
-      <div [@collapseExpand] class="body-inner">
-        <ng-content></ng-content>
-      </div>
-    }
+    <!-- keep projected content in the DOM even when collapsed so parent
+         components can query/inject into projected insertion points (e.g.
+         #itemInfoHost). We still visually hide it when collapsed. -->
+    <div class="body-inner" [class.content-hidden]="isCollapsed" [attr.aria-hidden]="isCollapsed">
+      <ng-content></ng-content>
+    </div>
   }
   <ng-template #loaderTpl>
     <div class="skeleton" aria-label="Chargement" role="status">

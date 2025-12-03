@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { SetTimeService } from './set-time.service';
 
@@ -6,7 +7,7 @@ describe('SetTimeService', () => {
   let service: SetTimeService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
     service = TestBed.inject(SetTimeService);
   });
 

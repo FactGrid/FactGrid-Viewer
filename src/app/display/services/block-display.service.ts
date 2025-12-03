@@ -29,8 +29,16 @@ export class BlockDisplayService {
   ): any[] {
     for (const { property } of properties) {
       if (item[0].claims[property] !== undefined) {
-        item[1].splice(item[1].indexOf(property), 1);
-        targetArray.push(item[0].claims[property]);
+        // only remove property from index if it exists in the index list
+        const idx = item[1].indexOf(property);
+        if (idx >= 0) item[1].splice(idx, 1);
+        // Avoid pushing the same claim object into the same target array
+        // multiple times; this prevents intra-block duplication earlier
+        // and saves the higher-cost de-duplication step later on.
+        const claim = item[0].claims[property];
+        if (!targetArray.includes(claim)) {
+          targetArray.push(claim);
+        }
       }
     }
     return targetArray;
@@ -156,7 +164,7 @@ export class BlockDisplayService {
           .replace('$3', parish)
           .replace('$4', es)
           .replace('$5', '00');
-        console.log('URL for P650:', url); // Debug log
+        // intentionally no debug log in production code
         item[0].claims.P650.url = url;
       }
     }

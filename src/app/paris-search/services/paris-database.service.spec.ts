@@ -1,13 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-import { DatabaseService } from './ParisDatabase.service';
+import { ParisDatabaseService } from './paris-database.service';
 
 describe('ParisDatabaseService', () => {
-  let service: DatabaseService;
+  let service: ParisDatabaseService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(DatabaseService);
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
+    service = TestBed.inject(ParisDatabaseService);
   });
 
   it('should be created', () => {

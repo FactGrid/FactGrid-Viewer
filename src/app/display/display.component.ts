@@ -363,8 +363,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private sparqlComponentRefs: Array<NgComponentRef<any> | null> = [null, null, null, null, null];
   // cache threshold for storing large SPARQL lists
   private sparqlCacheThreshold = 300; // only cache lists >= this length
-  // Focused console debug filter: set to specific item id or '*' for verbose
-  private readonly DEBUG_ITEM: string = 'Q38612';
   // use central SearchCacheService for generic cache storage
   private searchCache = inject(SearchCacheService);
   private request = inject(RequestService);
@@ -725,22 +723,22 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
           // Subscribe and create the SPARQL components dynamically when data arrives
           this.sparqlCardsSubscription = this.sparqlCards$.subscribe((cards) => {
             if (!cards) return;
+            // CRITICAL: Force change detection BEFORE attempting to load dynamic
+            // components. The template uses @if conditions that depend on sparqlCards$
+            // via async pipe. Until change detection runs, the ng-template hosts
+            // (#sparqlDisplay0, etc.) do not exist in the DOM.
             try {
-              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-                console.debug('[Display] sparqlCards arrived', {
-                  sparql0: cards.sparql0?.list?.length ?? 0,
-                  sparql1: cards.sparql1?.list?.length ?? 0,
-                  sparql2: cards.sparql2?.list?.length ?? 0,
-                  sparql3: cards.sparql3?.list?.length ?? 0,
-                  sparql4: cards.sparql4?.list?.length ?? 0,
-                });
-              }
-            } catch (e) {}
-            if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
-            if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
-            if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
-            if (cards.sparql3?.list?.length) this.loadSparqlAt(3, cards.sparql3);
-            if (cards.sparql4?.list?.length) this.loadSparqlAt(4, cards.sparql4);
+              this.cdr.detectChanges();
+            } catch {}
+            // Small delay to give Angular time to process @if conditions and create
+            // the ng-template hosts in the DOM
+            setTimeout(() => {
+              if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
+              if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
+              if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
+              if (cards.sparql3?.list?.length) this.loadSparqlAt(3, cards.sparql3);
+              if (cards.sparql4?.list?.length) this.loadSparqlAt(4, cards.sparql4);
+            }, 0);
           });
         } else {
           this.sparql$ = null;
@@ -840,25 +838,22 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async loadSparqlAt(index: number, card: any, attempt = 0): Promise<void> {
     try {
-      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-        console.debug('[Display] loadSparqlAt start', { index, itemId: this.id, cardLen: Array.isArray(card?.list) ? card.list.length : 'none' });
-      }
       const host = this[`sparqlDisplay${index}Host`] as ViewContainerRef | undefined;
-      // extra diagnostics: log host presence and attempt number so we can see
-      // whether the template anchor is present or delayed by ngIf / collapse logic
-      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-        console.debug('[Display] loadSparqlAt host check', { index, itemId: this.id, attempt, hostPresent: !!host, hostType: host?.constructor?.name || 'none' });
-      }
       // The host element may not be present yet when called from the subscription
-      // (template is rendered after async data). Retry a few times before giving up.
+      // (template is rendered after async data). Use exponential backoff for large lists.
+      // For lists >1000 items, Angular needs more time to process the @if condition.
       if (!host) {
-        if (attempt < 10) {
-          // small delay then retry
-          // log the retry so we can count how many attempts are needed
-          if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-            console.debug('[Display] loadSparqlAt host missing - retrying', { index, itemId: this.id, attempt });
-          }
-          setTimeout(() => this.loadSparqlAt(index, card, attempt + 1), 50);
+        // Maximum 30 attempts with exponential backoff (50ms, 75ms, 112ms, ...)
+        // Total max wait: ~8 seconds which should handle even very large lists
+        const maxAttempts = 30;
+        if (attempt < maxAttempts) {
+          // Force change detection to ensure Angular has processed the @if block
+          try {
+            this.cdr.detectChanges();
+          } catch {}
+          // Exponential backoff: 50ms * 1.5^attempt (capped at 500ms)
+          const delay = Math.min(500, 50 * Math.pow(1.5, Math.min(attempt, 10)));
+          setTimeout(() => this.loadSparqlAt(index, card, attempt + 1), delay);
         }
         return;
       }
@@ -866,14 +861,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       // so it can react to new data instead of being destroyed/recreated.
       const existingRef = this.sparqlComponentRefs[index];
       if (existingRef) {
-        if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-          console.debug('[Display] existing component ref found', { index, itemId: this.id, prevLength: Array.isArray(existingRef.instance?.sparqlData) ? existingRef.instance.sparqlData.length : 'unknown' });
-        }
-            try {
-                if (card) {
-              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-                console.debug('[Display] update existing component inputs', { index, id: this.id, newLen: Array.isArray(card.list) ? card.list.length : 0, setInputAvailable: typeof (existingRef as any).setInput === 'function' });
-              }
+        try {
+          if (card) {
             // prefer setInput when available (Ivy)
             // setInput triggers ngOnChanges automatically
             // @ts-ignore
@@ -883,10 +872,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               (existingRef as any).setInput('sparqlSubject', card.subject);
               (existingRef as any).setInput('langService', this.lang);
               (existingRef as any).setInput('parentTitle', card.title);
-                } else {
-                  if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-                    console.debug('[Display] loadSparqlAt: clearing component', { index, prevLength: Array.isArray(existingRef.instance?.sparqlData) ? existingRef.instance.sparqlData.length : 'unknown' });
-                  }
+            } else {
               // fallback: assign to instance and call ngOnChanges manually
               try {
                 // capture previous values before overwrite so ngOnChanges receives
@@ -955,22 +941,14 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch {}
         return;
       }
-      // We're about to create the dynamic component. Log host details before creation
-      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-        console.debug('[Display] creating component - host ready', { index, itemId: this.id, cardLen: Array.isArray(card?.list) ? card.list.length : 'none' });
-      }
+      // Create the dynamic component
       host.clear();
       const module = await import('./sparql-display/sparql-display.component');
       const Comp = module.SparqlDisplayComponent;
       const ref = host.createComponent(Comp);
       // set inputs using setInput() when available (safer) or by assigning instance and forcing CD
-          try {
-          if (card) {
-            try {
-              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-                console.debug('[Display] creating component at index', { index, id: this.id, listLen: Array.isArray(card.list) ? card.list.length : 0 });
-              }
-            } catch {}
+      try {
+        if (card) {
           // prefer setInput if runtime provides it (Ivy)
           // setInput ensures ngOnChanges is executed as expected
           // @ts-ignore - setInput is present on ComponentRef in newer Angular versions
@@ -989,10 +967,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               ref.instance.langService = this.lang;
               ref.instance.parentTitle = card.title;
 
-                // create minimal SimpleChanges payload so ngOnChanges runs
-                const changes: any = {};
-                changes['sparqlData'] = new SimpleChange(undefined, card.list, true);
-                changes['sparqlSubject'] = new SimpleChange(undefined, card.subject, true);
+              // create minimal SimpleChanges payload so ngOnChanges runs
+              const changes: any = {};
+              changes['sparqlData'] = new SimpleChange(undefined, card.list, true);
+              changes['sparqlSubject'] = new SimpleChange(undefined, card.subject, true);
               try {
                 if (typeof ref.instance.ngOnChanges === 'function') {
                   ref.instance.ngOnChanges(changes);
@@ -1005,9 +983,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
                 ref.changeDetectorRef.detectChanges();
               } catch {}
             } catch (err) {
-              if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || this.id === this.DEBUG_ITEM) {
-                console.debug('[Display] error while creating component', { index, id: this.id, error: String(err) });
-              }
               // ignore if instance shape doesn't match
             }
           }

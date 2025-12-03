@@ -1,8 +1,10 @@
 import { SafeHtmlPipe } from './safe-html.pipe';
+import { TestBed } from '@angular/core/testing';
 
 describe('SafeHtmlPipe', () => {
   it('create an instance', () => {
-    const pipe = new SafeHtmlPipe();
+    TestBed.configureTestingModule({ providers: [SafeHtmlPipe] });
+    const pipe = TestBed.inject(SafeHtmlPipe);
     expect(pipe).toBeTruthy();
   });
 });

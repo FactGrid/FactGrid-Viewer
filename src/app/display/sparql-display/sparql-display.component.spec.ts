@@ -75,20 +75,6 @@ describe('SparqlDisplayComponent', () => {
     expect(cards[0].textContent).toContain('Item A');
   });
 
-  it('shows a temporary debug panel with count and sample ids when data present', () => {
-    component.sparqlData = [
-      { item: { id: 'Q1' }, itemLabel: { value: 'Item A' }, itemText: 'Item A' },
-      { item: { id: 'Q2' }, itemLabel: { value: 'Item B' }, itemText: 'Item B' },
-    ];
-    component.ngOnChanges({} as any);
-    fixture.detectChanges();
-
-    const el: HTMLElement = fixture.nativeElement;
-    expect(el.textContent).toContain('DEBUG — list length:');
-    expect(el.textContent).toContain('Q1');
-    expect(el.textContent).toContain('Q2');
-  });
-
   it('renders label, description and year in dedicated blocks', () => {
     component.sparqlData = [
       {

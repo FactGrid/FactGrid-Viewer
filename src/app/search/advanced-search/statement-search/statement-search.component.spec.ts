@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { StatementSearchComponent } from './statement-search.component';
 
@@ -8,7 +9,7 @@ describe('StatementSearchComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StatementSearchComponent],
+      imports: [StatementSearchComponent, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StatementSearchComponent);

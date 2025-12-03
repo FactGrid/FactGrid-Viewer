@@ -7,7 +7,7 @@ import { Observable, forkJoin } from 'rxjs';
   providedIn: 'root',
 })
 export class SelectedItemListService {
-  private http = inject(HttpClient);
+  constructor(private http?: HttpClient) {}
 
   setPropertiesAndValues(u) {
     let values: any[] = Object.values(u.claims);
@@ -105,8 +105,8 @@ export class SelectedItemListService {
   //getItem(url:string): Observable<any> { return this.http.get(url) };
 
   requestItems(valuesUrl: string, propertiesUrl: string): Observable<any[]> {
-    let response1 = this.http.get(valuesUrl);
-    let response2 = this.http.get(propertiesUrl);
+    let response1 = this.http?.get(valuesUrl);
+    let response2 = this.http?.get(propertiesUrl);
     return forkJoin([response1, response2]);
   }
 

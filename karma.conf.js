@@ -37,8 +37,15 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false,
+    // Use Chrome headless when running in CI to avoid hanging on interactive browsers.
+    browsers: process.env.CI ? ['ChromeHeadlessNoSandbox'] : ['Chrome'],
+    singleRun: !!process.env.CI,
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-extensions', '--disable-dev-shm-usage']
+      }
+    },
     restartOnFileChange: true
   });
 };

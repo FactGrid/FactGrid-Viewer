@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { GregorianToJulianCalendarService } from './gregorian-to-julian-calendar.service';
 
@@ -6,7 +7,7 @@ describe('GregorianToJulianCalendarService', () => {
   let service: GregorianToJulianCalendarService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
     service = TestBed.inject(GregorianToJulianCalendarService);
   });
 

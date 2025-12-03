@@ -1,13 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-import { SparqlInterceptorService } from './sparql-interceptor.service';
+import { SparqlInterceptor } from './sparql-interceptor.service';
 
-describe('SparqlInterceptorService', () => {
-  let service: SparqlInterceptorService;
+describe('SparqlInterceptor', () => {
+  let service: SparqlInterceptor;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(SparqlInterceptorService);
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
+    service = TestBed.inject(SparqlInterceptor);
   });
 
   it('should be created', () => {

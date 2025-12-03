@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { SelectedItemListService } from './selected-item-list.service';
 
@@ -6,7 +7,7 @@ describe('SelectedItemListService', () => {
   let service: SelectedItemListService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
     service = TestBed.inject(SelectedItemListService);
   });
 

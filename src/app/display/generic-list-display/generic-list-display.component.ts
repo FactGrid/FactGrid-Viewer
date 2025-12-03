@@ -16,7 +16,19 @@ import { RouterModule } from '@angular/router';
 })
 export class GenericListDisplayComponent {
   @Input() title: string;
-  @Input() items: any[];
+  private _items: any[] = [];
+
+  @Input()
+  set items(v: any) {
+    // Normalize to array so the template can always iterate safely
+    if (v === undefined || v === null) this._items = [];
+    else if (Array.isArray(v)) this._items = v;
+    else this._items = [v];
+  }
+
+  get items(): any[] {
+    return this._items;
+  }
 
   openReferences = new Set<string>();
 
@@ -26,6 +38,12 @@ export class GenericListDisplayComponent {
     } else {
       this.openReferences.add(key);
     }
+  }
+
+  // Template helper so we don't call global Array.isArray from templates
+  // (avoids runtime issues in some test environments)
+  isArray(v: any): boolean {
+    return Array.isArray(v);
   }
 
   openImage(url: string): void {

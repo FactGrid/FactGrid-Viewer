@@ -108,14 +108,6 @@ export class SparqlDisplayService {
     const reversed = data.reverse();
     const mapEntries: [string, any][] = reversed.map((v) => [JSON.stringify([v.itemText]), v] as [string, any]);
     const unique = [...new Map<string, any>(mapEntries).values()].reverse();
-    try {
-      const removed = data.length - unique.length;
-      if (removed > 0) {
-        console.debug('[SparqlDisplay] removeDuplicates removed', removed, 'items (from', data.length, 'to', unique.length, ')');
-      }
-    } catch (e) {
-      // ignore logging errors
-    }
     return unique;
   }
 
@@ -146,14 +138,7 @@ export class SparqlDisplayService {
     return sparql$.pipe(
       map((data: any[][]) => {
         const buildCard = (index: number, type: SparqlDisplayType): SparqlCardState => {
-            const raw = data && data[index];
-            // Helpful debug: show raw list lengths so we can trace where items get dropped
-            try {
-              const rawLen = raw?.[1]?.length ?? 'undef';
-              console.debug('[SparqlDisplay] buildCard', { index, type, subject: raw?.[0] || '', rawLen });
-            } catch (e) {
-              /* ignore logging failures */
-            }
+          const raw = data && data[index];
           if (!raw || !raw[1] || !raw[1].length) {
             return { subject: '', list: [], title: '' };
           }
@@ -161,11 +146,6 @@ export class SparqlDisplayService {
           const rawList = raw[1];
           const transformed = this.transformData(type, rawList);
           const list = this.removeDuplicates(transformed);
-          try {
-            console.debug('[SparqlDisplay] buildCard result', { index, type, subject, rawLen: rawList.length, transformedLen: transformed.length, finalLen: list.length });
-          } catch (e) {
-            /* ignore */
-          }
           const title = this.getTitle(type, subject, langService, list);
           return { subject, list, title };
         };

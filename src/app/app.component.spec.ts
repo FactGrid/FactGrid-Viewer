@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      imports: [AppComponent, HttpClientTestingModule],
     }).compileComponents();
   });
 
@@ -20,12 +21,11 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('factgrid');
   });
 
-  it('should render title', () => {
+  it('should render footer component', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain(
-      'factgrid app is running!'
-    );
+    // the app no longer contains the default .content span; assert footer exists as smoke check
+    expect(compiled.querySelector('app-footer')).toBeTruthy();
   });
 });

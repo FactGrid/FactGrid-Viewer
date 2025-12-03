@@ -11,7 +11,7 @@
           >:
         </span>
       }
-      @for (M of P; track M.id + '-' + idx; let idx = $index) {
+      @for (M of (isArray(P) ? P : [P]); track M.id + '-' + idx; let idx = $index) {
         <div class="statementStyle">
           <div [ngStyle]="{ 'background-color': M?.rank === 'deprecated' ? '#f1f1f1' : '#ffffff' }">
             @if (M && M.mainsnak && M.mainsnak.datatype === 'time') {
@@ -87,7 +87,7 @@
           @if (M['qualifiers-order']) {
             <div class="qualifierStyle">
               <span>
-                @for (Q of M.qualifiers2; track Q.id + '-' + idx; let idx = $index) {
+                @for (Q of (isArray(M.qualifiers2) ? M.qualifiers2 : (M.qualifiers2 ? [M.qualifiers2] : [])); track Q.id + '-' + idx; let idx = $index) {
                   <div>
                     <span
                       class="qualifierProperty hover-bg-light"
@@ -205,14 +205,14 @@
                 </button>
               </div>
               @if (openReferences.has(pidx + '-' + idx) && M['references2']) {
-                @for (
-                  Ma of M['references2'];
+                        @for (
+                          Ma of (isArray(M['references2']) ? M['references2'] : (M['references2'] ? [M['references2']] : []));
                   track Ma.id + '-' + idx;
                   let idx = $index;
                   let isLast = $last
                 ) {
                   <div class="referenceStyle">
-                    @for (N of Ma; track N.id + '-' + idx; let idx = $index; let isLast = $last) {
+                    @for (N of (isArray(Ma) ? Ma : [Ma]); track N.id + '-' + idx; let idx = $index; let isLast = $last) {
                       <div class="inlineStyle">
                         <span
                           class="referenceProperty hover-bg-light"
@@ -222,8 +222,8 @@
                           {{ N.label }}:
                         </span>
                         <span>
-                          @for (
-                            P of N.display;
+                            @for (
+                            P of (isArray(N.display) ? N.display : (N.display ? [N.display] : []));
                             track P.id + '-' + idx;
                             let idx = $index;
                             let isLast = $last

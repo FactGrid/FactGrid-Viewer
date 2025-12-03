@@ -68,6 +68,49 @@ describe('ItemDisplayDispatcherService', () => {
     expect(target.locationAndSituation.length).toBeGreaterThan(0);
   });
 
+  it('dispatch should populate place block when only P625 coords are present and P2.place is set', () => {
+    const item: any = [
+      {
+        claims: {
+          P2: { place: true },
+          P625: [{ lat: 10, lon: 20 }],
+        },
+      },
+      ['P2', 'P625'],
+    ];
+
+    const target: any = {};
+    const flags = service.dispatch(item, target);
+
+    expect(flags.isPlace).toBeTrue();
+    expect(Array.isArray(target.locationAndSituation)).toBeTrue();
+    expect(target.locationAndSituation.length).toBeGreaterThan(0);
+  });
+
+  it('dispatch should prefer organisation when P2 indicates org even if coords exist', () => {
+    const item: any = [
+      {
+        claims: {
+          P2: [{ mainsnak: { datavalue: { value: { id: 'Q12' } } } }],
+          P48: [{ lat: 10, lon: 20 }],
+          P8: [{ org: 'o' }],
+        },
+      },
+      ['P2', 'P48', 'P8'],
+    ];
+
+    const target: any = {};
+    const flags = service.dispatch(item, target);
+
+    // Since P2 indicates an organisation (Q12) we should treat item as org
+    expect(flags.isOrg).toBeTrue();
+    expect(flags.isPlace).toBeFalse();
+    // Org display should be populated, place display should be empty
+    expect(Array.isArray(target.locationAndContext)).toBeTrue();
+    expect(target.locationAndContext.length).toBeGreaterThan(0);
+    expect(target.locationAndSituation === undefined || target.locationAndSituation.length === 0).toBeTrue();
+  });
+
   it('dispatch should populate excludedProperties and remove them from the index list', () => {
     const item: any = [
       {
@@ -140,6 +183,30 @@ describe('ItemDisplayDispatcherService', () => {
     expect(Array.isArray(target.externalLinks)).toBeTrue();
   });
 
+  it('mainList should not contain duplicate claim arrays (e.g. P267) when present in multiple blocks', () => {
+    const item: any = [
+      {
+        claims: {
+          P2: { org: true, activity: true },
+          P8: [{ org: 'o' }],
+          P267: [{ act: 'a' }],
+        },
+      },
+      ['P2', 'P8', 'P267'],
+    ];
+
+    const target: any = {};
+    const flags = service.dispatch(item, target);
+
+    expect(flags.isOrg).toBeTrue();
+    expect(flags.isActivity).toBeTrue();
+
+    // mainList is built from locationAndContext + activityDetail etc.
+    // Ensure the same claim array (item[0].claims.P267) appears only once
+    const occurrences = (target.mainList || []).filter((g: any) => g === item[0].claims.P267).length;
+    expect(occurrences).toBe(1);
+  });
+
   it('dispatch should populate otherClaims and mark isOther when item[1] contains unknown props', () => {
     const item: any = [
       {
@@ -201,6 +268,29 @@ describe('ItemDisplayDispatcherService', () => {
     expect(target.mainList.length).toBeGreaterThan(0);
   });
 
+  it('dispatch should include P3 in mainList when P2 present but produced no block content', () => {
+    const item: any = [
+      {
+        claims: {
+          // P2 exists but doesn't match any known flags / block types
+          P2: [{ mainsnak: { datavalue: { value: { id: 'Q999999' } } } }],
+          P3: [{ id: 'Q100' }],
+        },
+      },
+      ['P2', 'P3'],
+    ];
+
+    const target: any = {};
+    const flags = service.dispatch(item, target);
+
+    // We should still show a main card by falling back to P3 list
+    expect(flags.isMain).toBeTrue();
+    expect(Array.isArray(target.mainList)).toBeTrue();
+    expect(target.mainList.length).toBeGreaterThan(0);
+    // ensure the P3 array was added into the mainList
+    expect(target.mainList).toContain(item[0].claims.P3);
+  });
+
   it('dispatch should hide main title and use icon for person P2=Q7', () => {
     const item: any = [
       { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q7' } } } }] } },
@@ -211,9 +301,9 @@ describe('ItemDisplayDispatcherService', () => {
     const flags = service.dispatch(item, target);
 
     expect(flags.isPerson).toBeTrue();
-    // mainTitle should be cleared and mainIcon set to 'more_horiz'
+    // mainTitle should be cleared and mainIcon set to 'person' (life & family)
     expect(target.mainTitle === '' || target.mainTitle === undefined).toBeTrue();
-    expect(target.mainIcon).toBe('more_horiz');
+    expect(target.mainIcon).toBe('person');
   });
 
   it('dispatch should set person card title and icon for P2=Q7', () => {
@@ -228,5 +318,18 @@ describe('ItemDisplayDispatcherService', () => {
     expect(flags.isPerson).toBeTrue();
     expect(target.personIcon).toBe('person');
     expect(target.personTitle).toBeTruthy();
+  });
+
+  it('dispatch should use P2[0].mainsnak.label as mainTitle when P2 is Q890181', () => {
+    const item: any = [
+      { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q890181' } }, label: 'PlaceTypeX' } }] } },
+      ['P2'],
+    ];
+
+    const target: any = {};
+    const flags = service.dispatch(item, target);
+
+    expect(flags.isPerson).toBeFalse();
+    expect(target.mainTitle).toBe('PlaceTypeX');
   });
 });

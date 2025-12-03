@@ -1,15 +1,4 @@
 <div class="cardBackground" [ngClass]="isList ? 'show-division' : 'hide-division'">
-  <!-- Temporary debug panel: shows list length and sample items (helpful when tracing Q38612) -->
-  @if (list && list.length) {
-    <div class="sg-debug-panel" aria-hidden="false">
-      <div class="sg-debug-header">DEBUG — list length: <strong>{{ list.length }}</strong></div>
-      <div class="sg-debug-sample">
-        @for (dbgItem of list.slice(0, 10); track dbgItem.item?.id) {
-          <span class="debug-item">{{ dbgItem.item?.id || dbgItem.item?.value || 'unknown' }} — {{ dbgItem.itemLabel?.value || dbgItem.itemText || '—' }}</span>
-        }
-      </div>
-    </div>
-  }
   
   @if (isSearch) {
     <div class="searchFormPadding">
@@ -64,7 +53,7 @@
       class="virtual-scroll-viewport"
       [style.height.px]="getViewportHeightPx(list.length)"
     >
-      @for (L of list; track L.item.id) {
+      @for (L of list; track (L.item?.id || L.item?.value || $index)) {
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         } @else {
@@ -88,7 +77,7 @@
     </cdk-virtual-scroll-viewport>
   } @else {
     <div class="non-virtual-list">
-      @for (L of list; track L.item.id) {
+      @for (L of list; track (L.item?.id || L.item?.value || $index)) {
         @if (customRowTemplate) {
           <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         } @else {

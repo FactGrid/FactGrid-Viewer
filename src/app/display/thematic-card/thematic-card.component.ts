@@ -1,4 +1,4 @@
-import { Component, Input, AfterContentInit, ElementRef, ViewEncapsulation } from '@angular/core';
+import { Component, Input, AfterContentInit, ElementRef, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,11 +31,16 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ]),
   ],
 })
-export class ThematicCardComponent implements AfterContentInit {
+export class ThematicCardComponent implements AfterContentInit, OnChanges {
   @Input() title?: string;
   @Input() icon?: string;
   @Input() collapsible: boolean = false;
   @Input() startCollapsed: boolean = false;
+  // Optional key that can be changed by parent on navigation to signal the
+  // card instance that it should re-initialize its collapsed state. Useful
+  // when the host re-uses the same ThematicCard instance for different
+  // items so previous user toggles don't leak into a newly-loaded item.
+  @Input() resetKey?: string | number | null;
   @Input() showHeader: boolean = false;
   @Input() loading: boolean = false;
 
@@ -50,7 +55,24 @@ export class ThematicCardComponent implements AfterContentInit {
   ngAfterContentInit(): void {
     // Détecter si un header personnalisé est projeté via attribut [card-header]
     this.hasProjectedHeader = !!this.el.nativeElement.querySelector('[card-header]');
-    this.isCollapsed = this.collapsible && this.startCollapsed;
+    // initialize collapsed state based on inputs
+    this.isCollapsed = this.collapsible && !!this.startCollapsed;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // When the parent provides a new startCollapsed value (e.g. when navigating to a
+    // different item), reset the collapsed state to match it. This prevents previous
+    // user toggles from leaking into the next item when the host component reuses
+    // the same ThematicCard instance.
+    if (changes['startCollapsed'] || changes['collapsible'] || changes['resetKey']) {
+      this.isCollapsed = this.collapsible && !!this.startCollapsed;
+    }
+    // If the content may change, re-check for projected header
+    if (changes['title']) {
+      try {
+        this.hasProjectedHeader = !!this.el.nativeElement.querySelector('[card-header]');
+      } catch {}
+    }
   }
 
   toggle(): void {

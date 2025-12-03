@@ -89,7 +89,7 @@ $card-top-offset: 8px;
   display: flex;
   gap: 8px;
   align-items: center;
-  padding-left: calc(var(--card-horizontal-padding, 12px) + 8px);
+  /* padding-left géré par media queries pour alignement avec itemTitle */
 }
 .factgrid-label {
   font-weight: 600;
@@ -142,6 +142,25 @@ $card-top-offset: 8px;
   color: #111;
   line-height: 1.2;
   letter-spacing: -0.02em;
+}
+
+/* Ensure compact thematic-card headers that contain the selectedListTitle
+   look identical when the icon is provided via the component's `icon` input.
+   This makes the former-visits card header visually consistent with other cards. */
+:host ::ng-deep app-thematic-card[compact] header.card-header .mat-icon {
+  margin-right: var(--spacing-sm);
+  font-size: 1.75rem !important;
+  color: var(--primary-light) !important;
+}
+
+:host ::ng-deep app-thematic-card[compact] header.card-header .selectedListTitle {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  color: var(--primary-color) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--spacing-sm) !important;
+  min-height: 40px !important;
 }
 
 .info-themed-content .aliases {
@@ -1135,6 +1154,13 @@ $card-top-offset: 8px;
     overflow-wrap: break-word;
     word-break: break-word;
     hyphens: auto;
+    padding-left: 14px; /* align with thematic card header titles */
+  }
+
+  .aliases,
+  .itemDescription,
+  .factgrid-global {
+    padding-left: 14px; /* align with itemTitle */
   }
 
   .aliases {
@@ -1143,6 +1169,15 @@ $card-top-offset: 8px;
 
   .itemDescription {
     font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .itemTitle,
+  .aliases,
+  .itemDescription,
+  .factgrid-global {
+    padding-left: 12px; /* align with thematic card header titles on small screens */
   }
 }
 
@@ -1155,6 +1190,42 @@ mat-card img {
 /* ========================================
    LIENS EXTERNES
    ======================================== */
+
+.externalLinksText {
+  margin-bottom: 4px;
+  line-height: 1.5;
+  display: block;
+
+  /* Style du label (premier span) identique à .propertyStyle */
+  > span:first-child {
+    font-weight: 600;
+    color: var(--color-primary, #3f51b5);
+    font-size: 0.95rem;
+    display: inline;
+    margin-right: 2px;
+    padding: 2px 4px;
+    margin-left: -4px;
+    border-radius: 4px;
+    transition: background-color 150ms ease;
+
+    &:hover {
+      background-color: rgba(63, 81, 181, 0.08);
+      cursor: help;
+    }
+  }
+
+  a {
+    color: #3f51b5;
+    text-decoration: none;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    
+    &:hover {
+      text-decoration: underline;
+      color: #283593;
+    }
+  }
+}
 
 .external-links {
   height: fit-content;
@@ -1331,6 +1402,50 @@ table {
   height: 100px;
   margin: var(--spacing-sm);
   border-radius: var(--radius-sm);
+}
+
+/* Picture caption UI (per-image inside cards) */
+.picture-block {
+  display: block;
+  margin-bottom: 8px;
+
+  img[mat-card-image] {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .img-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+    padding-left: 2px;
+  }
+
+  .caption-toggle {
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 6px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .picture-caption {
+    color: #5f6c7f;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    padding: 6px 8px 10px 8px;
+    border-radius: 6px;
+    background: rgba(247, 247, 247, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    max-height: 220px;
+    overflow: auto;
+  }
 }
 
 .mat-list-base.inline-list {

@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { TranslateService } from '@ngx-translate/core';
+// TranslateService removed — not used by this pipe
 
 @Pipe({
   name: 'customDate',

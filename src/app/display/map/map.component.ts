@@ -29,16 +29,21 @@ export class MapComponent implements OnInit, OnDestroy {
       this.lat = Number(latitude);
       this.lng = Number(longitude);
       this.zoom = Number(zoom);
-      const itemLocation = { coords: new Leaflet.LatLng(this.lat, this.lng), zoom: this.zoom };
-
-      let map = Leaflet.map('map');
-
-      Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-      Leaflet.marker([this.lat, this.lng]).addTo(map);
-
-      map.setView(itemLocation.coords, itemLocation.zoom);
     });
+  }
+
+  ngAfterViewInit(): void {
+    // S'assurer que le DOM est prêt
+    setTimeout(() => {
+      const container = document.getElementById('map');
+      if (container) {
+        const itemLocation = { coords: new Leaflet.LatLng(this.lat, this.lng), zoom: this.zoom };
+        let map = Leaflet.map(container);
+        Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        Leaflet.marker([this.lat, this.lng]).addTo(map);
+        map.setView(itemLocation.coords, itemLocation.zoom);
+      }
+    }, 0);
   }
 
   ngOnDestroy(): void {}

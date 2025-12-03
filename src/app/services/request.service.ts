@@ -2,13 +2,75 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { saveAs } from 'file-saver';
-import { expand, map, reduce, catchError } from 'rxjs/operators';
+import { expand, map, reduce, catchError, tap, shareReplay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RequestService {
-  private http = inject(HttpClient);
+  constructor(private http?: HttpClient) {}
+
+  // simple in-memory cache for commons metadata to avoid repeated requests
+  private commonsMetadataCache = new Map<string, any>();
+
+  /**
+   * Fetch metadata for a Commons image (filename or full URL accepted).
+   * Uses the MediaWiki API action=query with prop=imageinfo&iiprop=extmetadata.
+   * Returns an object with descriptionHtml (if present) and other extmetadata fields.
+   */
+  getCommonsImageMetadata(fileOrUrl: string) {
+    if (!fileOrUrl) return of(null);
+
+    // try to derive a stable file name like 'File:Example.jpg'
+    const fileName = (() => {
+      try {
+        // If it's already a File:... value, use it
+        if (/^File:/i.test(fileOrUrl)) return fileOrUrl;
+        // if it's a url, take last path segment
+        const u = new URL(fileOrUrl);
+        const last = decodeURIComponent(u.pathname.split('/').pop() || '');
+        if (!last) return null;
+        return `File:${last}`;
+      } catch (e) {
+        // fallback: use raw
+        const cleaned = fileOrUrl.split('/').pop() || fileOrUrl;
+        return `File:${decodeURIComponent(cleaned)}`;
+      }
+    })();
+
+    if (!fileName) return of(null);
+
+    if (this.commonsMetadataCache.has(fileName)) return of(this.commonsMetadataCache.get(fileName));
+
+    const params = new HttpParams()
+      .set('action', 'query')
+      .set('titles', fileName)
+      .set('prop', 'imageinfo')
+      .set('iiprop', 'extmetadata')
+      .set('format', 'json')
+      .set('origin', '*');
+
+    const url = 'https://commons.wikimedia.org/w/api.php';
+
+    return this.http.get<any>(url, { params }).pipe(
+      map((res) => {
+        const page = Object.values(res?.query?.pages || {})[0] as any;
+        const ext = page?.imageinfo?.[0]?.extmetadata || null;
+        if (!ext) return null;
+        // select the most useful fields
+        const out: any = {};
+        out.descriptionHtml = ext.ImageDescription?.value || ext.ImageDescription || null;
+        out.artist = ext.Artist?.value || null;
+        out.credit = ext.Credit?.value || null;
+        out.licenseShort = ext.LicenseShortName?.value || null;
+        out.usageTerms = ext.UsageTerms?.value || null;
+        return out;
+      }),
+      tap((m) => this.commonsMetadataCache.set(fileName, m)),
+      catchError(() => of(null)),
+      shareReplay(1)
+    );
+  }
 
   private baseSearchURL = 'https://database.factgrid.de//w/api.php?action=wbsearchentities&search=';
   private baseGetURL = 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=';

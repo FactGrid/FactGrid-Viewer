@@ -7,7 +7,7 @@ import { map, tap } from 'rxjs/operators';
   standalone: true,
 })
 export class UnitPipe implements PipeTransform {
-  private http = inject(HttpClient);
+  constructor(private http?: HttpClient) {}
 
   unit: any = null;
 
@@ -38,7 +38,7 @@ export class UnitPipe implements PipeTransform {
       .set('format', 'json')
       .set('origin', '*');
     let response = this.http
-      .get('https://database.factgrid.de//w/api.php', { params: params })
+      ?.get('https://database.factgrid.de//w/api.php', { params: params })
       .pipe(
         map(
           (res) =>

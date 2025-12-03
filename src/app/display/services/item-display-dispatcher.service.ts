@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BlockDisplayService } from './block-display.service';
 import { TechnicalitiesDisplayService } from './technicalities-display.service';
 import { ClaimsEnricherService } from './claims-enricher.service';
+import { MainTitleSelectorService } from './main-title-selector.service';
 import { WikiDisplayService } from './wiki-display.service';
 
 export interface DisplayFlags {
@@ -31,7 +32,8 @@ export class ItemDisplayDispatcherService {
     private wikiDisplay: WikiDisplayService,
     // iframes handled separately if/when needed
     private technicalitiesDisplay: TechnicalitiesDisplayService,
-    private claimsEnricher: ClaimsEnricherService
+    private claimsEnricher: ClaimsEnricherService,
+    private mainTitleSelector: MainTitleSelectorService
   ) {}
 
   dispatch(item: any, target: any): DisplayFlags {
@@ -110,38 +112,14 @@ export class ItemDisplayDispatcherService {
     this.buildMainList(item, target, isPerson);
       // (previous experimenting code removed)
     isMain = target.mainList.length > 0;
-    // Prefer localized main label produced by FactgridSubtitlesService
-    // Fall back to the raw payload label only when no localized value exists.
-    if (claims.P2 !== undefined) {
-      // Avoid mapping the generic P2.main localized label into the main card
-      // when P2 explicitly contains a personLabel (that indicates a person
-      // context and we want the main card to be icon-only). Map P2.main only
-      // when it is a string and not a person context.
-      if (typeof claims.P2.main === 'string' && typeof claims.P2.personLabel !== 'string') {
-        target.mainTitle = claims.P2.main;
-      } else if (Array.isArray(claims.P2) && claims.P2[0]?.mainsnak?.label !== undefined) {
-        target.mainTitle = claims.P2[0].mainsnak.label;
-      }
-    }
-
-    // Main card icon/title behaviour: for person items we want the main card to
-    // show an icon (no textual title). Theming is handled in the component's
-    // template: when icon is present and title is falsy, only the icon is shown.
-    // Use a semantic icon 'more_horiz' for "others".
-    target.mainIcon = target.mainIcon ?? 'star'; // default that was used before
-    // Consider P2 a person entry when either the presence flag is set, the P2 payload
-    // contains the Q7 id, or when an explicit localized person label exists (subtitle service).
-    const isPersonP2 =
-      claims.P2?.person === true ||
-      (Array.isArray(claims.P2) && claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7')) ||
-      typeof claims.P2?.personLabel === 'string';
-    if (isPersonP2) {
-      // hide textual title and show the 'others' icon for human main cards
-      // only clear textual main title when it's coming from the generic P2/main label
-      // avoid accidentally wiping other localized main titles for non-person contexts
-      target.mainTitle = '';
-      target.mainIcon = 'more_horiz';
-    }
+    // Decide main card title/icon using the dedicated selector service.
+    // Pass item infoList (classes, subclasses, instances) to the selector so
+    // it can decide a main title using the item's class hierarchy when
+    // appropriate (e.g. prefer locality over organisation).
+    const meta = this.mainTitleSelector.decideMainMeta(claims.P2, item[0]?.infoList, claims.P3);
+    target.mainIcon = target.mainIcon ?? 'star';
+    if (meta.title !== undefined) target.mainTitle = meta.title;
+    if (meta.icon !== undefined) target.mainIcon = meta.icon;
 
     // Map localized subtitle strings created by FactgridSubtitlesService
     // into explicit title fields for the template to consume.
@@ -199,7 +177,7 @@ export class ItemDisplayDispatcherService {
       subclassesList: target.subclassesList,
       classesList: target.classesList,
       natureOfList: target.natureOfList,
-      technicalities: technicalities,
+   //   technicalities: technicalities,
     };
 
     // Flag unique pour l'affichage
@@ -257,6 +235,15 @@ export class ItemDisplayDispatcherService {
     target.locationAndSituation = [];
     if (claims.P2?.place !== undefined) {
       this.blockDisplay.setPlaceDisplay(item, target.locationAndSituation);
+      // If blockDisplay didn't pick up obvious place claims (P48), fall back
+      // to directly include those claims to avoid losing coordinates in edge cases
+      if (target.locationAndSituation.length === 0 && claims.P48 !== undefined) {
+        target.locationAndSituation.push(claims.P48);
+        if (Array.isArray(item[1])) {
+          const idx = item[1].indexOf('P48');
+          if (idx >= 0) item[1].splice(idx, 1);
+        }
+      }
     }
     return target.locationAndSituation.length > 0;
   }
@@ -364,7 +351,25 @@ export class ItemDisplayDispatcherService {
       target.activityDetail || [],
       ...(isPerson ? [] : target.eventDetail || []),
       target.documentDetail || [],
-      target.otherClaims || []
+    //  target.otherClaims || []
     );
+    // remove duplicate claim arrays that might have been pushed by multiple
+    // block-display handlers (e.g. P267 is configured in both ORG and
+    // ACTIVITY property lists and thus could be added twice). We dedupe by
+    // object identity so the first occurrence wins and we keep order.
+    target.mainList = Array.isArray(target.mainList)
+      ? target.mainList.filter((v, i, a) => a.indexOf(v) === i)
+      : target.mainList;
+
+    // If the main list is empty but the item carries a P3 (class/role),
+    // prefer using that class as the Main card content. This handles cases
+    // where an item is primarily a 'type' (e.g. Gymnasium) and P2 exists
+    // in a generic form but doesn't populate any blocks — falling back to
+    // P3 provides a sensible, user-friendly main card instead of nothing.
+    if ((!target.mainList || target.mainList.length === 0) && claims.P3 !== undefined) {
+      // prefer array shape expected by generic list display
+      target.mainList.push(claims.P3);
+    }
+
   }
 }

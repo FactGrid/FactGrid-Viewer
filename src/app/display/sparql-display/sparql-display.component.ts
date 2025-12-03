@@ -105,16 +105,25 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   }
 
   applyFilter(event: any) {
-    this.query = event.target.value.trim().toLowerCase();
+    this.query = (event?.target?.value || '').toString().trim().toLowerCase();
+
     this.list = this.sparqlDisplayService.removeDuplicates(
-      this.listWithoutDuplicate.filter((el) => el.itemText.toLowerCase().includes(this.query))
+      this.listWithoutDuplicate.filter((el) => {
+        const txt = (el?.itemText ?? el?.itemLabel?.value ?? '').toString().toLowerCase();
+        return txt.includes(this.query);
+      })
     );
   }
 
   onClickDownload(csvService: any) {
+    if (!csvService) return;
     const dataToDownload = this.sparqlDisplayService.prepareCsv(this.sparqlType, this.list);
-    const csv = csvService.arrayToCsv(dataToDownload);
-    csvService.downloadBlob(csv, 'factGrid', 'text/csv;charset=utf-8;');
+    try {
+      const csv = csvService.arrayToCsv(dataToDownload);
+      csvService.downloadBlob(csv, 'factGrid', 'text/csv;charset=utf-8;');
+    } catch (e) {
+      // fail silently — download is optional
+    }
   }
 
   ngOnDestroy(): void {

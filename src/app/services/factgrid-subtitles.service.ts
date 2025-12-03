@@ -1,122 +1,62 @@
 //service to set the subtitles of the FactGrid queries. It is used in the item-details.service.ts
 
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { SelectedLangService } from '../selected-lang.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FactgridSubtitlesService {
-  private lang = inject(SelectedLangService);
+  constructor(private lang: SelectedLangService) {}
 
   //TODO: pass the lang selection to the SelectedLangService
 
-  setSubtitle1(re, propertyId, lang) {
-    //to add a subtitle with a condition on the property
+  setSubtitle1(re: any, propertyId: string, lang?: string): void {
+    // to add a subtitle with a condition on the property
+    if (!re?.claims || !re.claims[propertyId]) return;
+    const lng = lang ?? this.lang.selectedLang;
+
+    // set the P320 sparql/title via centralized translations
     if (propertyId === 'P320') {
-      re.claims[propertyId].sparql = 'List of members';
-      if (lang === 'de') {
-        re.claims[propertyId].sparql = 'Mitgliederverzeichnis';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].sparql = 'Liste des membres';
-      } else if (lang === 'es') {
-        re.claims[propertyId].sparql = 'Lista de miembros';
-      } else if (lang === 'it') {
-        re.claims[propertyId].sparql = 'Elenco dei membri';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].sparql = 'A tagok listája';
-      }
+      re.claims[propertyId].sparql = this.lang.getTranslation('subtitle_members', lng);
     }
-    if (lang === 'en') {
-      re.claims[propertyId].other = 'further';
-    } else if (lang === 'de') {
-      re.claims[propertyId].other = 'weiteren';
-    } else if (lang === 'fr') {
-      re.claims[propertyId].other = 'autres';
-    } else if (lang === 'es') {
-      re.claims[propertyId].other = 'más';
-    } else if (lang === 'it') {
-      re.claims[propertyId].other = 'di più';
-    } else if (lang === 'hu') {
-      re.claims[propertyId].other = 'további';
-    }
-    // if ( lang === "en") {re.claims[propertyId].place = "place"}
-    // else if ( lang === "de") {re.claims[propertyId].place = "Ort"}
-    // else if ( lang === "fr") {re.claims[propertyId].place = "lieu"};
-    if (lang === 'en') {
-      re.claims[propertyId].sources = 'Sources';
-    } else if (lang === 'de') {
-      re.claims[propertyId].sources = 'Quellen';
-    } else if (lang === 'fr') {
-      re.claims[propertyId].sources = 'Sources';
-    } else if (lang === 'es') {
-      re.claims[propertyId].sources = 'Fuentes';
-    } else if (lang === 'it') {
-      re.claims[propertyId].sources = 'Fonti';
-    } else if (lang === 'hu') {
-      re.claims[propertyId].sources = 'Források';
-    }
+
+    // 'other' label and 'sources' should also be localized
+    re.claims[propertyId].other = this.lang.getTranslation('subtitle_further', lng);
+    re.claims[propertyId].sources = this.lang.getTranslation('subtitle_sources', lng);
   }
+  
 
-  setSubtitle2(re, propertyId, number, lang) {
-    //to add a subtitle with a condition on the value of a property (in general the property P2)
-    let j = number;
-    if (re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q7') {
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Life and family';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Leben und Familie';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Vie et famille';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Vida y familia';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Vita e famiglia';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Élet és család';
-      }
+  setSubtitle2(re: any, propertyId: string, number: number, lang?: string): void {
+    // to add a subtitle depending on the value of a claim (often P2)
+    if (!re?.claims || !re.claims[propertyId]) return;
+    const j = Number(number);
+    const lng = lang ?? this.lang.selectedLang;
 
-      if (lang === 'en') {
-        re.claims[propertyId].training = 'Education';
-      } else if (lang === 'de') {
-        re.claims[propertyId].training = 'Ausbildung';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].training = 'Éducation';
-      } else if (lang === 'es') {
-        re.claims[propertyId].training = 'Educación';
-      } else if (lang === 'it') {
-        re.claims[propertyId].training = 'Educazione';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].training = 'Oktatás';
-      }
+    const entry = re.claims[propertyId][j];
+    if (!entry?.mainsnak?.datavalue) return;
+    const dv = entry.mainsnak.datavalue;
+    const valueId = dv?.value?.id ?? dv?.value;
 
-      if (lang === 'en') {
-        re.claims[propertyId].career = 'Career and activities';
-      } else if (lang === 'de') {
-        re.claims[propertyId].career = 'Beruf und Aktivitäten';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].career = 'Carrière et activités';
-      } else if (lang === 'es') {
-        re.claims[propertyId].career = 'Carrera y actividades';
-      } else if (lang === 'it') {
-        re.claims[propertyId].career = 'Carriera e attività';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].career = 'Karrier és tevékenységek';
-      }
+    // Use enriched P2 flags when present, otherwise fall back to the detected wikibase type
+    const p2 = re.claims.P2;
+    const isPerson = p2?.person === true || valueId == 'Q7';
+    const isEvent = p2?.event === true || valueId == 'Q9';
 
-      if (lang === 'en') {
-        re.claims[propertyId].sociability = 'Sociability and culture';
-      } else if (lang === 'de') {
-        re.claims[propertyId].sociability = 'Soziabilität und Kultur';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].sociability = 'Sociabilité et culture';
-      } else if (lang === 'es') {
-        re.claims[propertyId].sociability = 'Sociabilidad y cultura';
-      } else if (lang === 'it') {
-        re.claims[propertyId].sociability = 'Sociabilità e cultura';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].sociability = 'Szociabilitás és kultúra';
-      }
+    if (isPerson) {
+      // localized labels only (presence flags are set by ClaimsEnricher)
+      re.claims[propertyId].main = this.lang.getTranslation('subtitle_life_and_family', lng);
+      // Dedicated label fields to avoid reusing `main` across types
+      re.claims[propertyId].personLabel = this.lang.getTranslation('subtitle_life_and_family', lng);
+      re.claims[propertyId].training = this.lang.getTranslation('subtitle_education', lng);
+      re.claims[propertyId].trainingLabel = this.lang.getTranslation('subtitle_education', lng);
+      re.claims[propertyId].career = this.lang.getTranslation('subtitle_career_and_activities', lng);
+      re.claims[propertyId].careerLabel = this.lang.getTranslation('subtitle_career_and_activities', lng);
+      re.claims[propertyId].sociability = this.lang.getTranslation('subtitle_sociability_and_culture', lng);
+      re.claims[propertyId].sociabilityLabel = this.lang.getTranslation(
+        'subtitle_sociability_and_culture',
+        lng
+      );
     }
     /*   if (re.claims[propertyId][j].mainsnak.datavalue.value.id !== "Q7") { //person
       re.claims[propertyId].person = undefined;
@@ -126,179 +66,48 @@ export class FactgridSubtitlesService {
        } ;
 */
 
-    if (re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q22') {
+    if (valueId == 'Q22') {
       //basic object
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Basic object';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Fundamentalobjekt';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Objet de base';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Objeto básico';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Oggetto di base';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Alapobjektum';
-      }
+      // keep fallback for now
+      re.claims[propertyId].main = 'Basic object';
     }
 
-    if (re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q147829') {
+    if (valueId == 'Q147829') {
       //basic object
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Database';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Datenbank';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Base de données';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Base de datos';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Base dati';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Adatbázis';
-      }
+      re.claims[propertyId].main = this.lang.getTranslation('subtitle_database', lng);
     }
 
-    if (
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q8' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q11174' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21925' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q164344'
-    ) {
-      //place (title localized below)
-      re.claims[propertyId].main = 'Place';
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Place';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Ort';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Lieu';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Lugar';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Luogo';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Hely';
-      }
+    if (valueId == 'Q8' || valueId == 'Q11174' || valueId == 'Q21925' || valueId == 'Q164344') {
+      // place -> localized via translations
+      re.claims[propertyId].main = this.lang.getTranslation('subtitle_place', lng);
     }
     //   if (re.claims[propertyId][j].mainsnak.datavalue.value.id !== "Q8") { //place
     //     re.claims[propertyId].place = undefined; }
-    if (re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q9') {
-      //event
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Event';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Ereignis';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Évènement';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Evento';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Evento';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Esemény';
-      }
+    if (isEvent) {
+      // event
+      re.claims[propertyId].main = this.lang.getTranslation('subtitle_event', lng);
+      // write an explicit event label so we don't reuse generic `main` for other contexts
+      re.claims[propertyId].eventLabel = this.lang.getTranslation('subtitle_event', lng);
     }
     //   if (re.claims[propertyId][j].mainsnak.datavalue.value.id !== "Q9") { //event
     //     re.claims[propertyId].event = undefined; }
-    if (
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q12' || //org
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q220833' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q140806' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q11214'
-    ) {
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Organisation';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Organisation';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Organisation';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Organización';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Organizzazione';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Szervezet';
-      }
+    if (valueId == 'Q12' || valueId == 'Q220833' || valueId == 'Q140806' || valueId == 'Q11214') {
+      re.claims[propertyId].main =
+        this.lang.getTranslation('organisationTitle', lng) ?? this.lang.getTranslation('subtitle_place', lng);
     }
     //  else re.claims[propertyId].org = undefined;
-    if (
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q20' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q257227'
-    ) {
+    if (valueId == 'Q20' || valueId == 'Q257227') {
       //publication (localized title set below)
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Print publication';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Druckpublikation';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Publication imprimée';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Publicación impresa';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Pubblicazione stampata';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Nyomtatott kiadvány';
-      }
+      re.claims[propertyId].main = this.lang.getTranslation('subtitle_document', lng) ?? 'Print publication';
     }
     // if (re.claims[propertyId][j].mainsnak.datavalue.value.id !== "Q20") { //publication
     //     re.claims[propertyId].document = undefined; }
-    if (
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q146602' || //activity
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21909' ||
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q37073'
-    ) {
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Activity';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Aktivität';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Activité';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Activitad';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Attività';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Tevékenység';
-      }
+    if (valueId == 'Q146602' || valueId == 'Q21909' || valueId == 'Q37073') {
+      re.claims[propertyId].main = this.lang.getTranslation('activity', lng) || 'Activity';
     }
-    if (
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q10671' || //document
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21407'
-    ) {
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Document';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Dokument';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Document';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Documento';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Documento';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Dokumentum';
-      }
-    }
-    if (
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q10671' || //FactGrid query
-      re.claims[propertyId][j].mainsnak.datavalue.value.id == 'Q21407'
-    ) {
+    if (valueId == 'Q10671' || valueId == 'Q21407') {
       re.claims[propertyId].document = 'document';
-      if (lang === 'en') {
-        re.claims[propertyId].main = 'Document';
-      } else if (lang === 'de') {
-        re.claims[propertyId].main = 'Dokument';
-      } else if (lang === 'fr') {
-        re.claims[propertyId].main = 'Document';
-      } else if (lang === 'es') {
-        re.claims[propertyId].main = 'Documento';
-      } else if (lang === 'it') {
-        re.claims[propertyId].main = 'Documento';
-      } else if (lang === 'hu') {
-        re.claims[propertyId].main = 'Dokumentum';
-      }
+      re.claims[propertyId].main = this.lang.getTranslation('subtitle_document', lng);
     }
     //  else re.claims[propertyId].document = undefined;
   }

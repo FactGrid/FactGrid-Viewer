@@ -1,13 +1,14 @@
 export const PLACE_DISPLAY_PROPERTIES = [
-  { property: 'P48', comment: 'geographic coordinates' },
-  { property: 'P58', comment: 'number of inhabitants' },
+  { property: 'P625', comment: 'geographic coordinates (Wikidata P625)' },
   { property: 'P297', comment: 'territorial affiliation' },
   { property: 'P466', comment: 'capital of' },
   { property: 'P538', comment: 'historical county' },
+  { property: 'P267', comment: 'organisational context' },
+  { property: 'P34', comment: 'name history' },
   { property: 'P461', comment: 'named after' },
+  { property: 'P58', comment: 'number of inhabitants' },
   { property: 'P140', comment: 'Illuminati code name (ng ser)' },
   { property: 'P139', comment: 'Illuminati code name of' },
-  { property: 'P267', comment: 'organisational context' },
 ];
 
 export const CAREER_DISPLAY_PROPERTIES = [
@@ -99,6 +100,7 @@ export const EVENT_DISPLAY_PROPERTIES = [
 
 export const EXCLUDED_DISPLAY_PROPERTIES = [
   { property: 'P899', comment: 'object type propertyies' }, // Ajoutez ici les identifiants des propriétés à ne pas afficher
+   { property: 'P320', comment: 'FactGrid list of members' }
   // ...
 ];
 
@@ -113,6 +115,8 @@ export const ORG_DISPLAY_PROPERTIES = [
   { property: 'P449', comment: 'partner organizations' },
   { property: 'P428', comment: 'next higher hierarchy level' },
   { property: 'P14', comment: 'in leading positions' },
+  {property: 'P358', comment: 'providing access to' },
+  { property: 'P358', comment: '' },
   { property: 'P465', comment: 'capital' },
   { property: 'P297', comment: 'territorial affiliation' },
   { property: 'P9', comment: 'includes' },
@@ -155,12 +159,13 @@ export const PERSON_DISPLAY_PROPERTIES = [
   { property: 'P141', comment: 'father' },
   { property: 'P142', comment: 'mother' },
   { property: 'P203', comment: 'siblings' },
+  { property: 'P586', comment: 'family' },
   { property: 'P84', comment: 'marriage' },
+  { property: 'P230', comment: 'intimate relationship' },
   { property: 'P200', comment: 'number of children' },
   { property: 'P150', comment: 'children' },
   { property: 'P150', comment: 'brother or sister-in-law' },
   { property: 'Q400624', comment: 'children' },
-  { property: 'P172', comment: 'religion' },
   { property: 'P208', comment: 'address' },
   { property: 'P1267', comment: 'signature' },
 ];
@@ -186,6 +191,9 @@ export const EXTERNAL_LINKS_DISPLAY_PROPERTIES = [
 ];
 
 export const SOCIABILITY_DISPLAY_PROPERTIES = [
+  { property:'P616', comment: 'country of citizenship' },
+   { property:'P814', comment: 'geographic compatriot of' },
+  { property: 'P172', comment: 'religion' },
   { property: 'P91', comment: 'member of' },
   { property: 'P454', comment: 'proposed to become a member of' },
   { property: 'P192', comment: 'friendship' },
@@ -194,6 +202,7 @@ export const SOCIABILITY_DISPLAY_PROPERTIES = [
   { property: 'P497', comment: 'interested in' },
   { property: 'P167', comment: 'contributor to' },
   { property: 'P278', comment: 'subscriptions signed' },
+  { property: 'P460', comment: 'linguistic skills' },
   { property: 'P513', comment: 'patients' },
 ];
 
@@ -205,7 +214,11 @@ export const INFO_DISPLAY_PROPERTIES = [
   { property: 'P131', comment: 'research projects that contributed to this data set' },
   { property: 'P994', comment: 'PhiloBiblon vocabulary term' },
   { property: 'P1132', comment: 'FactGrid keyword' },
+  { property: 'P189', comment: 'Wikimedia Commons picture' }
 ];
+
+// MAIN_TITLE_PREFERRED has moved to src/app/config/main-title.config.ts
+// It centralizes preferences used by MainTitleSelectorService.
 
 export const SOURCES_DISPLAY_PROPERTIES = [
   { property: 'P12', comment: 'literature' },
