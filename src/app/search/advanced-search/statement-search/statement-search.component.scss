@@ -65,6 +65,12 @@ mat-button-toggle-group {
   max-width: 50px;
 }
 
+/* Ensure label plus punctuation (separator) does not split across lines */
+.label-no-break {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .arrow-icon {
   display: flex;
   align-items: center;

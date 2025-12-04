@@ -32,19 +32,16 @@
               }
             }
             @if (M && M.mainsnak && M.mainsnak.datatype === 'monolingualtext') {
-              <span
-                >{{ M.mainsnak.datavalue.value.text }},
-                {{ M.mainsnak.datavalue.value.language }}</span
-              >
+              <span>
+                {{ M.mainsnak.datavalue.value.text | protectShortWords }}&#x2060;,&nbsp;{{ M.mainsnak.datavalue.value.language | protectShortWords }}
+              </span>
             }
             @if (M && M.mainsnak && M.mainsnak.datatype === 'string') {
-              <span class="displayLayout">{{ M.mainsnak.datavalue.value }}</span>
+              <span class="displayLayout">{{ M.mainsnak.datavalue.value | protectShortWords }}</span>
             }
             @if (M && M.mainsnak && M.mainsnak.datatype === 'url') {
               <span class="displayLayout">
-                <a href="{{ M.mainsnak.datavalue.value }}" target="_blank">{{
-                  M.mainsnak.datavalue.value
-                }}</a>
+                <a href="{{ M.mainsnak.datavalue.value }}" target="_blank">{{ M.mainsnak.datavalue.value | protectShortWords }}</a>
               </span>
             }
             @if (M && M.mainsnak) {
@@ -69,14 +66,14 @@
               (M.mainsnak.datatype === 'wikibase-item' ||
                 M.mainsnak.datatype === 'wikibase-property')
             ) {
-              <span>
+              <span class="label-no-break">
                 <a
                   class="linkedItemText factgrid-link"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
-                  >{{ M.mainsnak.label }}</a
-                >{{ M.mainsnak.datavalue.value.separator }}
+                  >{{ M.mainsnak.label | protectShortWords }}</a
+                >&#x2060;{{ M.mainsnak.datavalue.value.separator }}
                 @if (M.mainsnak.datavalue.value.description) {
-                  <span class="description-text">{{ M.mainsnak.datavalue.value.description }}</span>
+                  <span class="description-text">{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span>
                 }
               </span>
             }
@@ -124,17 +121,17 @@
                         }
                         @if (D.datatype === 'string') {
                           <span>
-                            {{ D.string }}
+                            {{ D.string | protectShortWords }}
                             @if (!isLast) {
-                              <span>,&nbsp;</span>
+                              <span>&#x2060;,&nbsp;</span>
                             }
                           </span>
                         }
                         @if (D.datatype === 'monolingualtext') {
                           <span>
-                            {{ D.string.text }}
+                            {{ D.string.text | protectShortWords }}
                             @if (!isLast) {
-                              <span>,&nbsp;</span>
+                              <span>&#x2060;,&nbsp;</span>
                             }
                           </span>
                         }
@@ -146,28 +143,30 @@
                         }
                         @if (D.datatype === 'external-id') {
                           <span>
-                            <a href="{{ D.link }}" target="_blank">{{ D.string }}</a>
+                            <a href="{{ D.link }}" target="_blank">{{ D.string | protectShortWords }}</a>
                           </span>
                           @if (!isLast) {
-                            <span>,&nbsp;</span>
+                            <span>&#x2060;,&nbsp;</span>
                           }
                         }
                         @if (D.datatype === 'url') {
                           <span class="displayLayout">
-                            <a href="{{ D.value }}" target="_blank">{{ D.value }}</a>
+                            <a href="{{ D.value }}" target="_blank">{{ D.value | protectShortWords }}</a>
                           </span>
                           @if (!isLast) {
-                            <span>,&nbsp;</span>
+                            <span>&#x2060;,&nbsp;</span>
                           }
                         }
                         @if (D.datatype === 'wikibase-item') {
                           <span>
-                            <a class="linkedItemText" [routerLink]="['/item', D.id]">{{
-                              D.label
-                            }}</a>
+                            <span class="label-no-break">
+                              <a class="linkedItemText" [routerLink]="['/item', D.id]">{{ D.label | protectShortWords }}</a>
+                              @if (D.description) {
+                                >&#x2060;{{ D.separator }}
+                              }
+                            </span>
                             @if (D.description) {
-                              {{ D.separator
-                              }}<span class="description-text">{{ D.description }}</span>
+                              <span class="description-text">{{ D.description | protectShortWords }}</span>
                             }
                           </span>
                         }
@@ -180,7 +179,7 @@
                         }
                       </span>
                       @if (!isLast) {
-                        <span>,&nbsp;</span>
+                        <span>&#x2060;,&nbsp;</span>
                       }
                     }
                   </div>
@@ -230,52 +229,52 @@
                           ) {
                             @if (N.datatype === 'wikibase-item') {
                               <span>
-                                <a class="linkedItemText" [routerLink]="['/item', P.id]">{{
-                                  P.label
-                                }}</a
-                                >{{ P.separator
-                                }}<span class="description-text">{{ P.description }}</span>
+                                <span class="label-no-break">
+                                  <a class="linkedItemText" [routerLink]="['/item', P.id]">{{ P.label | protectShortWords }}</a>
+                                  >&#x2060;{{ P.separator }}
+                                </span>
+                                <span class="description-text">{{ P.description | protectShortWords }}</span>
                               </span>
                               @if (!isLast) {
-                                <span>,&nbsp;</span>
+                                <span>&#x2060;,&nbsp;</span>
                               }
                             }
                             @if (N.datatype === 'time') {
                               <span>
-                                {{ P }}
+                                {{ P | protectShortWords }}
                                 @if (!isLast) {
-                                  <span>,&nbsp;</span>
+                                  <span>&#x2060;,&nbsp;</span>
                                 }
                               </span>
                             }
                             @if (N.datatype === 'string') {
                               <span>
-                                {{ P }}
+                                {{ P | protectShortWords }}
                                 @if (!isLast) {
-                                  <span>,&nbsp;</span>
+                                  <span>&#x2060;,&nbsp;</span>
                                 }
                               </span>
                             }
                             @if (N.datatype === 'url') {
                               <span class="displayLayout">
-                                <a href="{{ P }}" target="_blank">{{ P }}</a>
+                                <a href="{{ P }}" target="_blank">{{ P | protectShortWords }}</a>
                               </span>
                               @if (!isLast) {
-                                <span>,&nbsp;</span>
+                                <span>&#x2060;,&nbsp;</span>
                               }
                             }
                             @if (N.datatype === 'external-id') {
                               <span>
-                                <a href="{{ P.link }}" target="_blank">{{ P.value }}</a>
+                                <a href="{{ P.link }}" target="_blank">{{ P.value | protectShortWords }}</a>
                               </span>
                               @if (!isLast) {
-                                <span>,&nbsp;</span>
+                                <span>&#x2060;,&nbsp;</span>
                               }
                             }
                           }
                         </span>
                         @if (!isLast) {
-                          <span>,&nbsp;</span>
+                          <span>&#x2060;,&nbsp;</span>
                         }
                       </div>
                     }

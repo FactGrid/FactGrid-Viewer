@@ -419,6 +419,13 @@
   max-width: 100%;
 }
 
+/* Keep label and its following separator together (avoid orphan separators).
+   Apply inline nowrap to ensure punctuation like comma doesn't break to next line. */
+.label-no-break {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 a {
   color: #3f51b5;
   text-decoration: none;

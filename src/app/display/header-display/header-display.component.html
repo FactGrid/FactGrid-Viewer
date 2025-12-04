@@ -62,15 +62,15 @@
               </div>
             }
             @if (M.mainsnak.datatype === 'wikibase-item') {
-              <span>
+              <span class="label-no-break">
                 <a
                   class="linkedItemText"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
                   (click)="$event.stopPropagation()"
                   >{{ M.mainsnak.label }}</a
-                >{{ M.mainsnak.separator
-                }}<span class="description-text">{{ M.mainsnak.description }}</span>
+                >&#x2060;{{ M.mainsnak.separator }}
               </span>
+              <span class="description-text">{{ M.mainsnak.description }}</span>
             }
             @if (M.rank === 'deprecated') {
               <span class="warningDeprecated"> &nbsp;({{ M.rank }})</span>
@@ -136,7 +136,7 @@
                                 <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                               </mat-icon-button>
                               @if (D.description) {
-                                {{ D.separator }}<span class="description-text">{{ D.description }}</span>
+                                <span class="label-no-break">&#x2060;{{ D.separator }}</span><span class="description-text">{{ D.description }}</span>
                               }
                             </span>
                           }
@@ -177,7 +177,7 @@
                                 <mat-icon-button class="internalLink" [routerLink]="['/item', P.id]">
                                   <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                                 </mat-icon-button>
-                                &nbsp;&nbsp;&nbsp; {{ P.separator }}<span class="description-text">{{ P.description }}</span>
+                                &nbsp;&nbsp;&nbsp; <span class="label-no-break">&#x2060;{{ P.separator }}</span><span class="description-text">{{ P.description }}</span>
                               </span>
                               @if (!pIsLast) { <span>,&nbsp;</span> }
                             }

@@ -140,6 +140,12 @@
   font-size: 0.95rem;
 }
 
+/* Keep label and its punctuation together */
+.label-no-break {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .value-info-box.deprecated {
   background: linear-gradient(90deg, #f5f5f5 0%, #ececec 100%);
   opacity: 0.75;
