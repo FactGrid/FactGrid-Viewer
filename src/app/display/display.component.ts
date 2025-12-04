@@ -239,6 +239,16 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription1: Subscription;
   subscription2: Subscription;
   subscription3: Subscription;
+
+  // Public helper used by the template to open/close the linked-pages drawer
+  // We keep the DrawerService as the single source of truth for drawer state
+  toggleLinkedPages(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.drawerService.toggle();
+  }
   sparqlSubscription: Subscription | null = null;
   sparqlCardsSubscription: Subscription | null = null;
   selectedResearchFieldSubscription: Subscription;
@@ -320,7 +330,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mainIcon = 'star';
     // default person card icon (displayed on the Life & Family card)
     this.personIcon = 'person';
-    this.personTitle = this.lang.getTranslation('subtitle_life_and_family', this.lang.selectedLang) || 'Life and family';
+    this.personTitle =
+      this.lang.getTranslation('subtitle_life_and_family', this.lang.selectedLang) ||
+      'Life and family';
 
     // Abonnement aux commandes du drawer
     this.subscription0 = this.route.paramMap.subscribe((params) => {
@@ -399,27 +411,30 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     picture.captionLoading = true;
     const candidate = picture.full || picture.thumbnail || picture.uniqueKey;
     const fileName = this.filenameFromUrl(candidate);
-    this.request.getCommonsImageMetadata(fileName || candidate).subscribe((meta) => {
-      picture.captionLoading = false;
-      if (meta && meta.descriptionHtml) {
-        try {
-          picture.captionHtml = this.sanitizer.bypassSecurityTrustHtml(meta.descriptionHtml);
-        } catch (e) {
-          picture.captionHtml = meta.descriptionHtml;
+    this.request.getCommonsImageMetadata(fileName || candidate).subscribe(
+      (meta) => {
+        picture.captionLoading = false;
+        if (meta && meta.descriptionHtml) {
+          try {
+            picture.captionHtml = this.sanitizer.bypassSecurityTrustHtml(meta.descriptionHtml);
+          } catch (e) {
+            picture.captionHtml = meta.descriptionHtml;
+          }
+        } else {
+          picture.captionHtml = null;
         }
-      } else {
+        picture.captionVisible = true;
+        // ensure change detection updates
+        try {
+          this.cdr.detectChanges();
+        } catch {}
+      },
+      () => {
+        picture.captionLoading = false;
         picture.captionHtml = null;
+        picture.captionVisible = true;
       }
-      picture.captionVisible = true;
-      // ensure change detection updates
-      try {
-        this.cdr.detectChanges();
-      } catch {}
-    }, () => {
-      picture.captionLoading = false;
-      picture.captionHtml = null;
-      picture.captionVisible = true;
-    });
+    );
   }
 
   // ItemInfo lazy host(s)
@@ -916,7 +931,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
                 existingRef.instance.sparqlSubject = '';
                 try {
                   if (typeof existingRef.instance.ngOnChanges === 'function') {
-                    existingRef.instance.ngOnChanges({ sparqlData: new SimpleChange(undefined, [], false) });
+                    existingRef.instance.ngOnChanges({
+                      sparqlData: new SimpleChange(undefined, [], false),
+                    });
                   }
                 } catch {}
                 try {
@@ -932,10 +949,21 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         // Store large lists in cache so we can show them quickly if the user
         // returns to this item soon.
         try {
-          if (card && card.list && Array.isArray(card.list) && card.list.length >= this.sparqlCacheThreshold && this.id) {
+          if (
+            card &&
+            card.list &&
+            Array.isArray(card.list) &&
+            card.list.length >= this.sparqlCacheThreshold &&
+            this.id
+          ) {
             try {
               const key = `${this.id}::${index}::${card.subject || ''}`;
-              this.searchCache.setItem(key, { list: card.list, subject: card.subject, title: card.title }, undefined, undefined);
+              this.searchCache.setItem(
+                key,
+                { list: card.list, subject: card.subject, title: card.title },
+                undefined,
+                undefined
+              );
             } catch {}
           }
         } catch {}
@@ -994,10 +1022,21 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.sparqlComponentRefs[index] = ref as NgComponentRef<any>;
       // Cache very large lists so we can restore them quickly on reload/back
       try {
-        if (card && card.list && Array.isArray(card.list) && card.list.length >= this.sparqlCacheThreshold && this.id) {
+        if (
+          card &&
+          card.list &&
+          Array.isArray(card.list) &&
+          card.list.length >= this.sparqlCacheThreshold &&
+          this.id
+        ) {
           try {
             const key = `${this.id}::${index}::${card.subject || ''}`;
-            this.searchCache.setItem(key, { list: card.list, subject: card.subject, title: card.title }, undefined, undefined);
+            this.searchCache.setItem(
+              key,
+              { list: card.list, subject: card.subject, title: card.title },
+              undefined,
+              undefined
+            );
           } catch {}
         }
       } catch {}
@@ -1046,7 +1085,11 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         const prefix = `${this.id}::${idx}::`;
         const cached: any = this.searchCache.getItemByPrefix(prefix);
         if (cached && cached.list && cached.list.length) {
-          const card = { subject: cached.subject || '', list: cached.list, title: cached.title || '' };
+          const card = {
+            subject: cached.subject || '',
+            list: cached.list,
+            title: cached.title || '',
+          };
           void this.loadSparqlAt(idx, card);
         }
       } catch {}

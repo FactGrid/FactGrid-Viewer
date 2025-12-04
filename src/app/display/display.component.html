@@ -76,7 +76,19 @@
                   }
 
                   <div class="factgrid-global">
-                    <span class="factgrid-label">FactGrid:</span><a [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer" class="selectedItemLink">{{ id }}</a>
+                    <span class="factgrid-label">FactGrid:</span>
+                    <a [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer" class="selectedItemLink">{{ id }}</a>
+
+                    <!-- Contextual toggle for linked pages — aligned visually with FactGrid link -->
+                    <button
+                      class="selectedItemLink linked-pages-btn"
+                      (click)="toggleLinkedPages($event)"
+                      aria-label="Ouvrir le panneau des pages liées"
+                      matTooltip="Pages liées"
+                    >
+                      <mat-icon aria-hidden="true">link</mat-icon>
+                      <span class="linked-pages-label">{{ linkedPagesTitle | titlecase }}</span>
+                    </button>
                   </div>
                 </div>
               </app-thematic-card>
@@ -92,7 +104,7 @@
 
                      <!-- Nouvelle carte pour les images en mode mobile -->
               @if (isMobile && isPicture) {
-                <app-thematic-card [collapsible]="false" icon="image" [imageOnly]="true" [resetKey]="id">
+                <app-thematic-card [collapsible]="false" [imageOnly]="true" [resetKey]="id">
                   <div class="img-mobile">
                     @for (picture of pictures; track trackById(picture)) {
                       <div class="picture-block">
@@ -117,19 +129,19 @@
               }
 
               @if (isTraining) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="trainingTitle" [resetKey]="id">
+                <app-thematic-card [collapsible]="true" [title]="trainingTitle" [resetKey]="id">
                   <app-generic-list-display [title]="training" [items]="education"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isCareer) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="careerTitle" [resetKey]="id">
+                <app-thematic-card [collapsible]="true" [title]="careerTitle" [resetKey]="id">
                   <app-generic-list-display [title]="careerTitle" [items]="careerAndActivities"></app-generic-list-display>
                 </app-thematic-card>
               }
 
               @if (isSociability) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sociabilityTitle" [resetKey]="id">
+                <app-thematic-card [collapsible]="true" [title]="sociabilityTitle" [resetKey]="id">
                   <app-generic-list-display [title]="sociabilityTitle" [items]="sociabilityAndCulture"></app-generic-list-display>
                 </app-thematic-card>
               }
@@ -288,7 +300,7 @@
         <div class="child2">
           <div class="thematic-cards-grid">
           @if (!isMobile && isPicture) {
-            <app-thematic-card [collapsible]="false" icon="image" [imageOnly]="true">
+            <app-thematic-card [collapsible]="false" [imageOnly]="true">
               <div class="img2">
                 @for (picture of pictures; track trackById(picture)) {
                   <div class="picture-block">

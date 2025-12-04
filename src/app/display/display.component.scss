@@ -91,6 +91,34 @@ $card-top-offset: 8px;
   align-items: center;
   /* padding-left géré par media queries pour alignement avec itemTitle */
 }
+.linked-pages-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+.linked-pages-btn .mat-icon {
+  font-size: 1.05rem;
+  vertical-align: middle;
+}
+.linked-pages-btn .linked-pages-label {
+  text-transform: none;
+  font-size: 0.95rem;
+}
+
+/* Hover & focus: match selectedItemLink interactions */
+.linked-pages-btn:hover,
+.linked-pages-btn:focus {
+  text-decoration: underline;
+  background: rgba(40, 53, 147, 0.05);
+  border-radius: 4px;
+}
 .factgrid-label {
   font-weight: 600;
   color: var(--color-primary, #6699cc);
