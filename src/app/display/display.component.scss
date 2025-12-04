@@ -101,7 +101,7 @@ $card-top-offset: 8px;
   color: var(--color-primary, #325a9b);
   text-decoration: none;
   white-space: nowrap;
-  padding-right: 4px; /* évite qu'il colle au bord de la carte */
+  padding-right: 16px; /* éloigne le lien du bord droit de la carte */
 }
 
 .factgrid-link-desktop:hover,
@@ -154,6 +154,10 @@ $card-top-offset: 8px;
 .linked-pages-btn .linked-pages-label {
   text-transform: none;
   font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center; /* centre verticalement le label par rapport à l'icône */
+  line-height: 1;
+  padding-top: 1px;
 }
 
 /* Hover & focus: match selectedItemLink interactions */

@@ -55,4 +55,35 @@ describe('DisplayComponent', () => {
     component.toggleLinkedPages();
     expect(spy).toHaveBeenCalled();
   });
+
+  it('should show desktop FactGrid link when not mobile and mobile link when mobile', () => {
+    component.isMobile = false;
+    component.item = { id: 'Q42', label: 'Test' } as any;
+    component.id = 'Q42';
+    fixture.detectChanges();
+
+    const desktopLink: HTMLAnchorElement | null = fixture.nativeElement.querySelector('.factgrid-link-desktop');
+    expect(desktopLink).withContext('desktop link visible when not mobile').toBeTruthy();
+    expect(desktopLink!.textContent).toContain('Q42');
+
+    // Now simulate mobile
+    component.isMobile = true;
+    fixture.detectChanges();
+    const mobileLink: HTMLAnchorElement | null = fixture.nativeElement.querySelector('.factgrid-link-mobile');
+    const desktopLinkAfter: HTMLAnchorElement | null = fixture.nativeElement.querySelector('.factgrid-link-desktop');
+    expect(desktopLinkAfter).withContext('desktop link hidden on mobile').toBeNull();
+    expect(mobileLink).withContext('mobile link visible on mobile').toBeTruthy();
+    expect(mobileLink!.textContent).toContain('Q42');
+  });
+
+  it('should use the translated linkedPagesTitle for the button label', () => {
+    component.item = { id: 'Q7' } as any;
+    component.id = 'Q7';
+    component.linkedPagesTitle = 'pages liées test';
+    fixture.detectChanges();
+
+    const label = fixture.nativeElement.querySelector('.linked-pages-label');
+    expect(label).toBeTruthy();
+    expect(label.textContent.trim()).toBe('pages liées test');
+  });
 });
