@@ -85,6 +85,50 @@ $card-top-offset: 8px;
 }
 
 /* Small helpers specific to DisplayComponent */
+.itemTitle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.factgrid-link-desktop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--color-primary, #325a9b);
+  text-decoration: none;
+  white-space: nowrap;
+  padding-right: 4px; /* évite qu'il colle au bord de la carte */
+}
+
+.factgrid-link-desktop:hover,
+.factgrid-link-desktop:focus {
+  text-decoration: underline;
+}
+
+.factgrid-link-mobile {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .itemTitle-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .factgrid-link-desktop {
+    display: none;
+  }
+
+  .factgrid-link-mobile {
+    display: inline-flex;
+    margin-left: auto; /* pousser le lien vers la droite en mobile */
+  }
+}
+
 .factgrid-global {
   display: flex;
   gap: 8px;

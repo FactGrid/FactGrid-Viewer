@@ -67,7 +67,18 @@
 
               <app-thematic-card [collapsible]="false" class="info-themed-card" [resetKey]="id">
                 <div class="info-themed-content">
-                  <div class="itemTitle">{{ label }}</div>
+                  <div class="itemTitle-row">
+                    <div class="itemTitle">{{ label }}</div>
+                    <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
+                    <a *ngIf="!isMobile"
+                      class="factgrid-link-desktop"
+                      [href]="factGridUrl + id"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ id }}
+                    </a>
+                  </div>
                   @if (aliases?.length) {
                     <div class="aliases">{{ aliases | join: ', ' }}</div>
                   }
@@ -75,11 +86,8 @@
                     <div class="itemDescription">{{ description }}</div>
                   }
 
-                  <div class="factgrid-global">
-                    <span class="factgrid-label">FactGrid:</span>
-                    <a [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer" class="selectedItemLink">{{ id }}</a>
-
-                    <!-- Contextual toggle for linked pages — aligned visually with FactGrid link -->
+                   <div class="factgrid-global">
+                    <!-- Contextual toggle for linked pages — left on mobile -->
                     <button
                       class="selectedItemLink linked-pages-btn"
                       (click)="toggleLinkedPages($event)"
@@ -89,6 +97,16 @@
                       <mat-icon aria-hidden="true">link</mat-icon>
                       <span class="linked-pages-label">{{ linkedPagesTitle }}</span>
                     </button>
+
+                    <!-- Mobile-only FactGrid link (bottom, aligned to the right) render only on mobile -->
+                    <a *ngIf="isMobile"
+                      class="selectedItemLink factgrid-link-mobile"
+                      [href]="factGridUrl + id"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ id }}
+                    </a>
                   </div>
                 </div>
               </app-thematic-card>
