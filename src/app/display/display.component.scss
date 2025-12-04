@@ -902,7 +902,7 @@ body {
 }
 
 .child2 {
-  display: grid; /* Changer en grid pour aligner */
+  display: flex; /* reverted to flex column layout (previous behaviour) */
   flex: 1 1 0;
   min-width: 280px;
   max-width: 380px;
@@ -916,25 +916,24 @@ $card-top-offset: 8px;
 
 // Grille principale (child1)
 .thematic-cards-grid {
-  display: grid;
+  /* Revert to stacked column layout rather than grid — keeps cards vertically ordered */
+  display: flex;
+  flex-direction: column;
   gap: $compact-gap;
   padding: 0;
   padding-top: $card-top-offset; // appliquer l'offset ici
 }
 
 // child2 doit utiliser la même grille pour aligner la première rangée
+/* child2 uses the same stacked card flow — avoid double-grid rules */
 .child2 {
-  display: grid;
-  gap: $compact-gap;
-  padding: 0; // padding-top déplacé dans .child2 .thematic-cards-grid
-  padding-top: 0;
-  align-items: start;
-  grid-auto-rows: min-content;
+  /* keep child's own layout as flex column; nested .thematic-cards-grid will follow the column flow */
 }
 
 // Si child2 contient sa propre .thematic-cards-grid, appliquer l'offset + mêmes règles
 .child2 .thematic-cards-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: $compact-gap;
   padding: 0;
   padding-top: $card-top-offset; // même top offset qu'en child1
