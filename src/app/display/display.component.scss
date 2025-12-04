@@ -143,13 +143,15 @@ $card-top-offset: 8px;
   background: transparent;
   padding: 0 4px;
   margin: 0;
-  color: inherit;
+  color: var(--primary-color) !important; /* use project primary color */
   cursor: pointer;
   font: inherit;
 }
 .linked-pages-btn .mat-icon {
   font-size: 1.05rem;
-  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 .linked-pages-btn .linked-pages-label {
   text-transform: none;
@@ -157,7 +159,7 @@ $card-top-offset: 8px;
   display: inline-flex;
   align-items: center; /* centre verticalement le label par rapport à l'icône */
   line-height: 1;
-  padding-top: 1px;
+  padding: 0; /* remove extra offset */
 }
 
 /* Hover & focus: match selectedItemLink interactions */
@@ -425,6 +427,24 @@ $card-top-offset: 8px;
   color: var(--primary-color) !important;
   font-weight: 600 !important;
   font-size: 16px !important;
+}
+
+/* Ensure the close toolbar icon matches the global toolbar button sizing
+   and sits visually aligned with the toolbar text */
+.side-toolbar .toolbar-btn.close-btn {
+  margin: 0 2px !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.side-toolbar .close-label {
+  margin-left: 6px;
+  font-size: 0.95rem;
+  color: var(--text-primary) !important;
+  font-weight: 500;
 }
 
 .example-spacer {

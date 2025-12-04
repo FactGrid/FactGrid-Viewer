@@ -26,14 +26,16 @@
       <mat-toolbar class="side-toolbar">
         <span class="toolbar-text">{{ linkedPagesTitle }}</span>
         <span class="example-spacer"></span>
+        <!-- Use project-standard icon + label (translated main page) next to the toolbar title -->
         <button
           mat-button
-          class="close-btn"
+          class="toolbar-btn close-btn"
           (click)="drawerOpened = false; drawer.close()"
-          matTooltip="Fermer le panneau"
+          [attr.aria-label]="mainPage"
+          [matTooltip]="mainPage"
         >
-          <mat-icon>close</mat-icon>
-          <span>Fermer</span>
+          <mat-icon>home</mat-icon>
+          <span class="close-label">{{ mainPage }}</span>
         </button>
       </mat-toolbar>
 

@@ -86,4 +86,20 @@ describe('DisplayComponent', () => {
     expect(label).toBeTruthy();
     expect(label.textContent.trim()).toBe('pages liées test');
   });
+
+  it('close icon button should exist and use the toolbar-btn style', () => {
+    // prepare
+    component.item = { id: 'Q7' } as any;
+    component.id = 'Q7';
+    component.isMobile = false;
+    fixture.detectChanges();
+
+    const btn: HTMLButtonElement | null = fixture.nativeElement.querySelector('.close-btn');
+    expect(btn).withContext('close button exists').toBeTruthy();
+    // the close button now displays the translated main page label
+    expect(btn!.getAttribute('aria-label')).toBe(component.mainPage);
+    const labelSpan: HTMLElement | null = btn!.querySelector('.close-label');
+    expect(labelSpan).withContext('close button shows mainPage text').toBeTruthy();
+    expect(labelSpan!.textContent!.trim()).toBe(component.mainPage);
+  });
 });
