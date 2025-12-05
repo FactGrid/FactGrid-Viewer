@@ -255,7 +255,7 @@
 .statementStyle {
     /* statements/values appear below the property and are indented so
       qualifiers and references line up neatly with the main value. */
-    padding: 6px 0 6px var(--statement-indent, 64px);
+    padding: 6px 0 6px var(--statement-indent);
   width: auto;
   max-width: 100%;
   line-height: 1.7;

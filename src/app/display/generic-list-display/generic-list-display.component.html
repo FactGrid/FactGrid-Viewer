@@ -70,12 +70,14 @@
                 <a
                   class="linkedItemText factgrid-link"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
-                  >{{ M.mainsnak.label | protectShortWords }}</a
-                >&#x2060;<span class="separator">{{ M.mainsnak.datavalue.value.separator.replace(' ', '\u00A0') }}</span>
+                >
+                  {{ M.mainsnak.label | protectShortWords }}
+                  &#x2060;<span class="separator">{{ M.mainsnak.datavalue.value.separator.replace(' ', '\u00A0') }}</span>
+                  @if (M.mainsnak.datavalue.value.description) {
+                    <span class="typo-item-desc generic-description-layout card-description-layout">{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span>
+                  }
+                </a>
               </span>
-              @if (M.mainsnak.datavalue.value.description) {
-                <span class="typo-item-desc generic-description-layout card-description-layout">{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span>
-              }
             }
             @if (M && M.rank === 'deprecated') {
               <span class="warningDeprecated"> &nbsp;({{ M.rank }})</span>

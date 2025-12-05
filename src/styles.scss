@@ -33,8 +33,6 @@
   --font-title-weight: 600;
   --font-subtitle: 16px;
   --font-subtitle-weight: 400;
-  /* Default indentation for statements (global baseline) */
-  --statement-indent: 15px;
 }
 /* You can add global styles to this file, and also import other style files */
 
@@ -358,7 +356,9 @@ body {
   max-width: 100%;
   font-size: 16px;
   /* centralize indentation via CSS variable so card styles can override it */
-  padding-left: var(--statement-indent, 15px);
+    /* Delegated indentation for statements — value is now controlled by card contexts
+      (src/app/display/_cards.scss). No global fallback here to avoid duplication. */
+    padding-left: var(--statement-indent);
   padding-top: 2px;
   padding-bottom: 2px; // from 3px
 }

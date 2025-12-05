@@ -20,7 +20,8 @@
    the left indentation used by .statementStyle so component-level rules don't
    need to duplicate the same value. */
 .statementStyle {
-  padding-left: var(--statement-indent, 64px);
+  /* Use the centralized value; _cards.scss declares --statement-indent: 64px */
+  padding-left: var(--statement-indent);
 }
 
 :host ::ng-deep app-thematic-card.info-themed-card:hover {
