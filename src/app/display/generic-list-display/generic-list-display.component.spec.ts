@@ -60,7 +60,7 @@ describe('GenericListDisplayComponent', () => {
     expect(pipe.transform('x yz a c')).toBe('x\u00A0yz a\u00A0c');
   });
 
-  it('renders separators protected with word-joiner (no orphan comma)', () => {
+  it('renders separators inside the link (no orphan comma)', () => {
     component.items = {
       id: 'P3',
       label: 'Test Prop',
@@ -72,7 +72,29 @@ describe('GenericListDisplayComponent', () => {
     } as any;
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    // Expect U+2060 (word-joiner) to be present before the separator comma
-    expect(compiled.innerHTML.indexOf('\u2060,')).toBeGreaterThan(-1);
+    // Expect comma + non-breaking space to be inside a span with class separator
+    expect(compiled.innerHTML).toContain('<span class="separator">,&nbsp;</span>');
+  });
+
+  it('includes description inside the link for wikibase-item mainsnak', () => {
+    component.items = {
+      id: 'P4',
+      label: 'Test Prop',
+      mainsnak: {
+        datatype: 'wikibase-item',
+        datavalue: { value: { id: 'Q100', separator: ', ', description: 'a description' } },
+        label: 'Label',
+      },
+    } as any;
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    // The description span should live inside the anchor element for the mainsnak
+    const anchor = compiled.querySelector('a.factgrid-link') as HTMLElement | null;
+    expect(anchor).toBeTruthy();
+    const descSpan = anchor?.querySelector('span.typo-item-desc');
+    expect(descSpan).toBeTruthy();
+    // description may include non-breaking spaces; assert the substring is present
+    expect(descSpan?.textContent).toContain('description');
   });
 });
