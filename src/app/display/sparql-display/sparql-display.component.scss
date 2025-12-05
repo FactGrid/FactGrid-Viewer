@@ -1,6 +1,8 @@
+@use "../../../styles/_typography" as typo;
+
 /* ========================================
-   SPARQL DISPLAY - Style unifié et moderne
-   ======================================== */
+  SPARQL DISPLAY - Style unifié et moderne
+  ======================================== */
 
 .cardBackground {
   /* Neutral card content container: le layout (espacement/largeur)
@@ -157,21 +159,18 @@ mat-card {
   white-space: nowrap;
 }
 
-.sparql-label {
-  display: block;
-  font-weight: 600;
-  font-size: 1rem;
-  line-height: 1.4;
-  color: var(--color-primary, #1f3fa1);
-  white-space: normal;
+.sparql-label-layout {
+  display: block; /* layout only: wrapping and flow */
+  white-space: normal; /* allow wrapping */
+  /* layout-only: inherit color from semantic typography (typo-item-label) */
+  color: inherit;
 }
 
-.sparql-description {
+.sparql-description-layout {
   display: block;
-  margin-top: 2px;
+  margin-top: 2px; /* spacing only */
+  /* keep visual tone similar to previous color at layout level */
   color: #4b5563;
-  font-size: 0.92rem;
-  line-height: 1.5;
   white-space: normal;
 }
 
@@ -197,12 +196,12 @@ mat-card {
   align-items: center;
 }
 
-.sparql-link:hover .sparql-label {
+.sparql-link:hover .sparql-label-layout {
   color: var(--color-primary, #1f3fa1);
   text-decoration: underline;
 }
 
-.sparql-link:hover .sparql-description {
+.sparql-link:hover .sparql-description-layout {
   color: #374151;
 }
 
