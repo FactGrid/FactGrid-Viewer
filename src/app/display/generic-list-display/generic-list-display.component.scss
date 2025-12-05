@@ -24,13 +24,19 @@
 }
 .factgrid-link:hover,
 .factgrid-link:focus-visible {
-  /* show underline on hover/focus to communicate link semantics */
-  text-decoration: underline;
+  /* show underline on hover/focus to communicate link semantics.
+     Some global selectors can suppress text-decoration; use a
+     reliable visual fallback (border-bottom) with a transition. */
+  text-decoration: none; /* avoid double underlines if a generator sets it */
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px; /* ensure space for the border */
+  transition: border-color 120ms ease, background-color 150ms ease;
 }
 
 .factgrid-link:active {
   /* keep underline on click/active states so user sees activation */
-  text-decoration: underline !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid currentColor !important;
 }
 
 /* Supprimer l'espace entre le lien et le séparateur */
