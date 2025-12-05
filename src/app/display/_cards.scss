@@ -9,6 +9,20 @@
 
 @import './_cards-mixins.scss';
 
+/* Centralized indentation variable for statement layout across cards and lists.
+   Default to 64px (used for card-style statement indentation). Component styles
+   can override --statement-indent where different spacing is required. */
+:root {
+  --statement-indent: 64px;
+}
+
+/* Base rule for statement indentation within card contexts. This centralizes
+   the left indentation used by .statementStyle so component-level rules don't
+   need to duplicate the same value. */
+.statementStyle {
+  padding-left: var(--statement-indent, 64px);
+}
+
 :host ::ng-deep app-thematic-card.info-themed-card:hover {
   background: rgba(255, 255, 255, 0.95);
 }
@@ -206,6 +220,28 @@
     padding-left: 10px;
   }
 
+  /* If the first child is a mainsnak wrapper (needs background and may contain
+     block content such as images), use a specific class so we can keep it
+     inline-friendly while still allowing block children inside. */
+  .statementStyle > .mainsnak-bg {
+    display: inline-block; /* allow block children but behave inline for alignment */
+    padding-left: 10px; /* preserve existing spacing */
+    vertical-align: top; /* keep baseline alignment stable with neighboring inline text */
+    white-space: normal !important; /* allow wrapping of inline content inside */
+    /* Ensure the mainsnak wrapper occupies remaining horizontal space so
+       wrapped lines start under the value area rather than the card edge. */
+    box-sizing: border-box;
+    max-width: calc(100% - 64px); /* respect statement indentation */
+    width: calc(100% - 64px);
+  }
+
+  /* Make images inside mainsnaks responsive so they don't force overflow */
+  .statementStyle > .mainsnak-bg img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
   /* Allow wrapping/breaking for long labels/links inside the mainsnak
      container only (the first child div of a statement). This prevents
      qualifiers from being affected. */
@@ -213,6 +249,7 @@
   .statementStyle > div:first-child span,
   .statementStyle > div:first-child a,
   .statementStyle > div:first-child .linkedItemText,
+  .statementStyle > div:first-child .typo-item-label,
   .statementStyle > div:first-child .displayLayout {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
@@ -224,17 +261,16 @@
   .statementStyle > div:first-child > a,
   .statementStyle > div:first-child .displayLayout,
   .statementStyle > div:first-child .linkedItemText,
+  .statementStyle > div:first-child .typo-item-label,
   .statementStyle > div:first-child .calendarStyle {
     display: inline;
     margin-right: 6px; /* small gap between successive values */
   }
 
-  /* Slightly tighter description spacing when used inline next to a value */
-  .description-text {
-    color: #5f6c7f;
-    font-size: 0.875rem;
+  /* Slightly tighter layout spacing when used inline next to a value inside cards.
+     Typography (color/size/italic) must come from the semantic class `.typo-item-desc`. */
+  .card-description-layout {
     margin-left: 2px; /* reduced from 4px */
-    font-style: italic;
   }
 
   @media (max-width: 700px) {
@@ -242,6 +278,7 @@
     .statementStyle > div:first-child > a,
     .statementStyle > div:first-child .displayLayout,
     .statementStyle > div:first-child .linkedItemText,
+    .statementStyle > div:first-child .typo-item-label,
     .statementStyle > div:first-child .calendarStyle {
       margin-right: 4px;
     }
@@ -267,6 +304,7 @@
   /* Make sure very long inline elements inside mainsnak don't force horizontal scroll on small screens */
   @media (max-width: 700px) {
     .statementStyle > div:first-child .linkedItemText,
+    .statementStyle > div:first-child .typo-item-label,
     .statementStyle > div:first-child .displayLayout,
     .statementStyle > div:first-child a {
       display: inline !important;
@@ -284,7 +322,7 @@
   .statementStyle > div:first-child .displayLayout,
   .statementStyle > div:first-child a,
   .statementStyle > div:first-child span,
-  .statementStyle > div:first-child .description-text {
+  .statementStyle > div:first-child .card-description-layout {
     line-height: 1.12 !important;
     vertical-align: baseline;
   }
@@ -320,7 +358,7 @@
     app-generic-list-display
     .statementStyle
     > div:first-child
-    .description-text {
+    .card-description-layout {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
@@ -344,7 +382,7 @@
     .statementStyle > div:first-child .displayLayout,
     .statementStyle > div:first-child a,
     .statementStyle > div:first-child span,
-    .statementStyle > div:first-child .description-text {
+    .statementStyle > div:first-child .card-description-layout {
       line-height: 1.04 !important;
     }
     .statementStyle > div:first-child > span {
@@ -357,10 +395,12 @@
      very specific and constrained to the generic-list-display inside the
      thematic cards to avoid collateral effects elsewhere. */
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .linkedItemText,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-qualifier-label,
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-item-label,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle span,
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .description-text {
+  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .card-description-layout {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
@@ -369,6 +409,8 @@
 
   @media (max-width: 700px) {
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .linkedItemText,
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-qualifier-label,
+    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-item-label,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle span,
@@ -377,7 +419,7 @@
       .thematic-cards-grid
       app-generic-list-display
       .qualifierStyle
-      .description-text {
+      .card-description-layout {
       line-height: 1.02 !important;
     }
   }
@@ -385,7 +427,7 @@
   .qualifierStyle {
     margin-left: 32px;
     margin-top: 1px;
-    font-size: 0.85rem;
+    font-size: var(--typo-qualifier-desc-size);
     color: #5f6c7f;
     line-height: 1.4;
     padding: 1px 0 1px 8px;
@@ -464,11 +506,8 @@
     margin: 0;
   }
 
-  .description-text {
-    color: #5f6c7f;
-    font-size: 0.875rem;
+  .card-description-layout {
     margin-left: 4px;
-    font-style: italic;
   }
 
   .calendarStyle {
@@ -701,7 +740,9 @@
 
 /* Ensure title and icon use the same tint and spacing as other thematic cards */
 :host ::ng-deep app-thematic-card.external-themed-card .title-text,
+:host ::ng-deep app-thematic-card.external-themed-card .typo-thematic-card-title,
 :host ::ng-deep app-thematic-card.wiki-themed-card .title-text,
+:host ::ng-deep app-thematic-card.wiki-themed-card .typo-thematic-card-title,
 :host ::ng-deep app-thematic-card.external-themed-card .title-icon,
 :host ::ng-deep app-thematic-card.wiki-themed-card .title-icon {
   color: #111 !important;

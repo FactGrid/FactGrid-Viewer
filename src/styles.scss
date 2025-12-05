@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use 'styles/overlay-search.scss';
+@use 'styles/_typography' as typo;
 
 @include mat.core();
 // Exposition des design tokens en variables CSS globales
@@ -19,8 +20,8 @@
   --sparql-display-max-width: 900px;
   --md-sys-color-primary: #6699cc; // bleu personnalisé
   --color-primary: #6699cc;
-  --md-sys-color-secondary: #cc5500; // accent orange personnalisé
-  --color-accent: #cc5500;
+  --md-sys-color-secondary: #F8EDE3; // accent (Option E: crème pêche très légère)
+  --color-accent: #F8EDE3;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -32,6 +33,8 @@
   --font-title-weight: 600;
   --font-subtitle: 16px;
   --font-subtitle-weight: 400;
+  /* Default indentation for statements (global baseline) */
+  --statement-indent: 15px;
 }
 /* You can add global styles to this file, and also import other style files */
 
@@ -312,6 +315,7 @@ app-sparql-display .sparql-card .sparql-link {
 }
 
 /* Base globale de typographie pour tout le projet */
+@import 'styles/typography.scss';
 body {
   font-size: 16px; /* taille de base unifiée */
 }
@@ -353,35 +357,36 @@ body {
   width: auto;
   max-width: 100%;
   font-size: 16px;
-  padding-left: 15px;
+  /* centralize indentation via CSS variable so card styles can override it */
+  padding-left: var(--statement-indent, 15px);
   padding-top: 2px;
   padding-bottom: 2px; // from 3px
 }
 
-.description-text {
-  //color and weight for the descriptions of the statements and qualifiers
-  font-weight: 321;
-  color: #808080 !important;
+.global-description-layout {
+  // Layout-only helper left for any templates still relying on a global
+  // description helper. Typography tokens must come from the central
+  // `typo-item-desc` semantic class in src/styles/_typography.scss.
+  // Keep this layout-only. Use `typo-item-desc` for typography.
+  display: inline;
 }
 
-.qualifierProperty {
+  .qualifierProperty {
   //size and color of the label of the qualifier
-  font-size: 14px;
+  font-size: var(--typo-qualifier-desc-size);
   color: #3f51b5;
   font-style: italic;
 }
 
 .propertyStyle {
-  // size and color or the label of the statement
-  color: #3f51b5;
-  @include font-size();
-  font-weight: 400;
+  // prefer central typography tokens — keep minor layout tweaks local
+  @include typo.typo-property-label();
   padding-bottom: 4px;
 }
 
 .qualifierStyle {
   //size of the text of the qualifier
-  font-size: 14px;
+  font-size: var(--typo-qualifier-desc-size);
   padding-left: 10px;
 }
 
@@ -913,19 +918,19 @@ button.mat-icon-button .mat-icon {
   transition: background-color 0.2s;
 }
 
-.item-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.item-label {
+.typo-item-label {
   font-weight: 500;
   color: black;
   font-size: 1.1em; /* Taille de police légèrement plus grande */
   line-height: 1.2; /* Interlignage pour une meilleure lisibilité */
 }
 
+.typo-item-desc {
+  color: #666;
+  font-size: 1.1em;
+  margin-top: 2px;
+  margin-left: 32px; /* pour l’aligner sous le label, optionnel */
+}
 .item-description {
   color: #666;
   font-size: 1.1em;
@@ -941,7 +946,7 @@ button.mat-icon-button .mat-icon {
   .item-main {
     margin-right: 16px;
   }
-  .item-description {
+  .typo-item-desc {
     margin-top: 0;
     margin-left: 0;
   }
@@ -963,7 +968,7 @@ button.mat-icon-button .mat-icon {
     flex: 1 1 auto;
   }
 
-  .item-description {
+  .typo-item-desc {
     margin: 0 !important;
     padding: 0 !important;
     text-align: left;

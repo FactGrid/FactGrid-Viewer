@@ -1,19 +1,18 @@
+@use "../../../styles/_typography" as typo;
+
 .linkedItemText {
-  color: #000;
-  text-decoration: none;
-  font-size: inherit;
-  font-weight: inherit;
+  /* Behavioural/interaction-only — typographic properties moved to .typo-link */
   padding: 0;
   border-radius: 4px;
   transition: none;
   cursor: pointer;
-  white-space: nowrap;
 }
+
+// Use centralised typography mixins when component-scoped styles want
+// to keep typography local instead of relying solely on markup classes.
 .linkedItemText:hover,
 .linkedItemText:focus {
-  text-decoration: none;
   background: none;
-  color: #000;
 }
 
 /* Lien FactGrid spécifique : noir, sans souligné */
@@ -33,8 +32,8 @@
 }
 
 /* Supprimer l'espace entre le lien et le séparateur */
-.linkedItemText + .description-text,
-.linkedItemText + .description-text:before {
+.linkedItemText + .generic-description-layout,
+.linkedItemText + .generic-description-layout:before {
   margin-left: 0 !important;
 }
 .qualifierProperty + span,
@@ -171,14 +170,15 @@
    ======================================== */
 
 .listStyle {
-  /* Reverted to stacked layout: property label sits on its own line; the
-     statements / values are displayed underneath, indented. This matches
-     the previous behaviour before the grid change. */
+  /* Reverted layout: stacked (no grid) — keep original behaviour where
+    the property label is on its own line and statements/values appear
+    underneath, indented. */
   display: block;
   margin: 0 0 16px 0;
   padding: 8px 0;
   list-style: none;
   border-bottom: 1px solid rgba(227, 232, 239, 0.4);
+  align-items: start; /* ensure label and value align correctly vertically */
 }
 
 .generic-list {
@@ -215,6 +215,9 @@
 }
 
 .propertyStyle {
+  /* Apply central typographic token/mixin so changes are globalised.
+     Keep layout/interaction bits local and unchanged. */
+  @include typo.typo-property-label();
   font-weight: 600;
   color: var(--color-primary, #3f51b5) !important;
   font-size: 0.95rem;
@@ -250,21 +253,20 @@
 // Indentation plus importante pour les statements (valeurs, qualifiers, références)
 // Indentation plus importante pour les statements (valeurs, qualifiers, références)
 .statementStyle {
-  /* statements/values appear below the property and are indented
-     so qualifiers and references line up neatly with the main value. */
-  display: block;
-  padding: 6px 0 6px 0;
+    /* statements/values appear below the property and are indented so
+      qualifiers and references line up neatly with the main value. */
+    padding: 6px 0 6px var(--statement-indent, 64px);
   width: auto;
   max-width: 100%;
-  font-size: 0.95rem;
-  color: #1f2d40;
   line-height: 1.7;
   margin: 4px 0;
-  padding-left: 36px; /* indentation for statements */
 
   > div {
     padding: 4px 0;
+    // text-indent: -20px;   /* retrait négatif pour la première ligne */
+    // marginleft: 20px;    /* décale tout le bloc, y compris les lignes suivantes */
   }
+
 }
 
 .factgrid-link:hover {
@@ -274,7 +276,7 @@
 .qualifierStyle {
   margin-left: 0;
   margin-top: 6px;
-  font-size: 0.875rem;
+  font-size: var(--typo-qualifier-desc-size);
   color: #5f6c7f;
   line-height: 1.6;
   padding: 4px 0;
@@ -284,7 +286,7 @@
 
 .qualifierProperty {
   color: #ad1457;
-  font-size: 0.875rem;
+  font-size: var(--typo-qualifier-desc-size);
   font-style: italic;
   margin-right: 2px;
   padding: 0;
@@ -325,11 +327,12 @@
   font-weight: 500;
 }
 
-.description-text {
-  color: #5f6c7f;
-  font-size: 0.875rem;
+
+.generic-description-layout {
+  /* layout-only for inline descriptions next to labels in generic lists */
+  display: inline;
   margin-left: 4px;
-  font-style: italic;
+  overflow-wrap: break-word;
 }
 
 .inlineStyle {
@@ -417,13 +420,6 @@
   word-break: break-all;
   display: inline-block;
   max-width: 100%;
-}
-
-/* Keep label and its following separator together (avoid orphan separators).
-   Apply inline nowrap to ensure punctuation like comma doesn't break to next line. */
-.label-no-break {
-  display: inline-block;
-  white-space: nowrap;
 }
 
 a {
