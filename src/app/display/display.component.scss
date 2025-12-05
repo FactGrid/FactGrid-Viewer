@@ -4,11 +4,13 @@
    live in `src/styles.scss`.
 */
 
+@use "../../styles/_typography" as typo;
+
 // Déclarations globales de spacing (doivent être définies avant tout usage)
 $compact-gap: 4px;
 $compact-card-padding: 6px;
 $compact-card-margin: 4px;
-$card-top-offset: 8px;
+ $card-top-offset: 8px;
 
 /* Show / hide helpers used by the template */
 .hide-division {
@@ -125,7 +127,11 @@ $card-top-offset: 8px;
 
   .factgrid-link-mobile {
     display: inline-flex;
-    margin-left: auto; /* pousser le lien vers la droite en mobile */
+    margin-left: auto; /* push to the right within .factgrid-global */
+    align-items: center !important;
+    padding: 4px 6px !important;
+    border-radius: 4px !important;
+    background: transparent !important;
   }
 }
 
@@ -162,6 +168,16 @@ $card-top-offset: 8px;
   padding: 0; /* remove extra offset */
 }
 
+/* Drawer heading: show the 'linked pages' title at the top of the list inside the drawer */
+.drawer-heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  color: var(--text-primary, #111);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 10px;
+}
+
 /* Hover & focus: match selectedItemLink interactions */
 .linked-pages-btn:hover,
 .linked-pages-btn:focus {
@@ -193,7 +209,8 @@ $card-top-offset: 8px;
 }
 /* Harmonisation des propriétés info box avec les cartes thématiques */
 .info-card-content .propertyStyle {
-  color: var(--text-primary, #111) !important;
+  /* Align with central semantic token for property labels */
+  color: var(--typo-property-label-color, #000) !important;
 }
 /* ========================================
    CARTE D'INFORMATIONS GÉNÉRALES AVEC FOND TEINTÉ
@@ -210,6 +227,9 @@ $card-top-offset: 8px;
 
 .info-themed-content {
   padding: var(--thematic-card-padding);
+  /* allow anchored controls (mobile FactGrid link) to be positioned
+     relative to this content block */
+  position: relative;
 }
 
 .info-themed-content .itemTitle {
@@ -377,6 +397,8 @@ $card-top-offset: 8px;
   }
 }
 
+/* Close button label is styled inline via .close-btn rules after generic toolbar styles */
+
 .top-toolbar .mat-icon,
 .side-toolbar .mat-icon,
 .top-toolbar mat-icon,
@@ -391,6 +413,52 @@ $card-top-offset: 8px;
   color: var(--text-primary) !important;
   font-size: 14px !important;
   font-weight: 500 !important;
+}
+
+/* Override for close-btn: must come AFTER generic .side-toolbar rules */
+.side-toolbar .close-btn.close-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 4px !important;
+  margin: 0 !important;
+  color: var(--primary-color) !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  min-height: auto !important;
+  height: auto !important;
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  overflow: visible !important;
+  border-radius: 4px !important;
+}
+.side-toolbar .close-btn.close-btn:hover,
+.side-toolbar .close-btn.close-btn:focus {
+  text-decoration: underline !important;
+  background: rgba(40, 53, 147, 0.05) !important;
+}
+.side-toolbar .close-btn.close-btn .mat-icon,
+.side-toolbar .close-btn.close-btn mat-icon {
+  font-size: 1.05rem !important;
+  width: auto !important;
+  height: auto !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  color: var(--primary-color) !important;
+}
+.side-toolbar .close-btn.close-btn .close-label {
+  text-transform: none !important;
+  font-size: 0.95rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  color: var(--primary-color) !important;
+  font-weight: 400 !important;
 }
 
 .top-toolbar .new-search-button {
@@ -429,23 +497,7 @@ $card-top-offset: 8px;
   font-size: 16px !important;
 }
 
-/* Ensure the close toolbar icon matches the global toolbar button sizing
-   and sits visually aligned with the toolbar text */
-.side-toolbar .toolbar-btn.close-btn {
-  margin: 0 2px !important;
-  width: 40px !important;
-  height: 40px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.side-toolbar .close-label {
-  margin-left: 6px;
-  font-size: 0.95rem;
-  color: var(--text-primary) !important;
-  font-weight: 500;
-}
+/* Close button label is styled inline via .close-btn rules above */
 
 .example-spacer {
   flex: 1 1 auto !important;
@@ -518,9 +570,8 @@ $card-top-offset: 8px;
 /* Styles pour generic-list-display à l'intérieur des cartes */
 :host ::ng-deep app-generic-list-display {
   .propertyStyle {
-    font-weight: 600;
-    color: #111;
-    font-size: 0.95rem;
+    /* use central mixin for typographic properties */
+    @include typo.typo-property-label();
     display: block;
     margin-right: 8px;
     margin-bottom: 2px;
@@ -549,7 +600,7 @@ $card-top-offset: 8px;
   .qualifierStyle {
     margin-left: 32px; /* cohérence avec retrait statements */
     margin-top: 1px;
-    font-size: 0.85rem;
+    font-size: var(--typo-qualifier-desc-size);
     color: #5f6c7f;
     line-height: 1.4;
     padding: 1px 0 1px 8px;
@@ -558,7 +609,7 @@ $card-top-offset: 8px;
 
   .qualifierProperty {
     color: #111;
-    font-size: inherit; /* hérite de 0.85rem défini sur .qualifierStyle */
+    font-size: inherit; /* hérite de qualifier container (now var(--typo-qualifier-desc-size)) */
     font-style: italic;
     margin-right: 4px;
   }
@@ -628,11 +679,9 @@ $card-top-offset: 8px;
     margin: 0;
   }
 
-  .description-text {
-    color: #5f6c7f;
-    font-size: 0.875rem;
+  /* layout-only description class used in general display contexts */
+  .display-description-layout {
     margin-left: 4px;
-    font-style: italic;
   }
 
   .calendarStyle {
@@ -671,12 +720,10 @@ $card-top-offset: 8px;
     line-height: 12px !important;
   }
 
-  .description-text {
-    color: #5f6c7f;
-    font-size: 0.875rem;
+  /* slightly more compact layout for inline descriptions */
+  .display-description-compact-layout {
     margin-left: 2px;
     margin-right: 0;
-    font-style: italic;
   }
 
   .cover {
@@ -969,7 +1016,10 @@ body {
 
 .app-drawer {
   width: 340px;
-  background-color: var(--background-drawer);
+  /* Ensure drawer is opaque and uses project drawer background color */
+  /* harden: ensure fully opaque white background so the drawer is never transparent */
+  background-color: #ffffff !important;
+  background: #ffffff !important;
   box-shadow: var(--shadow-lg);
 }
 
@@ -1291,12 +1341,11 @@ mat-card img {
   line-height: 1.5;
   display: block;
 
-  /* Style du label (premier span) identique à .propertyStyle */
-  > span:first-child {
-    font-weight: 600;
-    color: var(--color-primary, #3f51b5);
-    font-size: 0.95rem;
-    display: inline;
+  /* Style du label (premier child) identique à .propertyStyle */
+  .externalLinksLabel {
+    /* use centralised property-label token so it matches other labels */
+    @include typo.typo-property-label();
+    display: block; /* ensure the label sits above the value */
     margin-right: 2px;
     padding: 2px 4px;
     margin-left: -4px;
@@ -1309,16 +1358,32 @@ mat-card img {
     }
   }
 
+  padding-left: 12px; /* give a small left gutter so text doesn't sit on the card edge */
+
+  .externalLinksValue a,
   a {
     color: #3f51b5;
     text-decoration: none;
     word-break: break-word;
     overflow-wrap: anywhere;
+    display: inline-block;
+    max-width: calc(100% - 8px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     
     &:hover {
       text-decoration: underline;
       color: #283593;
     }
+  }
+
+  /* Ensure link values use centralized item-label typography but stay blue */
+  .externalLinksValue a.typo-item-label,
+  a.typo-item-label {
+    @include typo.typo-item-label();
+    color: #3f51b5; /* link blue */
+    text-decoration: none;
   }
 }
 
@@ -1333,6 +1398,31 @@ mat-card img {
 
   &:hover {
     box-shadow: var(--shadow-md);
+  }
+}
+
+/* Make header padding for external/wikis consistent with content gutters */
+.externalLinksPadding {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+@media (max-width: 600px) {
+  .externalLinksText {
+    padding-left: 20px; /* extra breathing on mobile where items can stick to the edge */
+    /* allow the values to wrap naturally on small screens */
+    .externalLinksValue a,
+    a {
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+      text-overflow: unset !important;
+      max-width: 100% !important;
+      display: inline !important;
+    }
+  }
+
+  .externalLinksPadding {
+    padding-left: 20px;
   }
 }
 
@@ -1449,6 +1539,16 @@ button[mat-icon-button] .mat-icon {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Safety: ensure Angular Material drawer host element is opaque when opened */
+:host ::ng-deep .mat-drawer,
+:host ::ng-deep .mat-drawer .mat-drawer-inner-container,
+:host ::ng-deep .mat-drawer .mat-drawer-content {
+  /* ensure all internal material drawer containers are opaque */
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 :host ::ng-deep .mat-drawer-container {

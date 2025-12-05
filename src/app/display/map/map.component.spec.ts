@@ -12,7 +12,12 @@ describe('MapComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MapComponent, RouterTestingModule],
-      providers: [{ provide: ActivatedRoute, useValue: { params: of({ lat: '48.8566', lng: '2.3522', z: '12' }) } }],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { params: of({ lat: '48.8566', lng: '2.3522', z: '12' }) },
+        },
+      ],
     }).compileComponents();
   });
 

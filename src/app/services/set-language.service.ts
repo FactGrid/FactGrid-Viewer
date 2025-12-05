@@ -63,18 +63,24 @@ export class SetLanguageService {
     if (lang === 'zh') {
       if (obj['zh']) return Array.isArray(obj['zh']) ? obj['zh'].map((a) => a.value) : [];
       if (obj['zh-cn']) return Array.isArray(obj['zh-cn']) ? obj['zh-cn'].map((a) => a.value) : [];
-      if (obj['zh-hans']) return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
-      if (obj['zh-hant']) return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
+      if (obj['zh-hans'])
+        return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
+      if (obj['zh-hant'])
+        return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
     }
     if (lang === 'zh-hans') {
-      if (obj['zh-hans']) return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
+      if (obj['zh-hans'])
+        return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
       if (obj['zh']) return Array.isArray(obj['zh']) ? obj['zh'].map((a) => a.value) : [];
-      if (obj['zh-hant']) return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
+      if (obj['zh-hant'])
+        return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
     }
     if (lang === 'zh-hant') {
-      if (obj['zh-hant']) return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
+      if (obj['zh-hant'])
+        return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
       if (obj['zh']) return Array.isArray(obj['zh']) ? obj['zh'].map((a) => a.value) : [];
-      if (obj['zh-hans']) return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
+      if (obj['zh-hans'])
+        return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
     }
 
     if (obj[lang]) return Array.isArray(obj[lang]) ? obj[lang].map((a) => a.value) : [];

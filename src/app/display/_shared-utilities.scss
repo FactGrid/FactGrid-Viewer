@@ -56,5 +56,6 @@
 
 /* Harmonisation des propriétés info box avec les cartes thématiques */
 .info-card-content .propertyStyle {
-  color: var(--text-primary, #111) !important;
+  /* Make property labels follow central semantic token */
+  color: var(--typo-property-label-color, #000) !important;
 }

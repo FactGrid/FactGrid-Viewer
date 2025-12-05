@@ -8,7 +8,9 @@ describe('ThematicCardComponent', () => {
   let fixture: ComponentFixture<ThematicCardComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [ThematicCardComponent, NoopAnimationsModule] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [ThematicCardComponent, NoopAnimationsModule],
+    }).compileComponents();
     fixture = TestBed.createComponent(ThematicCardComponent);
     component = fixture.componentInstance;
   });
@@ -72,7 +74,10 @@ describe('ThematicCardComponent', () => {
     // the body should still contain projected content node even if collapsed
     component.collapsible = true;
     component.startCollapsed = true;
-    component.ngOnChanges({ startCollapsed: new SimpleChange(null, true, true), collapsible: new SimpleChange(null, true, true) });
+    component.ngOnChanges({
+      startCollapsed: new SimpleChange(null, true, true),
+      collapsible: new SimpleChange(null, true, true),
+    });
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
@@ -88,7 +93,10 @@ describe('ThematicCardComponent', () => {
   it('resets collapsed state when resetKey changes', () => {
     component.collapsible = true;
     component.startCollapsed = false;
-    component.ngOnChanges({ collapsible: new SimpleChange(null, true, true), startCollapsed: new SimpleChange(null, false, true) });
+    component.ngOnChanges({
+      collapsible: new SimpleChange(null, true, true),
+      startCollapsed: new SimpleChange(null, false, true),
+    });
     fixture.detectChanges();
 
     // user toggles closed
@@ -100,5 +108,23 @@ describe('ThematicCardComponent', () => {
     component.ngOnChanges({ resetKey: new SimpleChange(null, 'a', false) });
     fixture.detectChanges();
     expect(component.isCollapsed).toBeFalse();
+  });
+
+  it('collapse button exposes aria-label and keeps text for non-mobile', () => {
+    component.collapsible = true;
+    component.startCollapsed = true;
+    component.ngOnChanges({ startCollapsed: new SimpleChange(null, true, true), collapsible: new SimpleChange(null, true, true) });
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const btn = el.querySelector('.collapse-btn') as HTMLButtonElement | null;
+    expect(btn).toBeTruthy('collapse button exists');
+    // aria-label should reflect action
+    expect(btn?.getAttribute('aria-label')).toBe('Afficher');
+
+    // The visible text span should still be present in the template (hidden in real mobile via CSS)
+    const textSpan = btn?.querySelector('.collapse-text');
+    expect(textSpan).toBeTruthy();
+    expect(textSpan?.textContent?.trim()).toBe('Afficher');
   });
 });

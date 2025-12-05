@@ -4,7 +4,7 @@
    rules, separate from the more general thematic-card rules used in child1.
 */
 
-@import './_cards-mixins.scss';
+@use './_cards-mixins' as cardMixins;
 
 
 

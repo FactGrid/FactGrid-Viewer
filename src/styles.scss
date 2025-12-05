@@ -33,6 +33,8 @@
   --font-title-weight: 600;
   --font-subtitle: 16px;
   --font-subtitle-weight: 400;
+  /* Central typography tokens (fallbacks so runtime bundles have sensible defaults) */
+  --typo-property-label-color: #000;
 }
 /* You can add global styles to this file, and also import other style files */
 
@@ -312,8 +314,9 @@ app-sparql-display .sparql-card .sparql-link {
   font-size: $sizeValue;
 }
 
-/* Base globale de typographie pour tout le projet */
-@import 'styles/typography.scss';
+/* Base globale de typographie pour tout le projet
+  Already loaded via @use at the top ("@use 'styles/_typography' as typo;")
+  — the explicit @import was deprecated by Dart Sass and is removed. */
 body {
   font-size: 16px; /* taille de base unifiée */
 }

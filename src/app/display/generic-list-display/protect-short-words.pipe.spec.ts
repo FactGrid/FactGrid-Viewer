@@ -13,9 +13,9 @@ describe('ProtectShortWordsPipe', () => {
   });
 
   it('should attach a single-letter word to the following word with NBSP', () => {
-    expect(pipe.transform("a test")).toBe('a\u00A0test');
-    expect(pipe.transform("A   test")).toBe('A\u00A0test');
-    expect(pipe.transform("à la maison")).toBe('à\u00A0la maison');
+    expect(pipe.transform('a test')).toBe('a\u00A0test');
+    expect(pipe.transform('A   test')).toBe('A\u00A0test');
+    expect(pipe.transform('à la maison')).toBe('à\u00A0la maison');
   });
 
   it('should not change numbers or multi-letter words', () => {

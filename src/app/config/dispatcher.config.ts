@@ -100,7 +100,7 @@ export const EVENT_DISPLAY_PROPERTIES = [
 
 export const EXCLUDED_DISPLAY_PROPERTIES = [
   { property: 'P899', comment: 'object type propertyies' }, // Ajoutez ici les identifiants des propriétés à ne pas afficher
-   { property: 'P320', comment: 'FactGrid list of members' }
+  { property: 'P320', comment: 'FactGrid list of members' },
   // ...
 ];
 
@@ -115,7 +115,7 @@ export const ORG_DISPLAY_PROPERTIES = [
   { property: 'P449', comment: 'partner organizations' },
   { property: 'P428', comment: 'next higher hierarchy level' },
   { property: 'P14', comment: 'in leading positions' },
-  {property: 'P358', comment: 'providing access to' },
+  { property: 'P358', comment: 'providing access to' },
   { property: 'P358', comment: '' },
   { property: 'P465', comment: 'capital' },
   { property: 'P297', comment: 'territorial affiliation' },
@@ -191,8 +191,8 @@ export const EXTERNAL_LINKS_DISPLAY_PROPERTIES = [
 ];
 
 export const SOCIABILITY_DISPLAY_PROPERTIES = [
-  { property:'P616', comment: 'country of citizenship' },
-   { property:'P814', comment: 'geographic compatriot of' },
+  { property: 'P616', comment: 'country of citizenship' },
+  { property: 'P814', comment: 'geographic compatriot of' },
   { property: 'P172', comment: 'religion' },
   { property: 'P91', comment: 'member of' },
   { property: 'P454', comment: 'proposed to become a member of' },
@@ -214,7 +214,7 @@ export const INFO_DISPLAY_PROPERTIES = [
   { property: 'P131', comment: 'research projects that contributed to this data set' },
   { property: 'P994', comment: 'PhiloBiblon vocabulary term' },
   { property: 'P1132', comment: 'FactGrid keyword' },
-  { property: 'P189', comment: 'Wikimedia Commons picture' }
+  { property: 'P189', comment: 'Wikimedia Commons picture' },
 ];
 
 // MAIN_TITLE_PREFERRED has moved to src/app/config/main-title.config.ts

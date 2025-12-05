@@ -76,7 +76,8 @@ export class ItemInfoComponent implements OnChanges {
     const dataValue = val?.mainsnak?.datavalue?.value;
     if (dataValue !== undefined && dataValue !== null) {
       if (typeof dataValue === 'object' && dataValue.id) return dataValue.id;
-      if (typeof dataValue === 'string' && dataValue.toString().trim() !== '') return dataValue.toString().trim();
+      if (typeof dataValue === 'string' && dataValue.toString().trim() !== '')
+        return dataValue.toString().trim();
     }
     const label = (val?.mainsnak?.label ?? val?.itemLabel ?? '').toString().trim();
     if (label) return label;

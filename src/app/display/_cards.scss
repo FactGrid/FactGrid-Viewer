@@ -7,7 +7,7 @@
   border: 1px solid rgba(179, 198, 224, 0.8);
 }
 
-@import './_cards-mixins.scss';
+@use './_cards-mixins' as cardMixins;
 
 /* Centralized indentation variable for statement layout across cards and lists.
    Default to 64px (used for card-style statement indentation). Component styles
@@ -179,7 +179,8 @@
 :host ::ng-deep app-generic-list-display {
   .propertyStyle {
     font-weight: 600;
-    color: #111;
+    /* use central semantic token for label color so changes propagate */
+    color: var(--typo-property-label-color, #000);
     font-size: 0.95rem;
     display: block;
     margin-right: 6px;
@@ -722,7 +723,7 @@
   }
 }
 
-@import './_cards-child2.scss';
+@use './_cards-child2' as cardChild2;
 
 /* Slightly colored headers for External Links and Wikis to match child1 thematic cards */
 :host ::ng-deep app-thematic-card.external-themed-card .card-header,

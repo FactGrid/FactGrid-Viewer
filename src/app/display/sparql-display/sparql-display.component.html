@@ -59,9 +59,9 @@
         } @else {
           <div class="sparql-div sparql-card statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              <span class="sparql-label">{{ L.itemLabel?.value || L.itemText || '' }}</span>
+              <span class="typo-item-label sparql-label-layout">{{ L.itemLabel?.value || L.itemText || '' }}</span>
               @if (L.itemDescription?.value) {
-                <span class="sparql-description">
+                <span class="typo-item-desc sparql-description-layout">
                   {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
                 </span>
               }
@@ -83,9 +83,9 @@
         } @else {
           <div class="sparql-div sparql-card statementStyle">
             <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              <span class="sparql-label">{{ L.itemLabel?.value || '' }}</span>
+              <span class="typo-item-label sparql-label-layout">{{ L.itemLabel?.value || '' }}</span>
               @if (L.itemDescription?.value) {
-                <span class="sparql-description">
+                <span class="typo-item-desc sparql-description-layout">
                   {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
                 </span>
               }

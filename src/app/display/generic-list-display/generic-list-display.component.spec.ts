@@ -74,6 +74,12 @@ describe('GenericListDisplayComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     // Expect comma + non-breaking space to be inside a span with class separator
     expect(compiled.innerHTML).toContain('<span class="separator">,&nbsp;</span>');
+
+    // The separator must be glued to the label (no extra space between label and comma)
+    const anchor = compiled.querySelector('a.factgrid-link') as HTMLElement | null;
+    expect(anchor).toBeTruthy();
+    // The label is glued to the separator using a U+2060 (word-joiner) — assert the exact sequence
+    expect(anchor!.innerHTML).toContain('Label\u2060<span class="separator">,&nbsp;</span>');
   });
 
   it('includes description inside the link for wikibase-item mainsnak', () => {
@@ -96,5 +102,25 @@ describe('GenericListDisplayComponent', () => {
     expect(descSpan).toBeTruthy();
     // description may include non-breaking spaces; assert the substring is present
     expect(descSpan?.textContent).toContain('description');
+  });
+
+  it('does not attempt to replace separator when separator is undefined (no crash)', () => {
+    component.items = {
+      id: 'P5',
+      label: 'Test Prop',
+      mainsnak: {
+        datatype: 'wikibase-item',
+        datavalue: { value: { id: 'Q200', description: 'desc only' } },
+        label: 'Label',
+      },
+    } as any;
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    // Should not render separator span and should render description inside link
+    const sep = compiled.querySelector('span.separator');
+    expect(sep).toBeNull();
+    const anchor = compiled.querySelector('a.factgrid-link');
+    expect(anchor?.querySelector('span.typo-item-desc')).toBeTruthy();
   });
 });

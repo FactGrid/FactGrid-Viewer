@@ -24,7 +24,8 @@
                     "theme:navy-coral":  "node switch-palette.js 4",
                     "theme:burgundy-gold":  "node switch-palette.js 5",
                     "theme:preview":  "start theme-preview.html",
-                    "aif:check":  "node ./scripts/aif-check.js"
+                    "aif:check":  "node ./scripts/aif-check.js",
+                    "check:overlay-style": "node ./scripts/check-overlay-style.js"
                 },
     "devDependencies":  {
                             "@angular-devkit/build-angular":  "^20.0.1",

@@ -1,5 +1,13 @@
 //import { importExpr } from '@angular/compiler/src/output/output_ast';
-import { Component, OnInit, Input, ChangeDetectorRef, inject, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  ChangeDetectorRef,
+  inject,
+  OnDestroy,
+  AfterViewInit,
+} from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import * as Leaflet from 'leaflet';
@@ -10,7 +18,7 @@ import * as Leaflet from 'leaflet';
   styleUrls: ['./map.component.scss'],
   standalone: true,
 })
-export class MapComponent implements OnInit, OnDestroy {
+export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
   private changeDetector = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
 

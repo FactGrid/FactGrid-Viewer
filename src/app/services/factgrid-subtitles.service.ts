@@ -25,7 +25,6 @@ export class FactgridSubtitlesService {
     re.claims[propertyId].other = this.lang.getTranslation('subtitle_further', lng);
     re.claims[propertyId].sources = this.lang.getTranslation('subtitle_sources', lng);
   }
-  
 
   setSubtitle2(re: any, propertyId: string, number: number, lang?: string): void {
     // to add a subtitle depending on the value of a claim (often P2)
@@ -50,9 +49,18 @@ export class FactgridSubtitlesService {
       re.claims[propertyId].personLabel = this.lang.getTranslation('subtitle_life_and_family', lng);
       re.claims[propertyId].training = this.lang.getTranslation('subtitle_education', lng);
       re.claims[propertyId].trainingLabel = this.lang.getTranslation('subtitle_education', lng);
-      re.claims[propertyId].career = this.lang.getTranslation('subtitle_career_and_activities', lng);
-      re.claims[propertyId].careerLabel = this.lang.getTranslation('subtitle_career_and_activities', lng);
-      re.claims[propertyId].sociability = this.lang.getTranslation('subtitle_sociability_and_culture', lng);
+      re.claims[propertyId].career = this.lang.getTranslation(
+        'subtitle_career_and_activities',
+        lng
+      );
+      re.claims[propertyId].careerLabel = this.lang.getTranslation(
+        'subtitle_career_and_activities',
+        lng
+      );
+      re.claims[propertyId].sociability = this.lang.getTranslation(
+        'subtitle_sociability_and_culture',
+        lng
+      );
       re.claims[propertyId].sociabilityLabel = this.lang.getTranslation(
         'subtitle_sociability_and_culture',
         lng
@@ -93,12 +101,14 @@ export class FactgridSubtitlesService {
     //     re.claims[propertyId].event = undefined; }
     if (valueId == 'Q12' || valueId == 'Q220833' || valueId == 'Q140806' || valueId == 'Q11214') {
       re.claims[propertyId].main =
-        this.lang.getTranslation('organisationTitle', lng) ?? this.lang.getTranslation('subtitle_place', lng);
+        this.lang.getTranslation('organisationTitle', lng) ??
+        this.lang.getTranslation('subtitle_place', lng);
     }
     //  else re.claims[propertyId].org = undefined;
     if (valueId == 'Q20' || valueId == 'Q257227') {
       //publication (localized title set below)
-      re.claims[propertyId].main = this.lang.getTranslation('subtitle_document', lng) ?? 'Print publication';
+      re.claims[propertyId].main =
+        this.lang.getTranslation('subtitle_document', lng) ?? 'Print publication';
     }
     // if (re.claims[propertyId][j].mainsnak.datavalue.value.id !== "Q20") { //publication
     //     re.claims[propertyId].document = undefined; }

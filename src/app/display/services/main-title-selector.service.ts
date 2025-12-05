@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { LOCALITY_TITLE, ORGANISATION_TITLE, MAIN_TYPE_PRIORITY } from '../../config/main-title.config';
+import {
+  LOCALITY_TITLE,
+  ORGANISATION_TITLE,
+  MAIN_TYPE_PRIORITY,
+} from '../../config/main-title.config';
 
 export interface MainCardMeta {
   title?: string | undefined;
@@ -16,10 +20,10 @@ export class MainTitleSelectorService {
    * Rules implemented:
    * - If P2 is missing, return empty result (dispatcher can fall back to P3 behavior)
    * - If claims.P2.main is a string 'life and family' -> no textual title, icon 'person'
-  * - If P2 payload is an array and none of the configured type lists apply, the
-  *   selector will pick the first P2 entry and prefer a label carried in the
-  *   claim payload. This keeps behaviour deterministic without requiring a
-  *   separate preference list.
+   * - If P2 payload is an array and none of the configured type lists apply, the
+   *   selector will pick the first P2 entry and prefer a label carried in the
+   *   claim payload. This keeps behaviour deterministic without requiring a
+   *   separate preference list.
    * - If none of the above match, but `claims.P2.main` is a string, use that string as title.
    */
   decideMainMeta(p2: any, infoList?: any, p3?: any): MainCardMeta {
@@ -30,14 +34,21 @@ export class MainTitleSelectorService {
 
     // If the P2 payload indicates a person (presence flag) or contains Q7, treat
     // this as a 'life and family' person main card: icon-only 'person'.
-    if (p2?.person === true || (Array.isArray(p2) && p2.some((e: any) => e?.mainsnak?.datavalue?.value?.id === 'Q7'))) {
+    if (
+      p2?.person === true ||
+      (Array.isArray(p2) && p2.some((e: any) => e?.mainsnak?.datavalue?.value?.id === 'Q7'))
+    ) {
       return { title: '', icon: 'person' };
     }
 
     // Special-case textual P2.main labels 'life and family' -> person icon as well
     if (typeof mainMarker === 'string') {
       const normalized = mainMarker.toLowerCase();
-      if (normalized.includes('life') || normalized.includes('family') || normalized.includes('life and family')) {
+      if (
+        normalized.includes('life') ||
+        normalized.includes('family') ||
+        normalized.includes('life and family')
+      ) {
         return { title: '', icon: 'person' };
       }
     }
@@ -46,7 +57,12 @@ export class MainTitleSelectorService {
     const extractIds = (arr: any[]): string[] => {
       if (!Array.isArray(arr)) return [];
       return arr
-        .map((entry: any) => entry?.mainsnak?.datavalue?.value?.id || entry?.id || (typeof entry === 'string' ? entry : undefined))
+        .map(
+          (entry: any) =>
+            entry?.mainsnak?.datavalue?.value?.id ||
+            entry?.id ||
+            (typeof entry === 'string' ? entry : undefined)
+        )
         .filter((id: any) => !!id);
     };
 
@@ -68,7 +84,9 @@ export class MainTitleSelectorService {
     // be the class (P3) label rather than a generic P2 type name.
     if (p3) {
       const first = Array.isArray(p3) ? p3[0] : p3;
-      const labelFromP3 = first?.mainsnak?.label || (typeof first === 'string' ? first : first?.id || first?.mainsnak?.datavalue?.value?.id);
+      const labelFromP3 =
+        first?.mainsnak?.label ||
+        (typeof first === 'string' ? first : first?.id || first?.mainsnak?.datavalue?.value?.id);
       if (labelFromP3) return { title: labelFromP3 };
       // if p3 exists but we could not extract a string, continue to fallback
     }
@@ -103,7 +121,9 @@ export class MainTitleSelectorService {
           for (const pref of LOCALITY_TITLE) {
             if (matches.includes(pref.id)) {
               // Prefer payload label if present
-              const entry = Array.isArray(p2) ? p2.find((e: any) => e?.mainsnak?.datavalue?.value?.id === pref.id) : undefined;
+              const entry = Array.isArray(p2)
+                ? p2.find((e: any) => e?.mainsnak?.datavalue?.value?.id === pref.id)
+                : undefined;
               const labelFromPayload = entry?.mainsnak?.label;
               return { title: labelFromPayload || pref.comment };
             }
@@ -116,7 +136,9 @@ export class MainTitleSelectorService {
         if (matches.length > 0) {
           for (const pref of ORGANISATION_TITLE) {
             if (matches.includes(pref.id)) {
-              const entry = Array.isArray(p2) ? p2.find((e: any) => e?.mainsnak?.datavalue?.value?.id === pref.id) : undefined;
+              const entry = Array.isArray(p2)
+                ? p2.find((e: any) => e?.mainsnak?.datavalue?.value?.id === pref.id)
+                : undefined;
               const labelFromPayload = entry?.mainsnak?.label;
               return { title: labelFromPayload || pref.comment };
             }

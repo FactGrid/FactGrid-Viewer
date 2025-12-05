@@ -34,6 +34,8 @@ Conseils pratiques pour la résolution de bugs et PRs
 - Pour erreurs de build runtime liées à RxJS/Observable: vérifier si `async` pipe peut remplacer `subscribe`/`unsubscribe` et si OnPush / ChangeDetection est impliqué.
 - Pour régressions UI : préférer reproduire localement `ng serve`, puis écrire test(s) unitaires ciblés (TestBed) avant de proposer changements.
 
+- Please consult the Angular Material & CDK documentation (Sidenav, Overlay, Theming, Accessibility) before changing or implementing Material components.
+
 Exemples de prompts à utiliser avec l'agent
 - "Fais un patch minimal pour corriger l'erreur X dans `src/app/display/display.component.ts` (donne le diff et un test Jasmine correspondant)."
 - "Génère 2 tests unitaires pour `advanced-search.component` qui couvrent sélection d'un item et comportement en cas d'absence de résultats."

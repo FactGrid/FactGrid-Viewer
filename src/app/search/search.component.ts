@@ -262,6 +262,11 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    try {
+      document.body.classList.remove('no-overlay-scroll');
+    } catch (e) {
+      // ignore in test environments without document
+    }
     this.subscriptions.forEach((sub) => sub.unsubscribe());
     this.items = [];
     this.items$.next([]);
@@ -548,6 +553,37 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
 
       // overlayOpen state computed
     );
+
+    // On mobile: when overlay is open, prevent body scrolling so the modal-like
+    // overlay doesn't let the background content scroll. This is safe because
+    // we only toggle a small utility class and remove it on destroy.
+    const overlayScrollSub = this.overlayOpen$.subscribe((open) => {
+      // overlayOpen$ debug removed — keep behaviour but do not log to console in production
+      try {
+        if (typeof window !== 'undefined') {
+          // Toggle body scroll-lock on small screens only; but always attempt to log
+          if (window.innerWidth <= 700) {
+            document.body.classList.toggle('no-overlay-scroll', !!open);
+          }
+          // debug: log overlay element and its computed styles so we can inspect in browser devtools
+          try {
+            if (open) {
+              const pane = document.querySelector('.cdk-overlay-pane.search-items_panel') as HTMLElement | null;
+              if (pane) {
+                const rect = pane.getBoundingClientRect();
+              } else {
+                // debug removed
+              }
+            }
+          } catch (err) {
+            // ignore any DOM errors while debugging
+          }
+        }
+      } catch (e) {
+        /* noop in test env where document may not exist */
+      }
+    });
+    this.subscriptions.push(overlayScrollSub);
   }
 
   // hintValue/pages removed for compact-only mode

@@ -35,7 +35,14 @@
 
 /* Supprimer l'espace entre le lien et le séparateur */
 .linkedItemText + .generic-description-layout,
-.linkedItemText + .generic-description-layout:before {
+.linkedItemText + .generic-description-layout:before,
+/* If we insert a separator span between the label and description we must also
+   remove any left margin on the description so the comma appears glued to the
+   label (no visual double spacing). */
+.separator + .generic-description-layout,
+.separator + .generic-description-layout:before,
+.separator + .typo-item-desc,
+.separator + .description-text {
   margin-left: 0 !important;
 }
 .qualifierProperty + span,
@@ -221,7 +228,8 @@
      Keep layout/interaction bits local and unchanged. */
   @include typo.typo-property-label();
   font-weight: 600;
-  color: var(--color-primary, #3f51b5) !important;
+  /* prefer centralised token so property labels follow _typography.scss */
+  color: var(--typo-property-label-color, #000) !important;
   font-size: 0.95rem;
   display: block; /* property on its own line */
   margin: 0 0 6px 0; /* small gap below the property */

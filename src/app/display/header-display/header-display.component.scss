@@ -1,3 +1,5 @@
+@use "../../../styles/_typography" as typo;
+
 /* Barre bleue décorative au-dessus du header */
 .header-info-bar {
   position: absolute;
@@ -129,16 +131,16 @@
   transform: translateX(2px);
 }
 
-.value-info-box span,
-.value-info-box .displayLayout,
-.value-info-box .calendarStyle,
-.value-info-box .description-text {
-  background: transparent;
-  color: #1f2d40;
-  margin-right: 6px;
-  padding: 0 2px;
-  font-size: 0.95rem;
-}
+  .value-info-box span,
+  .value-info-box .displayLayout,
+  .value-info-box .calendarStyle,
+  .value-info-box .header-description-layout {
+    /* layout only: spacing and padding for inline values inside the value box
+       typography comes from .typo-item-desc */
+    background: transparent;
+    margin-right: 6px;
+    padding: 0 2px;
+  }
 
 /* Keep label and its punctuation together */
 .label-no-break {
@@ -172,15 +174,14 @@
 .header-info-box .propertyStyle {
   background: transparent;
   padding: 0 2px 0 0;
-  color: var(--color-primary, #3f51b5) !important;
-  font-weight: 600;
-  font-size: 0.93rem;
+  /* centralised typography token */
+  @include typo.typo-property-label();
 }
 
-.header-info-box .qualifierStyle {
+  .header-info-box .qualifierStyle {
   margin-bottom: 0 !important;
   padding-bottom: 0;
-  font-size: 0.875rem;
+  font-size: var(--typo-qualifier-desc-size);
   color: #5f6c7f;
 }
 

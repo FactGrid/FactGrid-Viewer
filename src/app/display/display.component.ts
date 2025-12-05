@@ -447,16 +447,41 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private itemInfoRefs: Array<NgComponentRef<any> | null> = [null, null];
 
   private loadBackList() {
+    // getBackList returns a pair of responses: [userLangResult, englishResult]
     this.subscription1 = this.backList
       .backList(this.itemId)
       .pipe(
-        map((res) => {
-          if (res[0].query !== undefined) {
+        map((res: any[]) => {
+          // Primary list for the user's language
+          if (res[0] && res[0].query !== undefined) {
             this.linkedItems = this.backListDetails.setBackList(res[0].query.pages);
           } else {
             this.linkedItems = [
               { id: 'Q21898', label: this.lang.getTranslation('$1', this.lang.selectedLang) },
             ];
+          }
+
+          // Secondary list (English) used as a fallback
+          let linkedItemsEn: any[] | null = null;
+          if (res[1] && res[1].query !== undefined) {
+            linkedItemsEn = this.backListDetails.setBackList(res[1].query.pages);
+          }
+
+          // Normalize labels: prefer label in user's lang, then English, finally the id
+          for (let i = 0; i < this.linkedItems.length; i++) {
+            const item = this.linkedItems[i];
+            let label = item?.label;
+
+            // treat empty string / null / undefined as missing
+            if (!label || (typeof label === 'string' && label.trim() === '')) {
+              if (linkedItemsEn && linkedItemsEn[i] && linkedItemsEn[i].label) {
+                label = linkedItemsEn[i].label;
+              } else {
+                label = item?.id;
+              }
+            }
+
+            this.linkedItems[i].label = label;
           }
         })
       )

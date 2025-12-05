@@ -8,7 +8,7 @@
         <ul>
           @for (prop of infoProperties; track prop.property) {
             <li>
-              <span class="propertyStyle">{{ prop.comment }} :</span>
+              <span class="propertyStyle typo-property-label">{{ prop.comment }} :</span>
               <span>{{ prop.value }}</span>
             </li>
           }
@@ -27,7 +27,7 @@
           <ul>
             @for (tech of infoList.technicalities; track trackTechPropKey(index, tech)) {
               <li>
-                <span class="propertyStyle">{{
+                <span class="propertyStyle typo-property-label">{{
                   tech.propertyLabel || tech.propertyId || '?'
                 }}</span>
                 <ul>
@@ -43,7 +43,7 @@
                             val.mainsnak?.datavalue?.value
                         }}
                         @if (val.mainsnak?.description) {
-                          <span class="description-text">({{ val.mainsnak.description }})</span>
+                          <span class="typo-item-desc iteminfo-description-layout">({{ val.mainsnak.description }})</span>
                         }
                       } @else {
                         {{ val.mainsnak?.datavalue?.value }}
@@ -60,7 +60,7 @@
       @if (infoList?.natureOfList?.length > 0) {
         <div class="info-section">
           <div class="section-header">
-            <span class="propertyStyle">{{ natureOfListTitle }}</span>
+            <span class="propertyStyle typo-property-label">{{ natureOfListTitle }}</span>
             <span class="count">({{ infoList.natureOfList.length }} {{ suffix1 }})</span>
           </div>
           <hr class="spacer-hr" />
@@ -76,8 +76,8 @@
               >
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                  @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    @if (L.itemDescription?.value) {
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                   <mat-icon-button
                     class="internalLink"
@@ -92,8 +92,8 @@
                       L.mainsnak?.datavalue?.value?.id ||
                       L.mainsnak?.datavalue?.value
                   }}
-                  @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    @if (L.mainsnak?.description) {
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -105,8 +105,8 @@
               <div class="entry-row">
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                  @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    @if (L.itemDescription?.value) {
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                   <mat-icon-button
                     class="internalLink"
@@ -121,8 +121,8 @@
                       L.mainsnak?.datavalue?.value?.id ||
                       L.mainsnak?.datavalue?.value
                   }}
-                  @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    @if (L.mainsnak?.description) {
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -136,7 +136,7 @@
       @if (infoList?.classesList?.length > 0) {
         <div class="info-section">
           <div class="section-header">
-            <span class="propertyStyle">{{ classesListTitle }}</span>
+            <span class="propertyStyle typo-property-label">{{ classesListTitle }}</span>
             <span class="count">({{ prefix1 }} {{ infoList.classesList.length }})</span>
           </div>
           <hr class="spacer-hr" />
@@ -152,8 +152,8 @@
               >
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                  @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    @if (L.itemDescription?.value) {
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -162,7 +162,7 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -175,7 +175,7 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -184,7 +184,7 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -198,7 +198,7 @@
       @if (infoList?.subclassesList?.length > 0) {
         <div class="info-section">
           <div class="section-header">
-            <span class="propertyStyle">{{ subclassesListTitle }}</span>
+            <span class="propertyStyle typo-property-label">{{ subclassesListTitle }}</span>
             <span class="count">({{ prefix2 }} {{ infoList.subclassesList.length }})</span>
           </div>
           <hr class="spacer-hr" />
@@ -215,7 +215,7 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -224,7 +224,7 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -237,7 +237,7 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -246,7 +246,7 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -260,7 +260,7 @@
       @if (infoList?.instancesList?.length > 0) {
         <div class="info-section">
           <div class="section-header">
-            <span class="propertyStyle">{{ instancesListTitle }}</span>
+            <span class="propertyStyle typo-property-label">{{ instancesListTitle }}</span>
             <span class="count">({{ infoList.instancesList.length }})</span>
           </div>
           <hr class="spacer-hr" />
@@ -277,7 +277,7 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                   <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"
                     ><mat-icon color="primary" [inline]="true"
@@ -291,7 +291,7 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -304,7 +304,7 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="description-text">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
                   }
                   <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"
                     ><mat-icon color="primary" [inline]="true"
@@ -318,7 +318,7 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="description-text">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}

@@ -9,7 +9,9 @@ describe('SparqlDisplayComponent', () => {
   let fixture: ComponentFixture<SparqlDisplayComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [SparqlDisplayComponent, NoopAnimationsModule, RouterTestingModule] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [SparqlDisplayComponent, NoopAnimationsModule, RouterTestingModule],
+    }).compileComponents();
     fixture = TestBed.createComponent(SparqlDisplayComponent);
     component = fixture.componentInstance;
   });
@@ -28,7 +30,10 @@ describe('SparqlDisplayComponent', () => {
   });
 
   it('renders translated empty state when langService provided', () => {
-    const mockLangService: any = { selectedLang: 'fr', getTranslation: (k: string, l?: string) => (k === 'no_results' ? 'Aucun résultat' : '') };
+    const mockLangService: any = {
+      selectedLang: 'fr',
+      getTranslation: (k: string, l?: string) => (k === 'no_results' ? 'Aucun résultat' : ''),
+    };
     component.langService = mockLangService;
     component.sparqlData = [];
     component.ngOnChanges({} as any);
@@ -88,8 +93,8 @@ describe('SparqlDisplayComponent', () => {
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;
-    const label = el.querySelector('.sparql-label');
-    const description = el.querySelector('.sparql-description');
+    const label = el.querySelector('.typo-item-label');
+    const description = el.querySelector('.typo-item-desc');
     const year = el.querySelector('.sparql-year');
 
     expect(label?.textContent?.trim()).toBe('Label line');

@@ -10,7 +10,7 @@
             <mat-icon class="title-icon">{{ icon }}</mat-icon>
           }
           @if (title) {
-            <span class="title-text">{{ title }}</span>
+            <span class="title-text typo-thematic-card-title">{{ title }}</span>
           }
         </div>
       }
@@ -19,9 +19,17 @@
     <!-- Always show header actions (collapse button / projected actions) -->
     <div class="header-actions">
       @if (collapsible) {
-        <button mat-button (click)="toggle()" class="collapse-btn" [attr.aria-expanded]="!isCollapsed">
+        <button
+          mat-button
+          (click)="toggle()"
+          class="collapse-btn"
+          [attr.aria-expanded]="!isCollapsed"
+          [attr.aria-label]="isCollapsed ? 'Afficher' : 'Masquer'"
+          [matTooltip]="isCollapsed ? 'Afficher' : 'Masquer'"
+          matTooltipPosition="above"
+        >
           <mat-icon>{{ isCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
-          <span>{{ isCollapsed ? 'Afficher' : 'Masquer' }}</span>
+          <span class="collapse-text">{{ isCollapsed ? 'Afficher' : 'Masquer' }}</span>
         </button>
       }
       <ng-content select="[card-actions]"></ng-content>

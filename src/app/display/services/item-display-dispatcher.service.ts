@@ -60,8 +60,10 @@ export class ItemDisplayDispatcherService {
     // detect Q7 anywhere in P2 entries (some items may use multiple P2 entries)
     // be permissive: P2 can have various shapes, so string-search the value as a fallback
     // prefer explicit enrichment flags; fallback to scanning raw payload if needed
-    const p2IsQ7 = claims.P2?.person === true ||
-      (Array.isArray(claims.P2) && claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7')) ||
+    const p2IsQ7 =
+      claims.P2?.person === true ||
+      (Array.isArray(claims.P2) &&
+        claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7')) ||
       (claims.P2 && JSON.stringify(claims.P2).includes('"Q7"'));
 
     if (claims.P2?.person !== undefined || p2IsQ7) {
@@ -110,7 +112,7 @@ export class ItemDisplayDispatcherService {
 
     // MainList
     this.buildMainList(item, target, isPerson);
-      // (previous experimenting code removed)
+    // (previous experimenting code removed)
     isMain = target.mainList.length > 0;
     // Decide main card title/icon using the dedicated selector service.
     // Pass item infoList (classes, subclasses, instances) to the selector so
@@ -177,7 +179,7 @@ export class ItemDisplayDispatcherService {
       subclassesList: target.subclassesList,
       classesList: target.classesList,
       natureOfList: target.natureOfList,
-   //   technicalities: technicalities,
+      //   technicalities: technicalities,
     };
 
     // Flag unique pour l'affichage
@@ -248,7 +250,11 @@ export class ItemDisplayDispatcherService {
     return target.locationAndSituation.length > 0;
   }
 
-  private processPerson(item: any, target: any, claims: any): { isPerson: boolean; isCareer: boolean; isSociability: boolean; isTraining: boolean } {
+  private processPerson(
+    item: any,
+    target: any,
+    claims: any
+  ): { isPerson: boolean; isCareer: boolean; isSociability: boolean; isTraining: boolean } {
     const result = { isPerson: false, isCareer: false, isSociability: false, isTraining: false };
     result.isPerson = true;
     this.blockDisplay.setPersonDisplay(item, target.lifeAndFamily);
@@ -269,13 +275,15 @@ export class ItemDisplayDispatcherService {
     target.sociabilityAndCulture = [];
     this.blockDisplay.setSociabilityDisplay(item, target.sociabilityAndCulture);
     result.isSociability = target.sociabilityAndCulture.length > 0;
-    if (result.isSociability && claims.P2?.sociability !== undefined) target.sociability = claims.P2.sociability;
+    if (result.isSociability && claims.P2?.sociability !== undefined)
+      target.sociability = claims.P2.sociability;
 
     // Education
     target.education = [];
     this.blockDisplay.setEducationDisplay(item, target.education);
     result.isTraining = target.education.length > 0;
-    if (result.isTraining && claims.P2?.training !== undefined) target.training = claims.P2.training;
+    if (result.isTraining && claims.P2?.training !== undefined)
+      target.training = claims.P2.training;
 
     return result;
   }
@@ -350,8 +358,8 @@ export class ItemDisplayDispatcherService {
       target.locationAndSituation || [],
       target.activityDetail || [],
       ...(isPerson ? [] : target.eventDetail || []),
-      target.documentDetail || [],
-    //  target.otherClaims || []
+      target.documentDetail || []
+      //  target.otherClaims || []
     );
     // remove duplicate claim arrays that might have been pushed by multiple
     // block-display handlers (e.g. P267 is configured in both ORG and
@@ -370,6 +378,5 @@ export class ItemDisplayDispatcherService {
       // prefer array shape expected by generic list display
       target.mainList.push(claims.P3);
     }
-
   }
 }

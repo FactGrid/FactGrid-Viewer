@@ -22,9 +22,9 @@
       [opened]="drawerOpened"
       position="start"
       class="app-drawer"
+      style="background: #ffffff;"
     >
       <mat-toolbar class="side-toolbar">
-        <span class="toolbar-text">{{ linkedPagesTitle }}</span>
         <span class="example-spacer"></span>
         <!-- Use project-standard icon + label (translated main page) next to the toolbar title -->
         <button
@@ -34,19 +34,21 @@
           [attr.aria-label]="mainPage"
           [matTooltip]="mainPage"
         >
-          <mat-icon>home</mat-icon>
           <span class="close-label">{{ mainPage }}</span>
+          <mat-icon class="direction-icon" aria-hidden="true">chevron_right</mat-icon>
         </button>
       </mat-toolbar>
 
       <div class="info-card-content">
+        <!-- Drawer heading for linked pages (display the title at the top of the list) -->
+        <div class="drawer-heading" role="heading" aria-level="2">{{ linkedPagesTitle }}</div>
         @for (link of linkedItems; track trackById(link)) {
           <div class="selectedItemRow">
             <a
-              class="selectedItemText"
+              class="selectedItemText typo-item-label"
               [routerLink]="['/item', link.id]"
               (click)="isMobile ? drawer.close() : null"
-            >{{ link.label }}</a>
+            >{{ link.label || link.id }}</a>
           </div>
         }
       </div>
@@ -71,15 +73,18 @@
                 <div class="info-themed-content">
                   <div class="itemTitle-row">
                     <div class="itemTitle">{{ label }}</div>
-                    <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
-                    <a *ngIf="!isMobile"
-                      class="factgrid-link-desktop"
+                        <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
+                        @if (!isMobile) {
+                    <a
+                      class="factgrid-link-desktop typo-item-label"
                       [href]="factGridUrl + id"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       {{ id }}
                     </a>
+                        }
+                  
                   </div>
                   @if (aliases?.length) {
                     <div class="aliases">{{ aliases | join: ', ' }}</div>
@@ -96,21 +101,23 @@
                       aria-label="Ouvrir le panneau des pages liées"
                       matTooltip="Pages liées"
                     >
-                      <mat-icon aria-hidden="true">link</mat-icon>
+                      <mat-icon aria-hidden="true">chevron_left</mat-icon>
                       <span class="linked-pages-label">{{ linkedPagesTitle }}</span>
-                    </button>
-
-                    <!-- Mobile-only FactGrid link (bottom, aligned to the right) render only on mobile -->
-                    <a *ngIf="isMobile"
-                      class="selectedItemLink factgrid-link-mobile"
-                      [href]="factGridUrl + id"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {{ id }}
-                    </a>
+                      </button>
+                      <!-- Mobile-only FactGrid link (aligned to the right of pages liées) -->
+                      @if (isMobile) {
+                      <a
+                        class="selectedItemLink factgrid-link-mobile typo-item-label"
+                        [href]="factGridUrl + id"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {{ id }}
+                      </a>
+                      }
                   </div>
                 </div>
+  
               </app-thematic-card>
 
               <!-- Map child route: render only when coordinates are available -->
@@ -279,15 +286,6 @@
           }
         </div>
 
-        <!--  ************************************* sparql3 ****************************************
-        <div class="matCardPadding" [ngClass]="isSparql0 ? 'show-division':'hide-division'">
-          <mat-card appearance="outlined" class=mat-elevation-z12>
-            <app-sparql3-display [item]="this.item"></app-sparql3-display>
-          </mat-card>
-        </div>-->
-
-        
-
         <!-- ******************************* Info ****************************************  -->
         <div class="matCardPadding" style="display: none">
           <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
@@ -345,7 +343,10 @@
               </div>
               @for (externalLink of externalLinks; track trackById(externalLink)) {
                 <div class="externalLinksText">
-                  <span>{{ externalLink.label }}: </span><a [href]="externalLink.url" target="_blank">{{ externalLink[0].mainsnak.datavalue.value }}</a><span>&nbsp;&nbsp;</span>
+                  <div class="externalLinksLabel">{{ externalLink.label }}:</div>
+                  <div class="externalLinksValue">
+                    <a class="typo-item-label" [href]="externalLink.url" target="_blank">{{ externalLink[0].mainsnak.datavalue.value }}</a>
+                  </div>
                 </div>
               }
             </app-thematic-card>
@@ -358,7 +359,10 @@
               </div>
               @for (wiki of wikis; track trackById(wiki)) {
                 <div class="externalLinksText">
-                  <span>{{ wiki.site }}: </span><a [href]="wiki.url" target="_blank">{{ wiki.title }}</a><span>&nbsp;&nbsp;</span>
+                  <div class="externalLinksLabel">{{ wiki.site }}:</div>
+                  <div class="externalLinksValue">
+                    <a class="typo-item-label" [href]="wiki.url" target="_blank">{{ wiki.title }}</a>
+                  </div>
                 </div>
               }
             </app-thematic-card>
@@ -373,7 +377,7 @@
               @for (selectedItem of selectedItemsList; track trackById(selectedItem)) {
                 @if (selectedItem) {
                   <div class="selectedItemRow">
-                    <a class="selectedItemLink" [routerLink]="['/item', selectedItem?.value?.id]" (click)="$event.stopPropagation()">{{ selectedItem.label }}</a>
+                    <a class="selectedItemLink typo-item-label" [routerLink]="['/item', selectedItem?.value?.id]" (click)="$event.stopPropagation()">{{ selectedItem.label }}</a>
                   </div>
                 }
               }

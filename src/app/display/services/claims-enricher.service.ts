@@ -69,7 +69,11 @@ export class ClaimsEnricherService {
     // P3 ancestry) implies an organisation class; that signal is exposed
     // as item.sparqlFlags.Q12Test by ItemSparqlService.
     const orgIds = ['Q12', 'Q220833', 'Q140806', 'Q11214'];
-    const sparqlIndicatesOrg = !!(item[0] && (item[0] as any).sparqlFlags && (item[0] as any).sparqlFlags.Q12Test === true);
+    const sparqlIndicatesOrg = !!(
+      item[0] &&
+      (item[0] as any).sparqlFlags &&
+      (item[0] as any).sparqlFlags.Q12Test === true
+    );
     if (orgIds.some((id) => p2HasId(id)) || sparqlIndicatesOrg) {
       claims.P2.org = claims.P2.org ?? true;
     }
@@ -101,19 +105,39 @@ export class ClaimsEnricherService {
     const placeIds = ['Q8', 'Q11174', 'Q21925', 'Q164344'];
     // Avoid depending on config import shape at runtime for tests — enumerate
     // the typical place-related property ids here.
-    const placePropNames = ['P48', 'P58', 'P297', 'P466', 'P538', 'P34', 'P461', 'P140', 'P139', 'P267', 'P625'];
+    const placePropNames = [
+      'P48',
+      'P58',
+      'P297',
+      'P466',
+      'P538',
+      'P34',
+      'P461',
+      'P140',
+      'P139',
+      'P267',
+      'P625',
+    ];
     const hasPlaceProps = placePropNames.some((pr) => claims[pr] !== undefined);
     // SPARQL may detect place ancestry via Q8Test — check it as an additional
     // signal when deciding whether the item should be considered a place.
-    const sparqlIndicatesPlace = !!(item[0] && (item[0] as any).sparqlFlags && (item[0] as any).sparqlFlags.Q8Test === true);
+    const sparqlIndicatesPlace = !!(
+      item[0] &&
+      (item[0] as any).sparqlFlags &&
+      (item[0] as any).sparqlFlags.Q8Test === true
+    );
     // Prefer explicit P2-derived signals (e.g. P2.org) over top-level place
     // props. Items like organisations may legitimately carry coordinates — in
     // such cases we prefer the P2 classification (organisation) unless P2
     // actually claims the item is a place. Therefore only set P2.place when
     // either the P2 value is a known place id OR there are top-level place
     // props *and* P2 does not identify the item as an organisation.
-    const p2IndicatesOrg = claims.P2?.org === true || ['Q12', 'Q220833', 'Q140806', 'Q11214'].some((id) => p2HasId(id));
-    if (placeIds.some((id) => p2HasId(id)) || ((hasPlaceProps || sparqlIndicatesPlace) && !p2IndicatesOrg)) {
+    const p2IndicatesOrg =
+      claims.P2?.org === true || ['Q12', 'Q220833', 'Q140806', 'Q11214'].some((id) => p2HasId(id));
+    if (
+      placeIds.some((id) => p2HasId(id)) ||
+      ((hasPlaceProps || sparqlIndicatesPlace) && !p2IndicatesOrg)
+    ) {
       claims.P2 = claims.P2 || {};
       claims.P2.place = claims.P2.place ?? true;
     }

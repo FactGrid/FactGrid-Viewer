@@ -1,3 +1,5 @@
+@use "../../../styles/_typography" as typo;
+
 /* Pour que le fond bleu du toggle occupe toute la largeur de la carte info */
 .no-card-padding {
   margin-left: calc(-24px - 2px); /* retire aussi la marge de la carte */
@@ -5,7 +7,6 @@
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
-
 .card-content-padded {
   padding-left: 24px;
   padding-right: 24px;
@@ -78,9 +79,8 @@
   border-bottom: 1px dashed #e2e6ea;
 }
 
-.description-text {
-  color: #546e7a;
-  font-size: 12px;
+.iteminfo-description-layout {
+  /* layout-only margin for compact descriptions shown in item-info lists */
   margin-left: 4px;
 }
 
@@ -146,8 +146,10 @@
 }
 
 .propertyStyle {
-  font-weight: 500;
-  color: #37474f;
+  /* Use central typographic tokens — keep layout-level rules local */
+  @include typo.typo-property-label();
+  /* use central token for the label color so theme changes show up */
+  color: var(--typo-property-label-color, #000);
 }
 
 .technicalities-title {

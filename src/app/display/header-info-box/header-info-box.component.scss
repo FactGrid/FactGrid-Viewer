@@ -20,7 +20,9 @@
 }
 
 /* Ensure inner generic-list content uses normal wrapping inside this card */
-.header-info-box-card .linkedItemText {
+.header-info-box-card .linkedItemText,
+.header-info-box-card .typo-item-label,
+.header-info-box-card .typo-item-desc {
   white-space: normal !important;
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
@@ -29,8 +31,9 @@
 /* Override child component styles (pierce view encapsulation) to ensure
    wrapping even when the child CSS enforces `white-space: nowrap`. */
 :host ::ng-deep .header-info-box-card .linkedItemText,
+:host ::ng-deep .header-info-box-card .typo-item-label,
 :host ::ng-deep .header-info-box-card .displayLayout,
-:host ::ng-deep .header-info-box-card .description-text,
+:host ::ng-deep .header-info-box-card .header-description-layout,
 :host ::ng-deep .header-info-box-card .inlineStyle,
 :host ::ng-deep .header-info-box-card a,
 :host ::ng-deep .header-info-box-card .factgrid-link {
@@ -41,7 +44,8 @@
   max-width: 100% !important;
 }
 
-:host ::ng-deep .header-info-box-card .linkedItemText {
+:host ::ng-deep .header-info-box-card .linkedItemText,
+:host ::ng-deep .header-info-box-card .typo-item-label {
   display: inline !important;
 }
 

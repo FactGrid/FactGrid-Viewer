@@ -20,7 +20,10 @@ describe('ItemDisplayDispatcherService', () => {
     const claimsEnricher = TestBed.inject(ClaimsEnricherService);
     spyOn(claimsEnricher, 'enrich').and.callThrough();
 
-    const item: any = [{ claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q7' } } } }] } }, ['P2']];
+    const item: any = [
+      { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q7' } } } }] } },
+      ['P2'],
+    ];
     const target: any = {};
 
     service.dispatch(item, target);
@@ -108,7 +111,9 @@ describe('ItemDisplayDispatcherService', () => {
     // Org display should be populated, place display should be empty
     expect(Array.isArray(target.locationAndContext)).toBeTrue();
     expect(target.locationAndContext.length).toBeGreaterThan(0);
-    expect(target.locationAndSituation === undefined || target.locationAndSituation.length === 0).toBeTrue();
+    expect(
+      target.locationAndSituation === undefined || target.locationAndSituation.length === 0
+    ).toBeTrue();
   });
 
   it('dispatch should populate excludedProperties and remove them from the index list', () => {
@@ -203,7 +208,9 @@ describe('ItemDisplayDispatcherService', () => {
 
     // mainList is built from locationAndContext + activityDetail etc.
     // Ensure the same claim array (item[0].claims.P267) appears only once
-    const occurrences = (target.mainList || []).filter((g: any) => g === item[0].claims.P267).length;
+    const occurrences = (target.mainList || []).filter(
+      (g: any) => g === item[0].claims.P267
+    ).length;
     expect(occurrences).toBe(1);
   });
 
@@ -246,7 +253,9 @@ describe('ItemDisplayDispatcherService', () => {
     // mainList should contain the event data; handle either nested-array or flattened shape
     expect(
       target.mainList.length > 0 ||
-        target.mainList.some((g: any) => (Array.isArray(g) && g[0] && g[0].event === 'e') || (g && g.event === 'e'))
+        target.mainList.some(
+          (g: any) => (Array.isArray(g) && g[0] && g[0].event === 'e') || (g && g.event === 'e')
+        )
     ).toBeTrue();
   });
 
@@ -322,7 +331,11 @@ describe('ItemDisplayDispatcherService', () => {
 
   it('dispatch should use P2[0].mainsnak.label as mainTitle when P2 is Q890181', () => {
     const item: any = [
-      { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q890181' } }, label: 'PlaceTypeX' } }] } },
+      {
+        claims: {
+          P2: [{ mainsnak: { datavalue: { value: { id: 'Q890181' } }, label: 'PlaceTypeX' } }],
+        },
+      },
       ['P2'],
     ];
 

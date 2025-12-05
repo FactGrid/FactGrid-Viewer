@@ -106,7 +106,9 @@ export class SparqlDisplayService {
     if (!data) return [];
     // preserve last occurrence for duplicates (reverse behaviour) and calculate how many were removed
     const reversed = data.reverse();
-    const mapEntries: [string, any][] = reversed.map((v) => [JSON.stringify([v.itemText]), v] as [string, any]);
+    const mapEntries: [string, any][] = reversed.map(
+      (v) => [JSON.stringify([v.itemText]), v] as [string, any]
+    );
     const unique = [...new Map<string, any>(mapEntries).values()].reverse();
     return unique;
   }

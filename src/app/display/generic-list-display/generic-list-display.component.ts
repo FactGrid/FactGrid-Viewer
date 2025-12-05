@@ -1,5 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { UnitPipe } from '../../unit.pipe';
+import { ProtectShortWordsPipe } from './protect-short-words.pipe';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +13,15 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./generic-list-display.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, UnitPipe, MatIconModule, MatButtonModule, MatTooltipModule, RouterModule],
+  imports: [
+    CommonModule,
+    UnitPipe,
+    ProtectShortWordsPipe,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    RouterModule,
+  ],
 })
 export class GenericListDisplayComponent {
   @Input() title: string;

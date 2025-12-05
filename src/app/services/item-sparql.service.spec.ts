@@ -23,8 +23,16 @@ describe('ItemSparqlService', () => {
       head: { vars: ['item', 'itemLabel', 'itemDescription', 'fLabel'] },
       results: {
         bindings: [
-          { item: { value: 'https://database.factgrid.de/entity/Q1' }, itemLabel: { value: 'Alpha' }, fLabel: { value: 'Z' } },
-          { item: { value: 'https://database.factgrid.de/entity/Q2' }, itemLabel: { value: 'Beta' }, fLabel: { value: 'A' } },
+          {
+            item: { value: 'https://database.factgrid.de/entity/Q1' },
+            itemLabel: { value: 'Alpha' },
+            fLabel: { value: 'Z' },
+          },
+          {
+            item: { value: 'https://database.factgrid.de/entity/Q2' },
+            itemLabel: { value: 'Beta' },
+            fLabel: { value: 'A' },
+          },
         ],
       },
     };
@@ -41,21 +49,48 @@ describe('ItemSparqlService', () => {
       getList: (url: string) => {
         // detect the batchAskQuery call (contains BIND/EXISTS) and return ASK-like response
         if (url?.includes('BIND(EXISTS') || url?.includes('isList')) {
-          return of({ results: { bindings: [
-            {
-              isLocality: { value: 'false' }, isOrganisation: { value: 'false' }, isCareer: { value: 'false' },
-              isFamilyName: { value: 'false' }, isAddress: { value: 'false' }, isFactGridClass: { value: 'false' },
-              isList: { value: 'true' }, isSet: { value: 'false' }, isSuperclass: { value: 'false' }, isSuperclass1: { value: 'false' }, isGOV: { value: 'false' }
-            }
-          ] } });
+          return of({
+            results: {
+              bindings: [
+                {
+                  isLocality: { value: 'false' },
+                  isOrganisation: { value: 'false' },
+                  isCareer: { value: 'false' },
+                  isFamilyName: { value: 'false' },
+                  isAddress: { value: 'false' },
+                  isFactGridClass: { value: 'false' },
+                  isList: { value: 'true' },
+                  isSet: { value: 'false' },
+                  isSuperclass: { value: 'false' },
+                  isSuperclass1: { value: 'false' },
+                  isGOV: { value: 'false' },
+                },
+              ],
+            },
+          });
         }
 
         // Otherwise return a SELECT result with 3 members
-        return of({ results: { bindings: [
-          { item: { value: 'https://database.factgrid.de/entity/Q100' }, itemLabel: { value: 'Member Z' } },
-          { item: { value: 'https://database.factgrid.de/entity/Q101' }, itemLabel: { value: 'Member A' }, fLabel: { value: 'A' } },
-          { item: { value: 'https://database.factgrid.de/entity/Q102' }, itemLabel: { value: 'Member B' }, fLabel: { value: 'B' } },
-        ] } });
+        return of({
+          results: {
+            bindings: [
+              {
+                item: { value: 'https://database.factgrid.de/entity/Q100' },
+                itemLabel: { value: 'Member Z' },
+              },
+              {
+                item: { value: 'https://database.factgrid.de/entity/Q101' },
+                itemLabel: { value: 'Member A' },
+                fLabel: { value: 'A' },
+              },
+              {
+                item: { value: 'https://database.factgrid.de/entity/Q102' },
+                itemLabel: { value: 'Member B' },
+                fLabel: { value: 'B' },
+              },
+            ],
+          },
+        });
       },
       getAsk: (url: string) => of(false),
       getItem: (u: string) => of({}),
@@ -71,9 +106,14 @@ describe('ItemSparqlService', () => {
     // spy on console.debug to collect debug messages
     const logs: any[] = [];
     const orig = console.debug;
-    console.debug = (...args: any[]) => { logs.push(args); };
+    console.debug = (...args: any[]) => {
+      logs.push(args);
+    };
 
-    const mockItem = { id: 'Q38612', claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q172192' } } } }], P165: [] } };
+    const mockItem = {
+      id: 'Q38612',
+      claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q172192' } } } }], P165: [] },
+    };
 
     svc.itemSparql(mockItem).subscribe((itemOut) => {
       expect(itemOut.id).toBe('Q38612');

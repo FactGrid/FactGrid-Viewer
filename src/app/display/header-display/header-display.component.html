@@ -3,7 +3,7 @@
     @if (id && factGridUrl) {
       <div class="factgrid-id">
         <div class="factgrid-id-inner">
-          <span class="propertyStyle">FactGrid:</span>
+          <span class="propertyStyle typo-property-label">FactGrid:</span>
           <a [href]="factGridUrl + id" target="_blank" rel="noopener" class="factgrid-link">{{ id }}</a>
         </div>
       </div>
@@ -11,7 +11,7 @@
     @for (P of headerDetailOptimized; track P.id) {
       <div class="listStyle">
         <span
-          class="propertyStyle hover-bg-light"
+          class="propertyStyle typo-property-label hover-bg-light"
           matTooltip="[{{ P.id }}] {{ P.description || '' }}"
           matTooltipPosition="right"
         >
@@ -25,10 +25,10 @@
             @if (M.mainsnak.datatype === 'time') {
               <span>{{ M.mainsnak.datavalue.value.date }}</span>
               @if (M.mainsnak.datavalue.value.calendarmodel === 'http://www.wikidata.org/entity/Q1985727') {
-                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q220486']">greg.</a>
+                <a class="calendarStyle linkedItemText typo-link typo-caption" [routerLink]="['/item', 'Q220486']">greg.</a>
               }
               @if (M.mainsnak.datavalue.value.calendarmodel === 'http://www.wikidata.org/entity/Q1985786') {
-                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q505980']">jul.</a>
+                <a class="calendarStyle linkedItemText typo-link typo-caption" [routerLink]="['/item', 'Q505980']">jul.</a>
               }
             }
             @if (M.mainsnak.datatype === 'monolingualtext') {
@@ -64,13 +64,13 @@
             @if (M.mainsnak.datatype === 'wikibase-item') {
               <span class="label-no-break">
                 <a
-                  class="linkedItemText"
+                  class="linkedItemText typo-link typo-item-label"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
                   (click)="$event.stopPropagation()"
                   >{{ M.mainsnak.label }}</a
                 >&#x2060;{{ M.mainsnak.separator }}
               </span>
-              <span class="description-text">{{ M.mainsnak.description }}</span>
+              <span class="typo-item-desc header-description-layout">{{ M.mainsnak.description }}</span>
             }
             @if (M.rank === 'deprecated') {
               <span class="warningDeprecated"> &nbsp;({{ M.rank }})</span>
@@ -82,7 +82,7 @@
                   @for (Q of M.qualifiers2; track Q.id) {
                     <div>
                       <span
-                        class="qualifierProperty hover-bg-light"
+                        class="typo-qualifier-property-label qualifierProperty hover-bg-light"
                         matTooltip="[{{ Q.id }}] {{ Q.description || '' }}"
                         matTooltipPosition="right"
                       >
@@ -94,10 +94,10 @@
                             <span>
                               {{ D.date }}
                               @if (D.calendar === 'http://www.wikidata.org/entity/Q1985727') {
-                                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q220486']">greg.</a>
+                                <a class="calendarStyle linkedItemText typo-link typo-caption" [routerLink]="['/item', 'Q220486']">greg.</a>
                               }
                               @if (D.calendar === 'http://www.wikidata.org/entity/Q1985786') {
-                                <a class="calendarStyle linkedItemText" [routerLink]="['/item', 'Q505980']">jul.</a>
+                                <a class="calendarStyle linkedItemText typo-link typo-caption" [routerLink]="['/item', 'Q505980']">jul.</a>
                               }
                             </span>
                           }
@@ -131,12 +131,12 @@
                           }
                           @if (D.datatype === 'wikibase-item') {
                             <span>
-                              {{ D.label }}
+                              <span class="typo-qualifier-label">{{ D.label }}</span>
                               <mat-icon-button class="internalLink" [routerLink]="['/item', D.id]" (click)="$event.stopPropagation()">
                                 <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                               </mat-icon-button>
                               @if (D.description) {
-                                <span class="label-no-break">&#x2060;{{ D.separator }}</span><span class="description-text">{{ D.description }}</span>
+                                <span class="label-no-break">&#x2060;{{ D.separator }}</span><span class="typo-qualifier-desc header-description-layout">{{ D.description }}</span>
                               }
                             </span>
                           }
@@ -177,7 +177,7 @@
                                 <mat-icon-button class="internalLink" [routerLink]="['/item', P.id]">
                                   <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                                 </mat-icon-button>
-                                &nbsp;&nbsp;&nbsp; <span class="label-no-break">&#x2060;{{ P.separator }}</span><span class="description-text">{{ P.description }}</span>
+                                &nbsp;&nbsp;&nbsp; <span class="label-no-break">&#x2060;{{ P.separator }}</span><span class="typo-item-desc header-description-layout">{{ P.description }}</span>
                               </span>
                               @if (!pIsLast) { <span>,&nbsp;</span> }
                             }

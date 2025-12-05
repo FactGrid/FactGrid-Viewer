@@ -1,14 +1,23 @@
-import { Component, Input, AfterContentInit, ElementRef, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  AfterContentInit,
+  ElementRef,
+  ViewEncapsulation,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-thematic-card',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatTooltipModule],
   templateUrl: './thematic-card.component.html',
   styleUrls: ['./thematic-card.component.scss'],
   encapsulation: ViewEncapsulation.None,

@@ -88,9 +88,7 @@ describe('MainTitleSelectorService', () => {
   });
 
   it('when P2.event is true should fallback to first P2 entry rather than returning empty title', () => {
-    const p2 = [
-      { mainsnak: { datavalue: { value: { id: 'Q123' } }, label: 'FirstType' } },
-    ];
+    const p2 = [{ mainsnak: { datavalue: { value: { id: 'Q123' } }, label: 'FirstType' } }];
     // Also mark event flag true to simulate the problematic condition
     (p2 as any).event = true;
 
@@ -101,9 +99,7 @@ describe('MainTitleSelectorService', () => {
   });
 
   it('chooses organisation title when locality not present but org is', () => {
-    const p2 = [
-      { mainsnak: { datavalue: { value: { id: 'Q12' } }, label: 'OrgTypeCustom' } },
-    ];
+    const p2 = [{ mainsnak: { datavalue: { value: { id: 'Q12' } }, label: 'OrgTypeCustom' } }];
     const infoList = { classesList: [{ id: 'Q12' }] } as any;
     const meta = service.decideMainMeta(p2, infoList);
     // prefer organisation title (payload label preferred)

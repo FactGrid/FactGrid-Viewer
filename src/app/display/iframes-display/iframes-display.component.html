@@ -3,7 +3,7 @@
     @for (group of iframeGroups; track group.property) {
       @if (group.label) {
         <div class="iframeTitlePadding">
-          <span class="propertyStyle">{{ group.label }}:</span>
+          <span class="propertyStyle typo-property-label">{{ group.label }}:</span>
         </div>
       }
       @for (claim of group.claims; track claim.id) {

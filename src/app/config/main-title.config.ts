@@ -38,17 +38,17 @@
 
 export const LOCALITY_TITLE: Array<{ id: string; comment: string }> = [
   // prefer specialized place type label Q890181 over generic 'Place'
-    { id: 'Q11174', comment: 'City in Illuminati' },
-     { id: 'Q164454', comment: 'US State'},
-    { id: 'Q890181', comment: 'City' },
-    { id: 'Q164494', comment: 'Commune (fr)' },
-    { id: 'Q164343', comment: 'Departement (fr)' },
-    { id: 'Q21876', comment: 'Region' },
-    { id: 'Q21925', comment: 'Country' },
-    {id: 'Q550945', comment: 'Sea'},
-    {id: 'Q550501', comment: 'Ocean'},
-    { id: 'Q8', comment: 'Place' },
-    {id: 'Q164344', comment: 'Geographical entity'},
+  { id: 'Q11174', comment: 'City in Illuminati' },
+  { id: 'Q164454', comment: 'US State' },
+  { id: 'Q890181', comment: 'City' },
+  { id: 'Q164494', comment: 'Commune (fr)' },
+  { id: 'Q164343', comment: 'Departement (fr)' },
+  { id: 'Q21876', comment: 'Region' },
+  { id: 'Q21925', comment: 'Country' },
+  { id: 'Q550945', comment: 'Sea' },
+  { id: 'Q550501', comment: 'Ocean' },
+  { id: 'Q8', comment: 'Place' },
+  { id: 'Q164344', comment: 'Geographical entity' },
 ];
 
 export const ORGANISATION_TITLE: Array<{ id: string; comment: string }> = [

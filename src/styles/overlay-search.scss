@@ -1,15 +1,15 @@
 /* Aligne le bord droit du panel sur le bord droit de l'input et ajoute un décalage vertical */
 .cdk-overlay-pane.search-items_panel.compact-overlay-panel {
   /* don't override the CDK's computed horizontal placement (left);
-     remove centering transform if present and add a small vertical offset */
-  transform: none !important;
+     remove centering transform if present and add a small vertical offset on desktop
+     — mobile centering is handled inside the mobile media query below. */
   margin-top: 8px !important;
 }
 
 /* Compact project panel variant: keep placement controlled by CDK, make it slightly narrower */
 .cdk-overlay-pane.search-items_panel.compact-project-panel {
-  /* do not force fixed positioning for compact project panels */
-  transform: none !important;
+  /* do not force fixed positioning for compact project panels on desktop —
+     mobile centering/transform handled via the media query below. */
   margin-top: 8px !important;
   width: min(480px, 70vw) !important;
   max-width: calc(100vw - 48px) !important;
@@ -33,8 +33,17 @@
 .cdk-overlay-pane.search-items_panel:not(.compact-overlay-panel) {
   width: min(720px, 92vw) !important;
   max-width: calc(100vw - 32px) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  /* NOTE: don't center by default, let CDK control placement on desktop.
+     Centering should only apply on small screens (mobile) — moved into media query. */
+}
+
+/* apply the transform: none override on desktop only so it's not stronger than
+   our mobile centering rules (which must win inside the media query). */
+@media (min-width: 701px) {
+  .cdk-overlay-pane.search-items_panel.compact-overlay-panel,
+  .cdk-overlay-pane.search-items_panel.compact-project-panel {
+    transform: none !important;
+  }
 }
 /* Correction : appliquer le style principal sur .cdk-overlay-pane.search-items_panel pour garantir l'opacité */
 .cdk-overlay-pane.search-items_panel {
@@ -133,6 +142,125 @@
     max-width: none !important;
     max-height: 100% !important;
   }
+
+  /* On small screens we want the overlay panel to be centered and take
+     most of the viewport width — do this only for mobile so desktop / tablet
+     keep the CDK's normal alignment behavior. Also ensure the outer pane
+     uses translate centering and doesn't cause body scroll. */
+  /* center panels on mobile — include compact overlay panels as well (they were previously
+     explicitly set to transform: none; but on mobile we want them centered). */
+  .cdk-overlay-pane.search-items_panel {
+    position: fixed !important; /* ensure centering is relative to viewport on mobile */
+    left: 50% !important;
+    right: auto !important; /* avoid being pinned to the right */
+    transform: translateX(-50%) !important;
+    box-sizing: border-box !important;
+    width: min(720px, calc(100vw - 32px)) !important; /* leave small gutters */
+    /* Make sure the panel doesn't push the page — keep small gap from top/bottom */
+    max-height: calc(100vh - 48px) !important;
+    overflow: hidden !important; /* inner content can scroll if needed */
+    /* debug visual removed */
+  }
+
+  /* Tighten interior padding and remove any redundant right padding
+     so long text doesn't leave a visible gap on the right. */
+  .cdk-overlay-pane.search-items_panel {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .search-items_panel .search-items_inner {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .search-items_panel .compact-suggestions ul {
+    padding-inline-start: 0 !important;
+    padding-inline-end: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
+  }
+
+  /* keep suggestion links full width and avoid flex overflow */
+  .search-items_panel .compact-suggestion-item {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .search-items_panel .compact-suggestion-item .compact-suggestion-link {
+    min-width: 0 !important; /* allow wrapping inside flex */
+    padding-inline-start: calc(6px + env(safe-area-inset-left, 0px)) !important;
+    padding-inline-end: calc(6px + env(safe-area-inset-right, 0px)) !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    display: block !important; /* ensure full-width clickable area */
+  }
+
+  /* Fine-grained device-based polish for mobile sizes */
+  /* Very small phones (iPhone SE and similar): reduce gutters and slightly scale text */
+  @media (max-width: 360px) {
+    .cdk-overlay-pane.search-items_panel {
+      width: calc(100vw - 12px) !important;
+      max-width: calc(100vw - 12px) !important;
+      padding-left: calc(6px + env(safe-area-inset-left, 0px)) !important;
+      padding-right: calc(6px + env(safe-area-inset-right, 0px)) !important;
+      border-radius: 8px !important;
+      max-height: calc(100vh - 28px) !important;
+    }
+
+    .search-items_panel .compact-suggestion-item .compact-suggestion-link {
+      padding-inline-start: calc(6px + env(safe-area-inset-left, 0px)) !important;
+      padding-inline-end: calc(6px + env(safe-area-inset-right, 0px)) !important;
+      font-size: 0.95rem !important;
+    }
+
+    .search-items_panel .typo-item-label { font-size: 0.98rem !important; }
+    .search-items_panel .typo-item-desc { font-size: 0.86rem !important; line-height: 1.16 !important; }
+  }
+
+  /* Medium-small phones (360-412): slightly larger gutters */
+  @media (min-width: 361px) and (max-width: 412px) {
+    .cdk-overlay-pane.search-items_panel {
+      width: calc(100vw - 18px) !important;
+      max-width: calc(100vw - 18px) !important;
+      padding-left: calc(8px + env(safe-area-inset-left, 0px)) !important;
+      padding-right: calc(8px + env(safe-area-inset-right, 0px)) !important;
+      max-height: calc(100vh - 36px) !important;
+    }
+
+    .search-items_panel .compact-suggestion-item .compact-suggestion-link {
+      padding-inline-start: calc(8px + env(safe-area-inset-left, 0px)) !important;
+      padding-inline-end: calc(6px + env(safe-area-inset-right, 0px)) !important;
+      font-size: 0.97rem !important;
+    }
+  }
+
+  /* Larger phones like 412x915: keep the panel generous but trim inner gaps */
+  @media (min-width: 413px) and (max-width: 540px) {
+    .cdk-overlay-pane.search-items_panel {
+      width: calc(100vw - 24px) !important;
+      max-width: calc(100vw - 24px) !important;
+      padding-left: calc(10px + env(safe-area-inset-left, 0px)) !important;
+      padding-right: calc(10px + env(safe-area-inset-right, 0px)) !important;
+    }
+  }
+
+
+  /* Prevent body scrolling while overlay is open on mobile. The component toggles
+     the class `no-overlay-scroll` on body; define the visual behaviour here. */
+  body.no-overlay-scroll {
+    overflow: hidden !important;
+    height: 100% !important;
+    touch-action: none !important;
+  }
+
+  /* Prevent page body from scrolling while mobile overlay is open. The
+     component toggles `body.no-overlay-scroll` when the overlay opens. */
+  body.no-overlay-scroll {
+    overflow: hidden !important;
+    height: 100% !important;
+    touch-action: none !important; /* reduce touch scrolling */
+  }
 }
 
 /* Project panel variant keeps same visual treatment */
@@ -174,12 +302,33 @@
   flex-direction: column !important;
   gap: 4px !important; /* tighter spacing inside each block */
   width: 100% !important;
-  padding: 8px 10px !important; /* smaller internal padding for compactness */
+  padding: 8px 10px !important; /* default internal padding for desktop/tablet */
   text-decoration: none !important;
   color: inherit !important;
   border-radius: 6px !important;
   transition: background-color 120ms ease, transform 100ms ease !important;
 }
+
+  /* Mobile-specific tweaks for suggestion items: reduce right padding and account
+     for safe-area insets so long suggestion text doesn't overflow to the right. */
+  .search-items_panel .compact-suggestion-item .compact-suggestion-link {
+    /* smaller horizontal padding to give content more room on small screens */
+    padding-inline-start: calc(8px + env(safe-area-inset-left, 0px)) !important;
+    /* give more horizontal breathing room but reduce right padding to avoid overflow */
+    padding-inline-end: calc(3px + env(safe-area-inset-right, 0px)) !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Reduce inner right-margin of description to avoid the feeling of too much right-padding */
+  .search-items_panel .typo-item-desc {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
 
 .search-items_panel .compact-suggestion-item .compact-suggestion-link:hover {
   background: rgba(31, 45, 64, 0.035) !important;
@@ -191,12 +340,12 @@
   background: rgba(31, 45, 64, 0.06) !important;
 }
 
-.search-items_panel .compact-suggestion-item .item-label {
+.search-items_panel .compact-suggestion-item .typo-item-label {
   font-weight: 600 !important;
   color: #1f2d40 !important;
 }
 
-.search-items_panel .compact-suggestion-item .item-description {
+.search-items_panel .compact-suggestion-item .typo-item-desc {
   color: rgba(31,45,64,0.7) !important;
   font-size: 0.92rem !important;
   line-height: 1.2 !important;
