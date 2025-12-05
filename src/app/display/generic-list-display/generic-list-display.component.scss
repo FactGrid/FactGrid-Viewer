@@ -1,34 +1,36 @@
 @use "../../../styles/_typography" as typo;
 
 .linkedItemText {
-  /* Behavioural/interaction-only — typographic properties moved to .typo-link */
+  /* Interaction feedback for inline item links */
   padding: 0;
   border-radius: 4px;
-  transition: none;
+  transition: background-color 150ms ease, color 120ms ease;
   cursor: pointer;
 }
 
 // Use centralised typography mixins when component-scoped styles want
 // to keep typography local instead of relying solely on markup classes.
 .linkedItemText:hover,
-.linkedItemText:focus {
-  background: none;
+.linkedItemText:focus-visible {
+  /* subtle hover/focus background so users see interactive area */
+  background-color: rgba(40, 53, 147, 0.06);
 }
 
 /* Lien FactGrid spécifique : noir, sans souligné */
 .factgrid-link {
   color: #000 !important;
-  text-decoration: none;
+  text-decoration: none; /* default no underline */
+  outline-offset: 2px; /* make focus visible offset consistent */
 }
 .factgrid-link:hover,
-.factgrid-link:focus {
-  color: #000 !important;
-  text-decoration: none;
+.factgrid-link:focus-visible {
+  /* show underline on hover/focus to communicate link semantics */
+  text-decoration: underline;
 }
 
 .factgrid-link:active {
+  /* keep underline on click/active states so user sees activation */
   text-decoration: underline !important;
-  color: #000 !important;
 }
 
 /* Supprimer l'espace entre le lien et le séparateur */
