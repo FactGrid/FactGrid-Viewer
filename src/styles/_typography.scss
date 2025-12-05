@@ -1,0 +1,142 @@
+/* Centralised typography utility classes
+   - small, reusable classes meant to be used across templates
+   - keep them intentionally minimal and atomic so components can compose
+*/
+
+/* Link typography (typographic properties only) */
+.typo-link {
+  color: #000;
+  text-decoration: none;
+  font-size: inherit; /* inherit sizing from surrounding flow */
+  font-weight: inherit;
+}
+
+.typo-link:hover,
+.typo-link:focus {
+  text-decoration: none;
+  color: #000;
+}
+
+/* Inline description / caption */
+.typo-description {
+  color: #5f6c7f;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+/* Small caption used for calendar/annotation */
+.typo-caption {
+  font-size: 0.8rem;
+  color: #ad1457;
+  font-style: italic;
+}
+
+/* Utility: ensure a text element uses the current font-size and weight
+   while keeping normal wrapping behaviour (not forcing nowrap). */
+.typo-inline {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* --------------------------------------------------
+   Tokens and semantic roles
+   -------------------------------------------------- */
+:root {
+  --typo-property-label-size: 0.95rem;
+  --typo-property-label-weight: 600;
+  /* Make property labels neutral (black) by default for better readability */
+  --typo-property-label-color: #000;
+
+  --typo-item-label-size: 0.95rem;
+  --typo-item-label-weight: 400;
+  --typo-item-label-color: #1f2d40; /* neutral dark */
+
+  --typo-item-desc-size: 0.875rem;
+  --typo-item-desc-color: #5f6c7f; /* muted */
+  --typo-qualifier-property-size: 0.75rem; /* aligned with qualifier description */
+  --typo-qualifier-property-color: var(--color-primary, #3f51b5);
+  --typo-qualifier-property-weight: 400;
+  --typo-qualifier-desc-size: 0.75rem; /* qualifier descriptions smaller than item desc */
+  --typo-qualifier-desc-color: var(--typo-item-desc-color);
+  --typo-qualifier-label-size: 0.75rem; /* qualifier value labels — aligned with description size */
+  --typo-qualifier-label-color: var(--typo-item-label-color);
+}
+
+/* SCSS mixins for use inside component-scoped files if desired */
+@mixin typo-property-label() {
+  font-size: var(--typo-property-label-size);
+  font-weight: var(--typo-property-label-weight);
+  color: var(--typo-property-label-color);
+  letter-spacing: 0.01em;
+}
+
+@mixin typo-item-label() {
+  font-size: var(--typo-item-label-size);
+  font-weight: var(--typo-item-label-weight);
+  color: var(--typo-item-label-color);
+}
+
+@mixin typo-item-desc() {
+  font-size: var(--typo-item-desc-size);
+  color: var(--typo-item-desc-color);
+  font-style: italic;
+}
+
+@mixin typo-qualifier-property-label() {
+  font-size: var(--typo-qualifier-property-size);
+  color: var(--typo-qualifier-property-color);
+  font-weight: var(--typo-qualifier-property-weight);
+  font-style: italic;
+}
+
+@mixin typo-qualifier-desc() {
+  font-size: var(--typo-qualifier-desc-size);
+  color: var(--typo-qualifier-desc-color);
+  font-style: italic;
+}
+
+@mixin typo-qualifier-label() {
+  font-size: var(--typo-qualifier-label-size);
+  color: var(--typo-qualifier-label-color);
+  font-weight: 400; /* regular weight for qualifier value labels */
+}
+
+/* Thematic card title — slightly larger, bold, semantic role used for card headers */
+@mixin typo-thematic-card-title() {
+  font-size: 1.35rem; /* matches existing card header sizing */
+    /* Thematic card titles should be neutral black and regular weight by default
+      (icons or accents can still be styled locally when needed). */
+    font-weight: 400; /* normal */
+    color: #000;
+  letter-spacing: 0.01em;
+}
+
+/* Semantic classes — prefer markup composition (class="propertyStyle typo-property-label")
+   so components don't need to import mixins. */
+.typo-property-label { @include typo-property-label(); }
+.typo-item-label { @include typo-item-label(); }
+.typo-item-desc { @include typo-item-desc(); }
+
+.typo-qualifier-property-label { @include typo-qualifier-property-label(); }
+
+.typo-qualifier-desc { @include typo-qualifier-desc(); }
+
+.typo-qualifier-label { @include typo-qualifier-label(); }
+
+/* Semantic class for thematic-card title; prefer markup composition */
+.typo-thematic-card-title { @include typo-thematic-card-title(); }
+
+/* Backwards compatibility: map existing local classes to the new semantic tokens */
+/* NOTE: legacy shims such as `.description-text` were removed so components must
+  opt-in to the central semantic typography classes (e.g. `typo-item-desc`).
+  Keep any purely layout-oriented rules in component stylesheets. */
+.calendarStyle { @extend .typo-caption; }
+
+/* Compat for selected-item helpers: keep visual color but inherit token sizes */
+.selectedItemText.typo-item-label {
+  @include typo-item-label();
+  /* selectedItemText often uses white foreground — keep that by default */
+  color: white !important;
+}
+
