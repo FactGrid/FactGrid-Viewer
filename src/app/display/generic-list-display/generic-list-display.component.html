@@ -71,11 +71,11 @@
                   class="linkedItemText factgrid-link"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
                   >{{ M.mainsnak.label | protectShortWords }}</a
-                >&#x2060;{{ M.mainsnak.datavalue.value.separator }}
-                @if (M.mainsnak.datavalue.value.description) {
-                  <span class="description-text">{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span>
-                }
+                >&#x2060;<span class="separator">{{ M.mainsnak.datavalue.value.separator.replace(' ', '\u00A0') }}</span>
               </span>
+              @if (M.mainsnak.datavalue.value.description) {
+                <span class="typo-item-desc generic-description-layout card-description-layout">{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span>
+              }
             }
             @if (M && M.rank === 'deprecated') {
               <span class="warningDeprecated"> &nbsp;({{ M.rank }})</span>
