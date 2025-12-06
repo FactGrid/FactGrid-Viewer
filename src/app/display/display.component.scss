@@ -468,6 +468,18 @@ $card-top-offset: 8px;
   font-size: 0.95rem;
 }
 
+/* hover / focus affordance for the external FactGrid id link */
+.title-card-id .title-id {
+  cursor: pointer;
+  transition: color 150ms ease, text-decoration 150ms ease, transform 150ms ease;
+}
+.title-card-id .title-id:hover,
+.title-card-id .title-id:focus-visible {
+  color: var(--primary-color);
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
 /* ensure the card content has a positioned context */
 .info-themed-content {
   position: relative;
