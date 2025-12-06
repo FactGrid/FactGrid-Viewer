@@ -478,7 +478,7 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 .new-search-icon {
   font-size: 16px;
   color: #666;
-  margin-right: 8px;
+  margin-right: 0; /* remove extra right gutter to keep symmetry with history button */
   display: flex;
   align-items: center;
 }
