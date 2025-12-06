@@ -10,7 +10,14 @@
 $compact-gap: 4px;
 $compact-card-padding: 6px;
 $compact-card-margin: 4px;
- $card-top-offset: 8px;
+$card-top-offset: 8px;
+
+/* SIMPLIFICATION: Override thematic card margin locally to 0.
+   We rely on the grid/flex gap of the container (.parent, .thematic-cards-grid)
+   to handle spacing. This makes alignment much more predictable. */
+:host {
+  --thematic-card-margin: 0px;
+}
 
 /* Show / hide helpers used by the template */
 .hide-division {
@@ -333,7 +340,23 @@ $compact-card-margin: 4px;
   width: 100%;
   margin: 0;
 }
-.top-toolbar,
+.top-toolbar {
+  min-height: 64px !important;
+  height: auto !important;
+  background: white !important;
+  /* top-toolbar will not show its own shadow by default — we apply a single
+     shadow in app-level CSS when both toolbars are present to avoid a
+     visible gutter between them */
+  box-shadow: none !important;
+  position: relative !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 0 var(--spacing-md) !important;
+  box-sizing: border-box !important;
+}
+
 .side-toolbar {
   min-height: 64px !important;
   height: auto !important;
@@ -348,6 +371,361 @@ $compact-card-margin: 4px;
   box-sizing: border-box !important;
 }
 
+/* Specific styling for the display toolbar (we use a plain div instead of
+   material toolbar to avoid stacked shadows). Keep visual parity, but no
+   extra shadow or top border so it appears as a single block with the
+   main app toolbar above it. */
+
+
+/* Home-state toolbar: larger header area and centered search */
+.top-toolbar.home-state {
+  min-height: 280px !important;
+  padding-top: 48px !important;
+  padding-bottom: 48px !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 18px !important;
+}
+
+.home-header {
+  text-align: center;
+  color: var(--text-primary);
+  /* subtler transition to keep the movement gentle */
+  transition: transform 320ms ease-out, opacity 240ms ease-in;
+  display: block;
+  pointer-events: none; /* header purely decorative in this stage */
+}
+
+.home-title {
+  font-size: 3.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.home-subtitle {
+  font-size: 1.05rem;
+  color: #5f6c7f;
+  font-style: italic;
+}
+
+.search-host {
+  display: flex;
+  justify-content: center;
+  width: min(720px, 86%);
+  transition: width 220ms ease, transform 200ms ease, box-shadow 180ms ease;
+  will-change: transform, width, box-shadow, opacity;
+  box-shadow: 0 6px 18px rgba(10, 20, 30, 0.04);
+}
+
+/* toolbar project pill */
+.project-sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* left: drawer + id ; right: project */
+  padding: 6px 24px; /* Match parent padding roughly */
+  margin-bottom: 0;
+  background-color: #fafafa; /* Subtle background to distinguish from content */
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  position: relative; /* ensure stacking context for z-index */
+  z-index: 110; /* sit above the top-toolbar (z-index 100) so sub-header is never hidden */
+}
+
+/* Place the project header as a proper thematic-card variant that aligns
+   with the left/right edges of the child columns. The card is a full-width
+   row inside .parent, but we apply a horizontal inset matching other cards
+   so the left border lines up with the first column cards and the right
+   border lines up with child2 cards' right edges. */
+
+/* Full-viewport variant: project header should visually span the full
+   viewport width and sit above the grid. Keep the same visual frame (radius
+   + shadow) so it looks like other thematic cards but edge-to-edge. */
+:host ::ng-deep app-thematic-card.project-sub-header-card {
+  width: 100vw;
+  max-width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0 0 10px 0; /* small breathing gap before the grid */
+  border-radius: 0; /* Remove radius to look like a section */
+  box-shadow: none !important; /* Remove shadow to make it invisible */
+  background: transparent !important; /* Transparent background */
+  border: none !important; /* No border */
+  z-index: 50; /* below top-toolbar but above content if needed */
+  padding: 0 !important; /* Remove default card padding to allow precise inner alignment */
+}
+
+/* inner wrapper that should align with the grid gutters.
+   With the simplified layout (no card margins, standard parent padding),
+   we just need to match the parent's padding. */
+.project-sub-header-card .project-sub-header-inner {
+  box-sizing: border-box;
+  /* Default (Desktop): Parent uses --spacing-lg (32px) */
+  --left-inset: var(--spacing-lg);
+  --right-inset: var(--spacing-lg);
+  width: calc(100% - (var(--left-inset) + var(--right-inset)));
+  margin-left: var(--left-inset);
+  margin-right: var(--right-inset);
+}
+
+/* Large screens (>=1280px) - Parent uses --spacing-lg by default, but let's check _layout.scss.
+   Actually _layout.scss doesn't change parent padding on large screens, it stays spacing-lg.
+   So we might not need a specific rule unless parent padding changes.
+   Wait, _layout.scss says:
+   .parent { padding-left: var(--spacing-lg); ... }
+   It doesn't seem to change for min-width: 1280px.
+   So we can stick to the default. */
+
+/* Small screens — Parent uses --spacing-md (16px) now (updated in _layout.scss) */
+@media (max-width: 813px) {
+  .project-sub-header-card .project-sub-header-inner {
+    --left-inset: var(--spacing-md);
+    --right-inset: var(--spacing-md);
+    width: calc(100% - (var(--left-inset) + var(--right-inset)));
+    margin-left: var(--left-inset);
+    margin-right: var(--right-inset);
+  }
+}
+
+/* keep the inner layout of the project sub-header visually neutral so the
+   thematic card frame provides the border/background */
+.project-sub-header-card .project-sub-header {
+  /* Match the visual padding of standard card headers:
+     Standard header padding is 6px 16px.
+     Since we removed card padding (3px) globally via --thematic-card-margin:0 and
+     thematic-card padding logic, we need to ensure this header looks right.
+     Actually, thematic-card padding is internal to the card.
+     If we set --thematic-card-margin: 0, the card touches the edge.
+     The card's internal padding is --thematic-card-padding (3px).
+     So content starts at 3px + 16px = 19px.
+     We removed padding on .project-sub-header-card (padding: 0 !important).
+     So we need to add that 19px here. */
+  padding: calc(6px + var(--thematic-card-padding, 3px)) calc(16px + var(--thematic-card-padding, 3px));
+  /* Reduce left padding to bring the drawer button closer to the edge */
+  padding-left: 0; 
+  background: transparent; /* card's background is provided by the component */
+  border: none;
+  display: flex;
+  align-items: center; /* ensure left/right items are vertically centered */
+  justify-content: space-between;
+}
+
+.project-sub-header-left,
+.project-sub-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.project-sub-header-left {
+  justify-content: flex-start;
+}
+
+.project-sub-header-right {
+  justify-content: flex-end;
+}
+
+/* make the project label anchor appearance neutral but interactive */
+.project-sub-header-right .project-link {
+  display: inline-flex;
+  align-items: center;
+  /* Ensure the project label is clearly visible */
+  color: var(--text-primary, #111);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  line-height: 1.2;
+  max-width: 100%; /* Ensure it can shrink */
+}
+
+.project-sub-header-right .project-link .project-name {
+  /* Simple text alignment */
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-sub-header-right .project-link:hover,
+.project-sub-header-right .project-link:focus {
+  text-decoration: underline;
+}
+
+.project-sub-header .project-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px; /* Allow more space than in toolbar */
+}
+
+@media (max-width: 813px) {
+  .project-sub-header-right .project-link {
+    /* Mobile: reduce padding */
+    padding: 2px 4px;
+    max-width: 100%; /* Ensure it doesn't overflow */
+    overflow: hidden; /* Contain the text */
+  }
+
+  .project-sub-header-right .project-link .project-name {
+    /* Mobile: ellipsis for long names */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* Ensure ellipsis works */
+    max-width: 100%; /* Let container dictate width */
+    font-size: 0.9rem;
+  }
+  
+  /* Ensure the right container allows shrinking */
+  .project-sub-header-right {
+    min-width: 0;
+    flex: 1;
+    justify-content: flex-end;
+    overflow: hidden; /* Crucial for flex child truncation */
+    /* hide the right project label on mobile — we show the title above the search */
+      display: none;
+    }
+
+    /* Template-driven helper: force-hide right-hand project info when the component
+       is in mobile-mode (isMobile=true). This ensures tests can assert the same
+       behavior regardless of the test runner viewport size. */
+    .project-sub-header-right.mobile-hidden {
+      display: none !important;
+  }
+
+  /* reduce vertical space for the chevron drawer button under the toolbar-separator */
+  .project-sub-header-card {
+    /* remove most of the breathing on mobile so the content grid sits closer */
+    margin: 0 0 0 0; /* remove bottom gap on mobile */
+  }
+
+  .project-sub-header {
+    padding: 2px 0; /* minimal vertical padding */
+    min-height: 40px; /* keep touch target viable */
+    margin-bottom: 4px;
+  }
+
+  .mobile-project-title {
+    display: block;
+    text-align: center;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary, #111);
+    margin-top: 6px;
+    margin-bottom: 4px;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.drawer-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.title-card-id {
+  position: absolute;
+  right: 12px;
+  top: 8px; /* slightly above title */
+  display: inline-flex;
+  align-items: center;
+}
+
+.title-card-id .title-id {
+  color: var(--text-primary, #222);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+/* ensure the card content has a positioned context */
+.info-themed-content {
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .project-sub-header {
+    padding: 6px 0; /* remove lateral padding */
+    min-height: 48px; /* Ensure sufficient height so it doesn't collapse */
+    margin-bottom: 10px; /* small breathing room under the sub-header */
+  }
+
+  /* Drawer button pinned to the very left of viewport */
+  .project-sub-header-left .drawer-toggle-btn {
+    /* Pull button to the exact left gutter of the viewport by using the
+       inner wrapper's --left-inset. This keeps the button visually flush
+       with the app edge across breakpoints instead of hardcoded offsets. */
+    margin-left: calc(-1 * var(--left-inset));
+    /* make sure the button has a small visual offset when needed */
+    padding-left: 6px;
+  }
+
+  /* On narrow screens, align the project info to the right edge of the viewport */
+  .project-sub-header-right {
+    padding-right: 6px;
+    justify-content: flex-end;
+    /* Pull the right block slightly out to the viewport edge so the
+       project name sits closer to the right on narrow screens */
+    margin-right: calc(-1 * var(--right-inset));
+  }
+
+  .project-sub-header .project-name {
+    max-width: 100%; /* Let flex container handle it */
+  }
+
+  /* tighten spacing between the sub-header and the content column in mobile.
+     Several small paddings/margins add up; remove the parent padding and pull
+     the content up slightly so the first thematic card visually sits closer
+     to the drawer-toggle area without overlapping. */
+  .parent {
+    padding-top: 0; /* remove extra gap */
+    margin-top: -6px; /* pull content up a little — conservative value */
+  }
+
+  /* also remove the top margin/padding applied by the grid itself so
+     the first thematic card truly sits flush under the sub-header */
+  .thematic-cards-grid {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    gap: 6px; /* slightly reduced gap in very narrow screens */
+  }
+
+  /* ensure the very first child doesn't carry its own top margin that would
+     counteract the nudge — reset if present */
+  .parent > *:first-child {
+    margin-top: 0 !important;
+  }
+
+} /* end @media (max-width: 600px) */
+
+.top-toolbar.item-open .search-host {
+  width: min(360px, 38%);
+  box-shadow: 0 10px 24px rgba(10, 20, 30, 0.07);
+}
+
+/* micro parallax: when pinned, reduce transform and add slight elevation — gentler than the accentuated variant */
+.top-toolbar.item-open .search-host {
+  width: min(360px, 38%);
+  box-shadow: 0 10px 24px rgba(10, 20, 30, 0.07);
+  transform: translateY(-3px);
+  opacity: 0.99;
+}
+
+/* header-overlay removed in the subtler design */
+
 @media (max-width: 700px) {
   .top-toolbar {
     flex-direction: column !important;
@@ -356,6 +734,15 @@ $compact-card-margin: 4px;
     min-height: 64px !important;
     height: auto !important;
     gap: 6px !important;
+  }
+
+  /* Fix mobile layout: search host must take full width */
+  .search-host,
+  .top-toolbar.item-open .search-host {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
   }
 
   .top-toolbar .search-field-col,
@@ -561,8 +948,11 @@ $compact-card-margin: 4px;
    CARTES THÉMATIQUES
    ======================================== */
 
+/* SIMPLIFICATION: Use flex gap for spacing instead of card margins. */
 .thematic-cards-grid {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
   margin: 0;
   padding: 0;
 }
@@ -1071,10 +1461,9 @@ $card-top-offset: 8px;
 }
 
 // child2 doit utiliser la même grille pour aligner la première rangée
-/* child2 uses the same stacked card flow — avoid double-grid rules */
-.child2 {
-  /* keep child's own layout as flex column; nested .thematic-cards-grid will follow the column flow */
-}
+/* child2 uses the same stacked card flow — avoid double-grid rules
+   its own layout will be kept as a flex column and nested .thematic-cards-grid
+   will follow the column flow. We intentionally avoid duplicating grid rules here. */
 
 // Si child2 contient sa propre .thematic-cards-grid, appliquer l'offset + mêmes règles
 .child2 .thematic-cards-grid {
@@ -1101,6 +1490,50 @@ $card-top-offset: 8px;
 
   .child2 {
     max-width: 100%;
+  }
+
+  /* neutralize the top offset used on wide screens so the first card sits
+     flush under the sub-header in mobile layouts where we stack columns */
+  .thematic-cards-grid {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+}
+
+/* Very narrow screens (phones like Galaxy S8+ and similar) — be more aggressive
+   at collapsing vertical spacing so the first thematic card sits visually flush
+   under the project sub-header and drawer affordance. */
+@media (max-width: 420px) {
+  .project-sub-header-card {
+    margin-bottom: 0 !important; /* no breathing gap */
+    padding-bottom: 0 !important;
+  }
+
+  .project-sub-header {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* pull the grid up a little more for very small screens */
+  .parent {
+    /* Pull slightly up but avoid overlapping under header/backdrop to prevent blur.
+       Smaller nudge reduces the chance the card sits beneath header overlays. */
+    margin-top: -8px; /* less aggressive than -18px */
+  }
+
+  /* reduce the gap between stacked cards to a minimum */
+  .thematic-cards-grid {
+    /* keep the stacked cards close but not touching to avoid visual artifacts */
+    gap: 4px !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* ensure the very first thematic card has no top margin from its internal
+     structure (safety for app-thematic-card defaults) */
+  :host ::ng-deep .thematic-cards-grid > app-thematic-card:first-child,
+  :host ::ng-deep .thematic-cards-grid > .thematic-card:first-child {
+    margin-top: 0 !important;
   }
 }
 

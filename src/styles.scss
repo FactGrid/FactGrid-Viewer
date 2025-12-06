@@ -590,7 +590,14 @@ body {
 
 .search-field-col {
   width: 300px; /* ou la largeur de ton mat-form-field */
+  max-width: 100%;
   margin: 0 auto; /* centre le bloc sur la page */
+}
+
+@media (max-width: 700px) {
+  .search-field-col {
+    width: 100% !important;
+  }
 }
 
 .search-icons-row {

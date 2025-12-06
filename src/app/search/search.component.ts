@@ -66,6 +66,8 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   for (let i = 0; i < array.length; i += chunkSize) {
     results.push(array.slice(i, i + chunkSize));
   }
+
+  
   return results;
 }
 
@@ -150,6 +152,8 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   filteredItems$: Observable<WikibaseEntity[]>;
   // Observable indiquant si l'overlay doit être ouvert (utilisé pour debug/contrôle)
   overlayOpen$: Observable<boolean>;
+  // history overlay behaviour (for visited items panel)
+  historyOverlayOpen$ = new BehaviorSubject<boolean>(false);
   // pagination/pages removed for compact-only mode
   selectedItemsList: any[] = [];
   selectedResearchField$ = this.selectedResearchField.selectedResearchField$;
@@ -216,8 +220,27 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filterInput.setValue('', { emitEvent: false });
     });
 
+
+  
     const overlaySub = this.overlayOpen$?.subscribe();
     if (overlaySub) this.subscriptions.push(overlaySub);
+
+    // ensure body scroll is locked while history overlay is open
+    const histSub = this.historyOverlayOpen$.subscribe((open) => {
+      try {
+        if (open) document.body.classList.add('no-overlay-scroll');
+        else document.body.classList.remove('no-overlay-scroll');
+      } catch {}
+    });
+    this.subscriptions.push(histSub);
+  }
+
+  // Required trackBy helper used from templates with @for ... track trackById(...)
+  trackById(index: number, item: any): any {
+    if (!item) return index;
+    // support objects wrapped in { value: { id, label } }
+    if (item.value && (item.value.id || item.value.label)) return item.value.id ?? item.value.label;
+    return item.id ?? item.label ?? index;
   }
 
   onItemRowClick(itemId: string, event?: MouseEvent) {
@@ -233,13 +256,20 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     }
     this.clickedItemId = itemId;
+    console.log('[Search] onItemRowClick', itemId, 'clicked, current clickedItemId:', this.clickedItemId);
     // Changement de couleur temporaire (par exemple 200ms)
     setTimeout(() => {
       this.clickedItemId = null;
-      // Toujours émettre l'événement de sélection
+      // Always emit selection event so embedding parents can react
+      const hasParent = !!(this.itemSelected && (this.itemSelected as any).observers && (this.itemSelected as any).observers.length);
       this.itemSelected.emit(itemId);
-      // Navigation directe pour le mode "page de recherche" autonome
-      this.router.navigate(['/item', itemId]);
+      // Only navigate when running standalone (no parent subscribers)
+      if (!hasParent) {
+        console.log('[Search] no parent subscriber: navigating to', itemId);
+        this.router.navigate(['/item', itemId]);
+      } else {
+        console.log('[Search] parent listening — parent should control navigation for', itemId);
+      }
       // Ferme le panneau de résultats en vidant la recherche et la liste
       this.searchInput.setValue('', { emitEvent: true });
       this.filterInput.setValue('', { emitEvent: false });
@@ -272,6 +302,14 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.items$.next([]);
     this.termCache = {};
     this.broadCacheItems = [];
+  }
+
+  toggleHistoryOverlay(): void {
+    this.historyOverlayOpen$.next(!this.historyOverlayOpen$.getValue());
+  }
+
+  closeHistoryOverlay(): void {
+    this.historyOverlayOpen$.next(false);
   }
 
   private initTranslations() {
@@ -698,6 +736,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.projectDisplayValue = value;
     this.searchResearchField.setValue(value);
     this.showProjectDropdown = true;
+    this.changeDetector.markForCheck();
+  }
+
+  /** Toggle the compact projects overlay when clicking the left project button */
+  toggleProjectOverlay() {
+    this.showProjectDropdown = !this.showProjectDropdown;
     this.changeDetector.markForCheck();
   }
 

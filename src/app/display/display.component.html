@@ -3,18 +3,17 @@
   <div class="spinner">
     <mat-spinner diameter="50" mode="indeterminate"></mat-spinner>
   </div>
-}
+} @else {
 
-<!-- Message d'erreur si P2 absent -->
-@if (isError) {
-  <div class="error-message">
-    <p>Property P2 is missing.</p>
-    <button (click)="addInFactGrid()">Add it in FactGrid</button>
-  </div>
-}
+  <!-- Message d'erreur si P2 absent -->
+  @if (isError) {
+    <div class="error-message">
+      <p>Property P2 is missing.</p>
+      <button (click)="addInFactGrid()">Add it in FactGrid</button>
+    </div>
+  } @else {
 
-<!-- Conteneur principal avec drawer -->
-@if (!isSpinner && !isError) {
+  <!-- Conteneur principal avec drawer -->
   <mat-drawer-container class="drawer-container" [autosize]="true">
     <mat-drawer
       #drawer
@@ -40,9 +39,13 @@
       </mat-toolbar>
 
       <div class="info-card-content">
-        <!-- Drawer heading for linked pages (display the title at the top of the list) -->
-        <div class="drawer-heading" role="heading" aria-level="2">{{ linkedPagesTitle }}</div>
-        @for (link of linkedItems; track trackById(link)) {
+        <!-- Drawer heading for linked pages (display the title at the top of the list).
+             On mobile we will render the backList as a thematic card inside the
+             content area instead of in the drawer, so keep drawer list desktop-only. -->
+        @if (!isMobile) {
+          <!-- Drawer-specific listing (desktop/tablet) -->
+          <div class="drawer-heading" role="heading" aria-level="2">{{ linkedPagesTitle }}</div>
+          @for (link of linkedItems; track trackById(link)) {
           <div class="selectedItemRow">
             <a
               class="selectedItemText typo-item-label"
@@ -51,18 +54,74 @@
             >{{ link.label || link.id }}</a>
           </div>
         }
+        }
       </div>
     </mat-drawer>
 
     <mat-drawer-content>
       <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
-      <mat-toolbar class="top-toolbar">
+      <mat-toolbar class="top-toolbar" [class.home-state]="!item" [class.item-open]="item">
+        <div class="home-header" [@homeHeader]="headerAnimState" (@homeHeader.start)="onHeaderAnimationStart($event)" (@homeHeader.done)="onHeaderAnimationDone($event)">
+          @if (!item) {
+            <div class="home-title">{{ title }}</div>
+            <div class="home-subtitle">{{ subtitle }}</div>
+          }
+        </div>
+
+        <!-- Mobile: show project title centered above search when a project is selected -->
+        @if (currentProject && currentProject.id !== 'all' && isMobile) {
+          <div class="mobile-project-title" aria-hidden="false">{{ currentProject.name }}</div>
+        }
+
         <span class="example-spacer"></span>
+
         <!-- Barre de recherche intégrée (mode compact par défaut) -->
-        <app-search (itemSelected)="onSearchItemSelected($event)"></app-search>
+        <div class="search-host" [@searchMove]="searchAnimState">
+          <app-search (itemSelected)="onSearchItemSelected($event)"></app-search>
+        </div>
+        <!-- header overlay removed — using subtler animation timing instead -->
       </mat-toolbar>
 
       <hr class="toolbar-separator" />
+
+      <!-- Selected project display (above the grid) -->
+      @if (currentProject && currentProject.id !== 'all') {
+        <app-thematic-card [collapsible]="false" class="project-sub-header-card" [showHeader]="false" [resetKey]="currentProject.id">
+          <!-- inner wrapper aligned to the grid gutters so left/right edges match child1/child2 cards -->
+          <div class="project-sub-header-inner">
+            <div class="project-sub-header">
+            <div class="project-sub-header-left">
+              <!-- Drawer toggle (left) + item id link -->
+              <button
+                mat-icon-button
+                class="drawer-toggle-btn"
+                (click)="toggleLinkedPages()"
+                [attr.aria-label]="linkedPagesTitle"
+                matTooltip="{{ linkedPagesTitle }}"
+              >
+                <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              </button>
+
+              <!-- item id moved into the title card (top-right) -->
+            </div>
+
+            <div class="project-sub-header-right" [class.mobile-hidden]="isMobile" [matTooltip]="currentProject.description">
+              <a
+                class="project-link"
+                [href]="factGridUrl + currentProject.id"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="currentProject.name"
+                [attr.title]="currentProject.description || currentProject.name"
+              >
+                <span class="project-name">{{ currentProject.name }}</span>
+              </a>
+            </div>
+            </div>
+          </div>
+        </app-thematic-card>
+      }
+
       <div class="parent">
         <div class="child1">
           <!-- Vue d'accueil lorsqu'aucun item n'est chargé -->
@@ -72,18 +131,15 @@
               <app-thematic-card [collapsible]="false" class="info-themed-card" [resetKey]="id">
                 <div class="info-themed-content">
                   <div class="itemTitle-row">
-                    <div class="itemTitle">{{ label }}</div>
-                        <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
-                        @if (!isMobile) {
-                    <a
-                      class="factgrid-link-desktop typo-item-label"
-                      [href]="factGridUrl + id"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {{ id }}
-                    </a>
+                        <div class="itemTitle">{{ label }}</div>
+                        @if (id) {
+                          <!-- top-right item id inside title card -->
+                          <div class="title-card-id">
+                            <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
+                          </div>
                         }
+                        <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
+                        <!-- item ID moved to the sub-header above — avoid duplicate here -->
                   
                   </div>
                   @if (aliases?.length) {
@@ -105,16 +161,7 @@
                       <span class="linked-pages-label">{{ linkedPagesTitle }}</span>
                       </button>
                       <!-- Mobile-only FactGrid link (aligned to the right of pages liées) -->
-                      @if (isMobile) {
-                      <a
-                        class="selectedItemLink factgrid-link-mobile typo-item-label"
-                        [href]="factGridUrl + id"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {{ id }}
-                      </a>
-                      }
+                      <!-- mobile ID link removed (now shown in sub-header) -->
                   </div>
                 </div>
   
@@ -235,8 +282,34 @@
                     <ng-template #sparqlDisplay4></ng-template>
                   </app-thematic-card>
                 }
+
+                <!-- (mobile card moved outside sparql container so it renders even when sparqlCards$ is empty) -->
               }
             </ng-container>
+
+              <!-- Mobile: render the 'linked pages' (backList) as a thematic card inside
+                   the stacked cards area (only when we have at least one linked item) -->
+              @if (isMobile && linkedItems?.length) {
+                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
+                  <!-- Project a small header when rendering mobile-only linked pages so tests can query the title reliably -->
+                  <div card-header>
+                    <span class="typo-thematic-card-title">{{ linkedPagesTitle }}</span>
+                  </div>
+
+                  <!-- Render items as router links so mobile card shows clickable links (id-based navigation) -->
+                  <mat-card-content class="info-card-content">
+                    @for (link of linkedItems; track trackById(link)) {
+                      <div class="selectedItemRow">
+                        <a
+                          class="selectedItemText typo-item-label"
+                          [routerLink]="['/item', link.id]"
+                        >{{ link.label || link.id }}</a>
+                      </div>
+                    }
+                  </mat-card-content>
+
+                </app-thematic-card>
+              }
 
               @if (showSources) {
                 <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="sources" [resetKey]="id">
@@ -260,10 +333,7 @@
            @else {
             <div class="thematic-cards-grid">
               <div class="matCardPadding">
-                <div class="itemTitle">FactGrid</div>
-                <div class="itemDescription" style="margin-bottom: 8px">
-                  {{ subtitle }}
-                </div>
+                <!-- Le titre principal est affiché dans la barre du haut en mode accueil -->
 
                 <!-- Projet sélectionné -->
                 @if (currentProject && currentProject.id !== 'all') {
@@ -388,4 +458,5 @@
       </div>
     </mat-drawer-content>
   </mat-drawer-container>
+  }
 }

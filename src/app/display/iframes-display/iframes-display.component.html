@@ -21,7 +21,7 @@
         }
         <!-- Display the iframe for each claim -->
         <iframe
-          style="width: 100%; height: 100vh; border: none"
+          style="width: 100%; height: calc(100vh - 56px); border: none"
           [src]="sanitize(claim.mainsnak?.datavalue?.value)"
         >
         </iframe>

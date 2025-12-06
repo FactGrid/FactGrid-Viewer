@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent, HttpClientTestingModule],
+      imports: [AppComponent, HttpClientTestingModule, RouterTestingModule],
     }).compileComponents();
   });
 
@@ -27,5 +28,17 @@ describe('AppComponent', () => {
     const compiled = fixture.nativeElement;
     // the app no longer contains the default .content span; assert footer exists as smoke check
     expect(compiled.querySelector('app-footer')).toBeTruthy();
+  });
+
+  it('should render a home button that links to the root', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+
+    const homeBtn = compiled.querySelector('button[aria-label="Accueil"]');
+    expect(homeBtn).toBeTruthy();
+
+    const homeIcon = homeBtn.querySelector('mat-icon');
+    expect(homeIcon.textContent).toContain('home');
   });
 });

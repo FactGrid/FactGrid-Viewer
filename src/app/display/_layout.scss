@@ -116,15 +116,17 @@ body {
 @media (max-width: 813px) {
   .parent {
     flex-flow: column;
-    /* a smaller gutter on very narrow screens */
-    padding-left: var(--spacing-xs);
-    padding-right: var(--spacing-xs);
-    gap: var(--spacing-sm);
+    /* SIMPLIFICATION: Use standard spacing for outer gutters on mobile.
+       No extra margins on children needed. */
+    padding-left: var(--spacing-md);  /* 16px */
+    padding-right: var(--spacing-md); /* 16px */
+    gap: var(--spacing-md);
   }
 
   .child1 {
-    margin-right: var(--spacing-xs);
-    margin-left: var(--spacing-xs);
+    /* Removed extra margins that complicated alignment */
+    margin-right: 0;
+    margin-left: 0;
   }
 
   .child2 {

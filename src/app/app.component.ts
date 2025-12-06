@@ -133,12 +133,8 @@ export class AppComponent implements OnInit {
     window.open('https://database.factgrid.de/wiki/Main_Page', '_blank');
   }
 
-  toggleResearchField() {
-    const current = this.selectedResearchFieldService.getShowResearchField();
-    const next = !current;
-    this.selectedResearchFieldService.setShowResearchField(next);
-    this.showResearchField = next;
-  }
+  // Project selection UI moved into Search / Display components —
+  // method toggleResearchField removed from template usage.
 
   toggleDrawer() {
     this.drawerService.toggle();

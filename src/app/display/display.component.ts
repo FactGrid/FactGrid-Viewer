@@ -9,7 +9,8 @@ import {
   ViewContainerRef,
   ComponentRef as NgComponentRef,
   SimpleChange,
-} from '@angular/core';
+  } from '@angular/core';
+import { trigger, state, style, transition, animate, AnimationEvent } from '@angular/animations';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -83,9 +84,34 @@ import { RequestService } from '../services/request.service';
     JoinPipe,
     GenericListDisplayComponent,
   ],
+  animations: [
+    // curtain-style header lift: scaleY with transform-origin bottom produces
+    // a 'rideau' effect (collapsing upwards) that looks like a curtain lifting.
+    trigger('homeHeader', [
+      state(
+        'home',
+        style({ transform: 'scaleY(1)', opacity: 1, transformOrigin: 'bottom', height: '*' })
+      ),
+      state(
+        'closed',
+        style({ transform: 'scaleY(0)', opacity: 0, transformOrigin: 'bottom', height: 0 })
+      ),
+      // less pronounced timing (subtler curtain lift)
+      transition('home => closed', [animate('320ms 60ms ease-out')]),
+      transition('closed => home', [animate('280ms ease-in')]),
+    ]),
+    trigger('searchMove', [
+      state('home', style({ transform: 'translateY(0)', width: 'min(720px, 86%)', opacity: 1 })),
+      state('pinned', style({ transform: 'translateY(-6px)', width: 'min(360px, 38%)', opacity: 0.95 })),
+      // subtle movement when pinning the search widget
+      transition('home => pinned', [animate('220ms ease-out')]),
+      transition('pinned => home', [animate('200ms ease-in')]),
+    ]),
+  ],
 })
 export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   [key: string]: any;
+  title = 'FactGrid';
   subtitle: string;
   private sparqlDisplayService = inject(SparqlDisplayService);
   constructor(private cdr: ChangeDetectorRef) {}
@@ -195,6 +221,15 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   isMobile = false;
   drawerOpened = false;
   isAliases = false;
+
+  // visual state for the startup header and search transition
+  headerAnimState: 'home' | 'closed' = 'home';
+  searchAnimState: 'home' | 'pinned' = 'home';
+  // When user selects an item from the embedded search while on the homepage
+  // we store the id and wait for the header animation to finish before navigating
+  private pendingNavigationItemId: string | null = null;
+  // used to show a transient overlay and visual cues while animation runs
+  headerAnimating = false;
 
   // Divers
   trans: any = '';
@@ -362,6 +397,20 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.drawerService.setState(this.drawerOpened);
     });
     this.subscriptions.push(drawerSubscription);
+
+    // Keep the component aware of small-handset viewports globally so that
+    // template conditionals for mobile-only UI (e.g. .mobile-project-title)
+    // work consistently at runtime and inside tests when needed.
+    const bpSub = this.observer
+      .observe([Breakpoints.Handset, Breakpoints.HandsetPortrait, Breakpoints.HandsetLandscape])
+      .subscribe((result) => {
+        this.isMobile = !!result?.matches;
+        // ensure template updates
+        try {
+          this.cdr.detectChanges();
+        } catch {}
+      });
+    this.subscriptions.push(bpSub);
   }
 
   // Dynamic component hosts for lazy-loading sparql display instances
@@ -531,9 +580,15 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (!item || !Array.isArray(item) || item.length === 0) {
         this.item = null;
+        // Ensure homepage visuals are restored when there is no item
+        this.headerAnimState = 'home';
+        this.searchAnimState = 'home';
         return;
       }
       this.item = item;
+      // Item present -> header should be closed and search pinned
+      this.headerAnimState = 'closed';
+      this.searchAnimState = 'pinned';
       // Ensure any previously created dynamic SPARQL components and subscriptions
       // are destroyed when switching items so new components can be created for
       // the newly selected item.
@@ -1176,6 +1231,18 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!itemId) {
       return;
     }
+    // If we're on the homepage (no current item), animate header first
+    console.log('[Display] onSearchItemSelected received', itemId, 'current item:', this.item ? this.item[0]?.id || 'present' : 'none');
+    if (!this.item) {
+      // play header closing animation and pin the search
+      this.pendingNavigationItemId = itemId;
+      this.headerAnimState = 'closed';
+      this.searchAnimState = 'pinned';
+      // actual navigation will happen when animationDone fires
+      return;
+    }
+
+    // Otherwise navigate immediately
     this.router.navigate(['/item', itemId]);
   }
 
@@ -1197,5 +1264,26 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         // noop
       }
     });
+  }
+
+  // Animation callback: when header closing animation completes, navigate to pending item
+  onHeaderAnimationDone(e: AnimationEvent) {
+    console.log('[Display] header animation done event', e.toState, 'pending id', this.pendingNavigationItemId);
+    // animation finished — clear the visual flag so overlays and UI feedback hide
+    this.headerAnimating = false;
+    // ensure the animation finished going to 'closed'
+    if (e.toState === 'closed' && this.pendingNavigationItemId) {
+      const id = this.pendingNavigationItemId;
+      this.pendingNavigationItemId = null;
+      // perform navigation
+      console.log('[Display] navigating after animation to', id);
+      this.router.navigate(['/item', id]);
+    }
+  }
+
+  onHeaderAnimationStart(e: AnimationEvent) {
+    // show overlay / visual cue — useful for debugging and user feedback
+    this.headerAnimating = true;
+    console.log('[Display] header animation started', e.fromState, '->', e.toState);
   }
 }

@@ -6,7 +6,29 @@
   height: 56px;
   padding: 0 16px;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    /* single shadow will be applied below the combined toolbars instead of
+      on the top toolbar itself to prevent a visible seam between stacked
+      toolbars */
+    box-shadow: none;
+  /* S'assurer que la barre d'outils reste au-dessus des iframes
+     qui peuvent occuper toute la hauteur de la fenêtre (height:100vh).
+     Sans z-index, un iframe peut recouvrir la toolbar et intercepter les clics. */
+  position: relative;
+  z-index: 1000;
+}
+
+/* When the display component places a .top-toolbar directly underneath
+   the main app toolbar we want them to look like a single contiguous
+   block. Remove the thin separator/box-shadow that visually creates a
+   gutter between them and ensure no top border shows through. */
+.custom-toolbar + .main-content .top-toolbar {
+  /* Apply a single, deliberate shadow under the *group* of toolbars
+     so the visual block looks consistent and no seam appears between
+     the app toolbar and the display toolbar. */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+  border-top: none !important;
+  background: #fff !important;
+  margin-top: 0 !important;
 }
 
 .toolbar-spacer {

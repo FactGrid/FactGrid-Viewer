@@ -13,16 +13,20 @@
       <mat-icon>menu</mat-icon>
     </button>
 
-    <span class="toolbar-spacer"></span>
-
+    <!-- Home button: retourne à la page d'accueil de l'app -->
     <button
       mat-icon-button
       class="toolbar-btn"
-      (click)="toggleResearchField()"
-      aria-label="Sélection du projet de recherche"
+      aria-label="Accueil"
+      matTooltip="Retour à la page d'accueil"
+      routerLink="/"
     >
-      <mat-icon>settings</mat-icon>
+      <mat-icon>home</mat-icon>
     </button>
+
+    <span class="toolbar-spacer"></span>
+
+    <!-- Project selection removed — selection UI handled elsewhere -->
 
     <button
       mat-icon-button

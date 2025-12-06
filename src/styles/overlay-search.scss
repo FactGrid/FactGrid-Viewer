@@ -41,7 +41,8 @@
    our mobile centering rules (which must win inside the media query). */
 @media (min-width: 701px) {
   .cdk-overlay-pane.search-items_panel.compact-overlay-panel,
-  .cdk-overlay-pane.search-items_panel.compact-project-panel {
+  .cdk-overlay-pane.search-items_panel.compact-project-panel,
+  .cdk-overlay-pane.search-history_panel.compact-history-panel {
     transform: none !important;
   }
 }
@@ -93,7 +94,9 @@
 
 /* Ensure suggestion lists injected directly are also opaque and sized */
 .search-items_panel .compact-suggestions,
-.search-items_panel .compact-suggestion-item {
+.search-items_panel .compact-suggestion-item,
+.search-history_panel .compact-suggestions,
+.search-history_panel .compact-suggestion-item {
   background: transparent !important;
   box-sizing: border-box !important;
   margin: 0 !important;
@@ -162,11 +165,42 @@
     /* debug visual removed */
   }
 
+  /* Ensure desktop behavior for the history pane matches the items pane (no centering transform) */
+  .cdk-overlay-pane.search-history_panel {
+    transform: none !important;
+    box-sizing: border-box !important;
+    /* keep history panel narrower by default on desktop to avoid overflow */
+    width: min(360px, 38vw) !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+
   /* Tighten interior padding and remove any redundant right padding
      so long text doesn't leave a visible gap on the right. */
   .cdk-overlay-pane.search-items_panel {
     padding-left: 8px !important;
     padding-right: 8px !important;
+  }
+
+  /* Mobile centering for history pane (match items panel behavior) */
+  @media (max-width: 700px) {
+    .cdk-overlay-pane.search-history_panel {
+      position: fixed !important;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) !important;
+      width: min(720px, calc(100vw - 32px)) !important;
+      max-height: calc(100vh - 48px) !important;
+      overflow: hidden !important;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+      box-sizing: border-box !important;
+    }
+
+    .cdk-overlay-pane.search-history_panel .search-items_inner {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      width: 100% !important;
+    }
   }
 
   .search-items_panel .search-items_inner {
@@ -297,7 +331,8 @@
 }
 
 /* Make the entire suggestion block a clear, interactive link */
-.search-items_panel .compact-suggestion-item .compact-suggestion-link {
+.search-items_panel .compact-suggestion-item .compact-suggestion-link,
+.search-history_panel .compact-suggestion-item .compact-suggestion-link {
   display: flex !important;
   flex-direction: column !important;
   gap: 4px !important; /* tighter spacing inside each block */
@@ -330,22 +365,41 @@
     word-break: break-word !important;
   }
 
-.search-items_panel .compact-suggestion-item .compact-suggestion-link:hover {
+.search-items_panel .compact-suggestion-item .compact-suggestion-link:hover,
+.search-history_panel .compact-suggestion-item .compact-suggestion-link:hover {
   background: rgba(31, 45, 64, 0.035) !important;
   cursor: pointer !important;
   transform: none !important; /* avoid vertical shift to keep layout compact */
 }
 
-.search-items_panel .compact-suggestion-item.clicked .compact-suggestion-link {
+/* Ensure history lists don't render default list bullets/pastilles when attached to body */
+.search-history_panel .compact-history-list ul {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Make mobile history panel a bit wider (slightly smaller gutters) */
+@media (max-width: 700px) {
+  .cdk-overlay-pane.search-history_panel {
+    width: min(840px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+}
+
+.search-items_panel .compact-suggestion-item.clicked .compact-suggestion-link,
+.search-history_panel .compact-suggestion-item.clicked .compact-suggestion-link {
   background: rgba(31, 45, 64, 0.06) !important;
 }
 
-.search-items_panel .compact-suggestion-item .typo-item-label {
+.search-items_panel .compact-suggestion-item .typo-item-label,
+.search-history_panel .compact-suggestion-item .typo-item-label {
   font-weight: 600 !important;
   color: #1f2d40 !important;
 }
 
-.search-items_panel .compact-suggestion-item .typo-item-desc {
+.search-items_panel .compact-suggestion-item .typo-item-desc,
+.search-history_panel .compact-suggestion-item .typo-item-desc {
   color: rgba(31,45,64,0.7) !important;
   font-size: 0.92rem !important;
   line-height: 1.2 !important;
@@ -355,4 +409,30 @@
 .search-items_panel,
 .search-items_panel * {
   isolation: isolate !important;
+}
+
+/* History panel styling: mirror the same robust visual treatment as search-items_panel
+   so the compact/mobile history overlay is never transparent and has a visible border */
+.cdk-overlay-pane.search-history_panel.compact-history-panel {
+  margin-top: 8px !important;
+  width: min(480px, 70vw) !important;
+  max-width: calc(100vw - 48px) !important;
+  z-index: 1420 !important; /* sit above most content */
+}
+
+.cdk-overlay-pane.search-history_panel {
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(31, 45, 64, 0.08) !important;
+  box-shadow: 0 12px 36px rgba(31, 45, 64, 0.14) !important;
+  max-height: calc(70vh) !important;
+  overflow-y: auto !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure any inner history panel wrapper remains readable */
+.cdk-overlay-pane .search-history_panel .history-panel {
+  padding: 8px 12px !important;
+  background: transparent !important; /* inner wrapper; visual treated by the pane */
 }

@@ -80,53 +80,19 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 300px;
-  box-sizing: border-box;
-}
-
-.selected-project-label {
-  font-size: 0.95em;
-  color: #283593;
-  margin-top: 0.25em; /* ou essaye 2px ou 0.25em pour être encore plus proche */
-  margin-left: 0;
-  width: 100%;
-  box-sizing: border-box;
-  line-height: 1.2;
-  /* Optionnel : style mat-hint */
-  opacity: 0.8;
-  font-style: italic;
-}
-
-.icon-active {
-  color: #ad1457 !important; // rouge vif
-}
-
-.icon-inactive {
-  color: #3f51b5 !important; // bleu vif
-}
-
-.no-results {
-  text-align: center;
-  margin-top: 24px;
-  color: #ad1457;
-  font-size: 1.1em;
-}
-
-
-/* Les règles globales liées aux overlays (CDK) sont centralisées dans
-   `src/styles/overlay-search.scss`. Elles ont été retirées d'ici pour
-   éviter les duplications et garantir qu'elles s'appliquent correctement
-   au panneau attaché au `document.body` par le CDK. */
-
+  /* mobile layout handled by later global @media blocks — nested mobile rules removed to avoid duplication/conflict */
+  }
 /* Styles pour les inputs compact avec coins ronds (plain inputs) */
 .compact-dual-search {
+  /* The old dual-column layout has been retired - keep vertical stacking
+     to simplify the search UI (project input above item input). */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 8px;
   width: 100%;
   max-width: 100%;
-  margin: 0; /* avoid extra margins that cause overflow */
-  align-items: center;
+  margin: 0; /* avoids extra margins */
+  align-items: stretch;
   box-sizing: border-box;
 }
 
@@ -219,30 +185,108 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   box-sizing: border-box;
 }
 
-/* If screen too small (tablet/phone), stack the inputs and let them take full width */
 @media (max-width: 700px) {
+  /* Reset global padding that might squeeze the layout */
+  .search-center2 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure the search column can expand across the viewport on small devices */
+  .search-field-col {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+  }
+
   .compact-dual-search {
     flex-direction: column;
     max-width: 100%;
     gap: 6px;
   }
 
-  .compact-search-field {
-    flex: 1 1 auto;
-    min-width: 0;
-    width: 100%;
+  .compact-search-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    position: relative !important;
+    left: auto !important;
+    transform: none !important;
+    overflow: visible !important;
   }
-}
 
-.compact-search-field .compact-clear-btn {
-  background: #fff; /* ensure visible on white fields */
-  border: none;
-  padding: 6px 10px; /* comfortable hit area */
-  cursor: pointer;
-  font-size: 13px;
-  color: #666;
-  border-left: 1px solid #eee;
-  border-radius: 0 6px 6px 0;
+  /* Move history button to the right (order 2) */
+  .compact-history-btn {
+    order: 2 !important;
+    flex: 0 0 44px !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important; /* gap handles spacing */
+    z-index: 1450 !important;
+  }
+
+  /* Input takes remaining space (order 1) */
+  .compact-search-field {
+    order: 1 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .compact-search-field .compact-search-input {
+    width: 100% !important;
+    padding-left: 8px !important;
+    padding-right: 40px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* On mobile, stack the buttons under the input: input spans full width
+     and the two buttons appear in a single row underneath (side‑by‑side)
+     centered. Use CSS Grid so we can keep the existing DOM order. */
+  .new-item-search-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* buttons share a row */
+    grid-template-rows: auto auto !important;
+    grid-template-areas: "input input" "btn-left btn-right" !important;
+    gap: 8px !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 12px !important;
+  }
+
+  .new-search-input-wrapper {
+    grid-area: input !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* Place buttons on the row below the input */
+  .project-select-btn {
+    grid-area: btn-left !important;
+    justify-self: end !important; /* sit on left side of the two-button row */
+    width: 48% !important;
+    margin: 0 !important;
+  }
+
+  .new-history-btn {
+    grid-area: btn-right !important;
+    justify-self: start !important; /* sit on right side */
+    width: 48% !important;
+    margin: 0 !important;
+  }
 }
 
 .compact-clear-btn:hover {
@@ -251,6 +295,12 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 
 .compact-search-wrapper {
   position: relative;
+  /* make compact search wrapper a horizontal layout so a left icon can coexist with the input */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(720px, 86%);
+  margin: 0 auto; /* center the block */
 }
 
 .compact-project-dropdown {
@@ -267,6 +317,40 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
+}
+
+/* history button (compact mobile) */
+.compact-history-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(31, 45, 64, 0.08);
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: none;
+  padding: 6px;
+}
+
+/* Ensure the compact history button stays clickable above the overlay backdrop
+   so the user can toggle the history overlay by clicking the button again. */
+.compact-history-btn {
+  position: relative;
+  z-index: 1450; /* should be above default overlay/backdrop stacking in our styles */
+}
+
+/* Lower the z-index of our translucent backdrop so the origin control can be above it
+   while keeping the backdrop visually present. This will let button clicks reach the
+   button even when the backdrop is rendered on top of the page. */
+.cdk-overlay-backdrop.cdk-backdrop-translucent {
+  z-index: 1420;
+}
+
+.compact-history-btn mat-icon {
+  font-size: 20px;
+  color: rgba(24,36,56,0.8);
 }
 
 
@@ -307,4 +391,221 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 
 .compact-project-option:last-child {
   border-bottom: none;
+}
+
+
+
+/* History overlay panel styling */
+.compact-history-panel .history-panel {
+  padding: 8px 12px;
+}
+.compact-history-panel .history-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.compact-history-panel .compact-history-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.compact-history-panel .compact-history-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+.compact-history-panel .compact-history-list li a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.compact-history-panel .history-empty { color: #666; padding: 8px 0; }
+
+/* Visual rules for the overlay panel root — ensure it's opaque and has a border */
+.search-history_panel, .compact-history-panel {
+  background: #ffffff; /* opaque white */
+  border-radius: 10px;
+  border: 1px solid rgba(31,45,64,0.08);
+  box-shadow: 0 12px 36px rgba(31,45,64,0.14);
+  color: var(--text-primary);
+  min-width: 240px;
+  max-height: calc(70vh);
+  overflow-y: auto;
+  padding: 6px;
+}
+
+/* tone down translucent/backdrop classes if used; keep overlay readable */
+.cdk-backdrop-translucent {
+  background: rgba(0,0,0,0.22) !important;
+}
+
+
+
+/* =========================================
+   NEW SEARCH IMPLEMENTATION (REBUILT)
+   ========================================= */
+
+/* Container for the item search block (Input + History Button) */
+.new-item-search-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  /* Desktop: Align to the right (or let parent handle it, but ensure it doesn't stretch unnecessarily) */
+  justify-content: flex-end;
+  width: auto;
+  margin-left: auto; /* Push to right if in a flex row */
+}
+
+/* Wrapper for the input field and its icons */
+.new-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0 8px;
+  height: 40px;
+  width: 300px; /* Fixed width on desktop */
+  box-sizing: border-box;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.new-search-input-wrapper:focus-within {
+  border-color: #3f51b5; /* Accent color */
+  box-shadow: 0 0 0 1px #3f51b5;
+}
+
+/* Search Icon */
+.new-search-icon {
+  font-size: 16px;
+  color: #666;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+/* The actual input element */
+.new-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  min-width: 0; /* Flexbox fix */
+  font-size: 14px;
+  color: #333;
+  height: 100%;
+  padding: 0;
+}
+
+/* Clear Button (X) */
+.new-clear-btn {
+  background: transparent;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.new-clear-btn:hover {
+  color: #333;
+}
+
+/* History Button */
+.new-history-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(0,0,0,0.6);
+  padding: 0;
+  flex-shrink: 0; /* Don't shrink */
+}
+
+.new-history-btn:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+/* Project selector button (left of compact input) */
+.project-select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(0,0,0,0.6);
+  padding: 0 8px;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.project-select-btn:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.project-label-desktop {
+  font-size: 0.85rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  margin-right: 4px;
+  font-weight: 500;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+
+/* =========================================
+   MOBILE LAYOUT (Max-width: 700px)
+   ========================================= */
+@media (max-width: 700px) {
+  
+  /* Force container to take full width and center content */
+  .new-item-search-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    justify-content: center !important; /* Center the block */
+    padding: 0 12px; /* Add some breathing room from screen edges */
+    box-sizing: border-box;
+  }
+
+  /* Input wrapper takes all available space */
+  .new-search-input-wrapper {
+    width: auto !important;
+    flex: 1 !important; /* Grow to fill space */
+  }
+
+  /* History button stays fixed size on the right */
+  .new-history-btn {
+    flex: 0 0 44px !important;
+  }
+  
+  /* Ensure parent containers don't restrict width */
+  .search-field-col {
+    width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  .search-center2 {
+    width: 100% !important;
+    padding: 0 !important;
+    display: block !important; /* Reset flex centering if needed */
+  }
 }
