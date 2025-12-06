@@ -236,12 +236,12 @@ export const TRANSLATIONS = {
     zh: '搜索项目',
   },
   linkedPagesTitle: {
-    de: 'verlinkte Seiten',
-    fr: 'pages liées',
-    es: 'páginas enlazadas',
-    hu: 'kapcsolódó oldalak',
-    it: 'pagine collegate',
-    en: 'linked pages',
+    de: 'Verlinkte Seiten',
+    fr: 'Pages liées',
+    es: 'Páginas enlazadas',
+    hu: 'Kapcsolódó oldalak',
+    it: 'Pagine collegate',
+    en: 'Linked pages',
     zh: '相关页面',
   },
   listTitle: {

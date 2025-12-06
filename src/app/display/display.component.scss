@@ -128,6 +128,15 @@ $card-top-offset: 8px;
     align-items: flex-start;
   }
 
+  /* On narrow screens the card ID must be shown on a separate line above
+     the title and aligned to the right to avoid overlapping long titles. */
+  .title-card-id {
+    position: static; /* participate in flow instead of absolute */
+    order: -1;        /* render before the title within the column layout */
+    align-self: flex-end; /* align the id to the right */
+    margin-bottom: 6px; /* space between id and title */
+  }
+
   .factgrid-link-desktop {
     display: none;
   }
@@ -281,10 +290,12 @@ $card-top-offset: 8px;
   margin-top: 16px;
 }
 
-/* Appliquer le fond teinté seulement sur l'info-box à l'intérieur de l'header-display */
-:host ::ng-deep .header-container app-header-display .info-box,
-:host ::ng-deep .header-container app-header-display .header-info,
-:host ::ng-deep .header-container app-header-display .info-container {
+/* Apply tinted background to header-area info boxes (no longer tied to a specific component)
+  Formerly targeted `app-header-display`; we keep the styling by selecting the
+  classes inside `.header-container` so removal of the component doesn't lose styles. */
+:host ::ng-deep .header-container .info-box,
+:host ::ng-deep .header-container .header-info,
+:host ::ng-deep .header-container .info-container {
   background: linear-gradient(135deg, #f8fbff 0%, #f0f6fa 100%) !important;
   border-radius: 8px;
   padding: 16px;
@@ -1152,11 +1163,7 @@ $card-top-offset: 8px;
   margin-right: 0;
 }
 
-app-header-display {
-  margin-left: 0;
-  margin-right: 0;
-  display: block;
-}
+/* app-header-display removed - use .header-wrapper where necessary */
 
 /* ========================================
    IMAGES ET MÉDIAS

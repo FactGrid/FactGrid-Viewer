@@ -16,11 +16,7 @@
   margin-right: 0;
 }
 
-app-header-display {
-  margin-left: 0;
-  margin-right: 0;
-  display: block;
-}
+/* `app-header-display` component removed; keep `.header-wrapper` for layout control. */
 
 /* ========================================
    IMAGES ET MÉDIAS

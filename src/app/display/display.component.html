@@ -54,9 +54,17 @@
               <app-thematic-card [collapsible]="false" class="info-themed-card" [resetKey]="id">
                 <div class="info-themed-content">
                   <div class="itemTitle-row">
+                        @if (id && isMobile) {
+                          <!-- Mobile-only: place ID on its own line above the title and align right -->
+                          <div class="title-card-id">
+                            <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
+                          </div>
+                        }
+
                         <div class="itemTitle">{{ label }}</div>
-                        @if (id) {
-                          <!-- top-right item id inside title card -->
+
+                        @if (id && !isMobile) {
+                          <!-- Desktop-only: top-right item id inside title card -->
                           <div class="title-card-id">
                             <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
                           </div>
@@ -159,35 +167,35 @@
               <ng-container *ngIf="sparqlCards$ | async as cards">
                 @if (cards) {
                 @if (cards.sparql0.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql0.list?.length" [title]="cards.sparql0.title" [showHeader]="true" [resetKey]="id">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql0.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
                     <ng-template #sparqlDisplay0></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql1.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql1.list?.length" [title]="cards.sparql1.title" [showHeader]="true" [resetKey]="id">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql1.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
                     <ng-template #sparqlDisplay1></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql2.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql2.list?.length" [title]="cards.sparql2.title" [showHeader]="true" [resetKey]="id">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql2.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
                     <ng-template #sparqlDisplay2></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql3.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql3.list?.length" [title]="cards.sparql3.title" [showHeader]="true" [resetKey]="id">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql3.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
                     <ng-template #sparqlDisplay3></ng-template>
                   </app-thematic-card>
                 }
 
                 @if (cards.sparql4.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="!cards.sparql4.list?.length" [title]="cards.sparql4.title" [showHeader]="true" [resetKey]="id">
+                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql4.title" [showHeader]="true" [resetKey]="id">
                     <div class="thematic-card-header-bar"></div>
                     <ng-template #sparqlDisplay4></ng-template>
                   </app-thematic-card>
@@ -349,7 +357,7 @@
             </app-thematic-card>
           }
 
-          <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [compact]="true" icon="history">
+     <!--    <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [compact]="true" icon="history">
             <div card-header class="selectedListTitle">{{ formerVisitsTitle }}</div>
             <mat-card-content class="info-card-content">
               @if (selectedItemsList?.length === 0) {
@@ -364,6 +372,7 @@
               }
             </mat-card-content>
           </app-thematic-card>
+          ---> 
           </div>
         </div>
       </div>

@@ -77,10 +77,12 @@
   margin-top: 16px;
 }
 
-/* Appliquer le fond teinté seulement sur l'info-box à l'intérieur de l'header-display */
-:host ::ng-deep .header-container app-header-display .info-box,
-:host ::ng-deep .header-container app-header-display .header-info,
-:host ::ng-deep .header-container app-header-display .info-container {
+/* Apply tinted background to header-area info boxes (not tied to a specific component)
+  Formerly targeted `app-header-display` — now target elements inside the
+  `.header-container` so visuals remain after the component is removed. */
+:host ::ng-deep .header-container .info-box,
+:host ::ng-deep .header-container .header-info,
+:host ::ng-deep .header-container .info-container {
   background: linear-gradient(135deg, #f8fbff 0%, #f0f6fa 100%) !important;
   border-radius: 8px;
   padding: 16px;
