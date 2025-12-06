@@ -289,8 +289,8 @@
 
               <!-- Mobile: render the 'linked pages' (backList) as a thematic card inside
                    the stacked cards area (only when we have at least one linked item) -->
-              @if (isMobile && linkedItems?.length) {
-                <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
+                            @if (isMobile && linkedItems?.length) {
+                              <app-thematic-card class="mobile-linked-pages-card" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
                   <!-- Project a small header when rendering mobile-only linked pages so tests can query the title reliably -->
                   <div card-header>
                     <span class="typo-thematic-card-title">{{ linkedPagesTitle }}</span>

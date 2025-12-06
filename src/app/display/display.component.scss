@@ -1695,6 +1695,15 @@ $card-top-offset: 8px;
   }
 }
 
+/* Mobile linked pages live in a thematic card but elsewhere in the app
+   .selectedItemText.typo-item-label is forced to white for other card
+   contexts via central typography rules. Override that here so links are
+   readable on a white card background in the mobile linked-pages card. */
+.mobile-linked-pages-card .selectedItemText.typo-item-label,
+.mobile-linked-pages-card .selectedItemText {
+  color: var(--typo-item-label-color) !important;
+}
+
 /* ========================================
    TITRE ET EN-TÊTE DE PAGE
    ======================================== */
