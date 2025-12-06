@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Observable, map, startWith, combineLatest } from 'rxjs';
 import { SlideUpAnimation } from './slide-up-animation';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -91,6 +92,8 @@ export class AppComponent implements OnInit {
 
   constructor() {}
 
+  isHome = false;
+
   ngOnInit(): void {
     if (localStorage['selectedLang'] === undefined) {
       localStorage.setItem('selectedLang', 'en');
@@ -116,6 +119,13 @@ export class AppComponent implements OnInit {
 
     this.selectedResearchFieldService.showResearchField$.subscribe((show) => {
       this.showResearchField = show;
+    });
+
+    // Keep track of whether we're on the root page so we can hide the Home icon
+    this.isHome = this.router?.url === '/' || this.router?.url === '';
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((ev: any) => {
+      const url = ev?.urlAfterRedirects ?? ev?.url;
+      this.isHome = url === '/' || url === '';
     });
   }
 

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { Router } from '@angular/router';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
@@ -31,7 +32,11 @@ describe('AppComponent', () => {
   });
 
   it('should render a home button that links to the root', () => {
+    // simulate non-root route by forcing isHome = false
     const fixture = TestBed.createComponent(AppComponent);
+    // ngOnInit sets isHome based on Router — set it explicitly after init
+    fixture.detectChanges();
+    fixture.componentInstance.isHome = false;
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
 
@@ -40,5 +45,18 @@ describe('AppComponent', () => {
 
     const homeIcon = homeBtn.querySelector('mat-icon');
     expect(homeIcon.textContent).toContain('home');
+  });
+
+  it('should hide the home button on the root route', () => {
+    // simulate root route by forcing isHome = true
+    const fixture = TestBed.createComponent(AppComponent);
+    // ngOnInit sets isHome — ensure template sees the root state by setting after init
+    fixture.detectChanges();
+    fixture.componentInstance.isHome = true;
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+
+    const homeBtn = compiled.querySelector('button[aria-label="Accueil"]');
+    expect(homeBtn).toBeNull();
   });
 });
