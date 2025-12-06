@@ -261,26 +261,7 @@
           }
            @else {
             <div class="thematic-cards-grid">
-              <div class="matCardPadding">
-                <!-- Le titre principal est affiché dans la barre du haut en mode accueil -->
-
-                <!-- Projet sélectionné -->
-                @if (currentProject && currentProject.id !== 'all') {
-                  <div class="itemDescription" style="margin-bottom: 12px">
-                    <strong>{{ currentProject.name }}</strong>
-                    @if (currentProject.description) {
-                      <span>– {{ currentProject.description }}</span>
-                    }
-                  </div>
-                }
-
-                <p class="itemDescription">
-                  Utilisez la barre de recherche en haut pour trouver une personne, une publication
-                  ou un autre item dans FactGrid.<br />
-                  Vous pouvez également sélectionner un projet, puis commencer à taper quelques
-                  lettres du nom ou du titre pour afficher les résultats ici.
-                </p>
-              </div>
+   
             </div>
           }
         </div>
