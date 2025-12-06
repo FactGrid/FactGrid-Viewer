@@ -255,6 +255,13 @@ describe('DisplayComponent', () => {
     expect(projectCardMobile)
       .withContext('project sub-header card should be absent on mobile')
       .toBeNull();
+
+    // on the home page the title should be centered regardless of viewport width
+    const topToolbar: HTMLElement | null = fixture.nativeElement.querySelector('.top-toolbar');
+    expect(topToolbar).toBeTruthy();
+    expect(topToolbar!.classList.contains('home-state')).toBeTrue();
+    const computed = window.getComputedStyle(mobileTitle!);
+    expect(computed.textAlign).toBe('center');
   });
 
   it("doesn't render project title when project is the '-' placeholder (desktop)", () => {

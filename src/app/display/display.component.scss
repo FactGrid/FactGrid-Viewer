@@ -519,7 +519,7 @@ $card-top-offset: 8px;
   color: var(--text-primary, #111);
   margin: 6px auto 4px auto; /* center horizontally and keep vertical spacing */
   padding: 0 12px; /* breathing room from viewport edges */
-  line-height: 1.05; /* tighter interline spacing for mobile project label */
+  line-height: 1.2; /* tighter interline spacing for mobile project label */
   max-width: calc(100% - 48px); /* prevent the label from touching the viewport edges */
     /* Allow wrapping instead of truncation so long project names flow to next line
       (useful on narrow viewports or when user has a long project name). */
@@ -536,6 +536,14 @@ $card-top-offset: 8px;
     margin-left: 8px; /* a small gap from the left controls */
     align-self: center;
   }
+}
+
+/* When the display toolbar is in home-state (homepage), keep the project title centered
+   regardless of viewport width so the label appears visually centered on the landing page. */
+.top-toolbar.home-state .mobile-project-title {
+  text-align: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .top-toolbar.item-open .search-host {
