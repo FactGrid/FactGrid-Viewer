@@ -24,7 +24,10 @@
           }
         </div>
 
-        <!-- Show selected project title above search (mobile behaviour used on all viewports) -->
+        <!-- Show selected project title above search (mobile behaviour used on all viewports)
+             Simplified check: selectedResearchField initial value is `id: 'all'` when no project
+             is selected. We therefore only render the title when id !== 'all' and when the
+             name is not the placeholder '-' (legacy placeholder used in the project list). -->
         @if (currentProject && currentProject.id !== 'all' && currentProject.name && currentProject.name.trim() !== '-') {
           <div class="mobile-project-title" aria-hidden="false">{{ currentProject.name }}</div>
         }

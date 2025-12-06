@@ -276,6 +276,18 @@ describe('DisplayComponent', () => {
       .toBeNull();
   });
 
+  it("doesn't render project title when selected research field is the default 'all'", () => {
+    component.item = null; // header visible
+    component.currentProject = { id: 'all', name: 'all' } as any;
+    fixture.detectChanges();
+
+    const mobileTitle: HTMLElement | null =
+      fixture.nativeElement.querySelector('.mobile-project-title');
+    expect(mobileTitle)
+      .withContext("default 'all' selection should not render the project title")
+      .toBeNull();
+  });
+
   it('mobile: should render linked pages as a thematic card when backList exists', () => {
     // ensure the component is in item-state so the stacked card area is rendered
     component.item = {} as any;
