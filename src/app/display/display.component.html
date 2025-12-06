@@ -72,7 +72,7 @@
                         <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
                         <!-- item ID moved to the sub-header above — avoid duplicate here -->
                   
-                  </div>
+                </div>
                   @if (aliases?.length) {
                     <div class="aliases">{{ aliases | join: ', ' }}</div>
                   }
@@ -80,7 +80,10 @@
                     <div class="itemDescription">{{ description }}</div>
                   }
 
-                   <!-- factgrid-global: removed drawer toggle button (linked pages are displayed as a thematic card now) -->
+                  <!-- HEADER properties: show instance/subclass/part-of etc. (uses HEADER_DISPLAY_PROPERTIES) -->
+                  @if (headerDetail?.length) {
+                    <app-generic-list-display [title]="''" [items]="headerDetail"></app-generic-list-display>
+                  }
                 </div>
   
               </app-thematic-card>

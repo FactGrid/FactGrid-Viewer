@@ -9,6 +9,7 @@ import {
   EVENT_DISPLAY_PROPERTIES,
   ORG_DISPLAY_PROPERTIES,
   SOCIABILITY_DISPLAY_PROPERTIES,
+  HEADER_DISPLAY_PROPERTIES,
   INFO_DISPLAY_PROPERTIES,
   SOURCES_DISPLAY_PROPERTIES,
   EXTERNAL_LINKS_DISPLAY_PROPERTIES,
@@ -50,6 +51,13 @@ export class BlockDisplayService {
 
   setInfoDisplay(item: any, infoDetail: any[]): any[] {
     return this.populateDisplay(item, infoDetail, INFO_DISPLAY_PROPERTIES);
+  }
+
+  setHeaderDisplay(item: any, headerDetail: any[]): any[] {
+    // HEADER_DISPLAY_PROPERTIES is defined in dispatcher.config and lists P2/P3/P8 etc.
+    // This keeps the header-focused properties grouped and presented in the top info card.
+    // Reuse populateDisplay helper so behaviour matches other section builders.
+    return this.populateDisplay(item, headerDetail, HEADER_DISPLAY_PROPERTIES);
   }
 
   setPlaceDisplay(item: any, locationAndSituation: any[]): any[] {

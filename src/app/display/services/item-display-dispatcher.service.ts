@@ -20,6 +20,7 @@ export interface DisplayFlags {
   isMain: boolean;
   isWikis: boolean;
   isInfoList: boolean;
+  isHeader: boolean;
   isFrames: boolean;
   isExternalLinks: boolean;
   isInfo: boolean;
@@ -47,6 +48,9 @@ export class ItemDisplayDispatcherService {
 
     // Info
     const isInfo = this.processInfo(item, target);
+
+    // Header (title-related properties such as instance/subclass/part-of)
+    const isHeader = this.processHeader(item, target);
 
     // Place
     const isPlace = this.processPlace(item, target);
@@ -212,6 +216,7 @@ export class ItemDisplayDispatcherService {
       isOrg,
       isOther,
       isInfoList,
+      isHeader,
       isInfo,
       isMain,
       isWikis,
@@ -230,6 +235,12 @@ export class ItemDisplayDispatcherService {
     this.blockDisplay.setInfoDisplay(item, target.info);
     // no debug logging in helpers
     return target.info.length > 0;
+  }
+
+  private processHeader(item: any, target: any): boolean {
+    target.headerDetail = [];
+    this.blockDisplay.setHeaderDisplay(item, target.headerDetail);
+    return target.headerDetail.length > 0;
   }
 
   private processPlace(item: any, target: any): boolean {

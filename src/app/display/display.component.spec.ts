@@ -327,6 +327,26 @@ describe('DisplayComponent', () => {
     expect(drawerHeading).toBeNull();
   });
 
+  it('should render header properties card inside info-themed-card when headerDetail exists', () => {
+    component.item = { id: 'Q1', label: 'Test title' } as any;
+    component.id = 'Q1';
+    component.headerDetail = [
+      {
+        id: 'P2',
+        label: 'Instance of',
+        claims: [{ mainsnak: { datatype: 'string', datavalue: { value: 'Q7' } } }],
+      },
+    ];
+
+    fixture.detectChanges();
+
+    const headerCard: HTMLElement | null = fixture.nativeElement.querySelector('.info-themed-card');
+    expect(headerCard).withContext('info-themed-card should be present').toBeTruthy();
+
+    const headerList: HTMLElement | null = fixture.nativeElement.querySelector('app-generic-list-display');
+    expect(headerList).withContext('generic list for header should be rendered').toBeTruthy();
+  });
+
   it('mobile: should render the FactGrid id above the title in the item header', () => {
     component.item = { id: 'Q1', label: 'Un titre très long pour tester le wrapping' } as any;
     component.id = 'Q1';

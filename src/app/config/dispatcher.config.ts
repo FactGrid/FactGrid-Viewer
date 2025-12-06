@@ -1,3 +1,9 @@
+export const HEADER_DISPLAY_PROPERTIES = [
+  { property: 'P2', comment: 'instance of' },
+  { property: 'P3', comment: 'subclass of' },
+  { property: 'P8', comment: 'part of' },
+];
+
 export const PLACE_DISPLAY_PROPERTIES = [
   { property: 'P625', comment: 'geographic coordinates (Wikidata P625)' },
   { property: 'P297', comment: 'territorial affiliation' },
@@ -207,9 +213,7 @@ export const SOCIABILITY_DISPLAY_PROPERTIES = [
 ];
 
 export const INFO_DISPLAY_PROPERTIES = [
-  { property: 'P2', comment: 'instance of' },
   { property: 'P3', comment: 'subclass of' },
-  { property: 'P8', comment: 'part of' },
   { property: 'P97', comment: 'field of research' },
   { property: 'P131', comment: 'research projects that contributed to this data set' },
   { property: 'P994', comment: 'PhiloBiblon vocabulary term' },

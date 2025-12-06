@@ -153,6 +153,26 @@ describe('ItemDisplayDispatcherService', () => {
     expect(target.info.length).toBeGreaterThan(0);
   });
 
+  it('dispatch should populate headerDetail and set isHeader when header properties exist', () => {
+    const item: any = [
+      {
+        claims: {
+          P2: [{ id: 'Q7' }],
+          P3: [{ id: 'Q8' }],
+          P8: [{ id: 'Q9' }],
+        },
+      },
+      ['P2', 'P3', 'P8'],
+    ];
+
+    const target: any = {};
+    const flags = service.dispatch(item, target);
+
+    expect(flags.isHeader).toBeTrue();
+    expect(Array.isArray(target.headerDetail)).toBeTrue();
+    expect(target.headerDetail.length).toBeGreaterThan(0);
+  });
+
   it('dispatch should populate org/activity/document/source/external lists when P2 flags + claims present', () => {
     const item: any = [
       {
