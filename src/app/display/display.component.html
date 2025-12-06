@@ -290,7 +290,7 @@
               <!-- Mobile: render the 'linked pages' (backList) as a thematic card inside
                    the stacked cards area (only when we have at least one linked item) -->
                             @if (isMobile && linkedItems?.length) {
-                              <app-thematic-card class="mobile-linked-pages-card" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
+                              <app-thematic-card class="mobile-linked-pages-card thematic-card--compact" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
                   <!-- Project a small header when rendering mobile-only linked pages so tests can query the title reliably -->
                   <div card-header>
                     <span class="typo-thematic-card-title">{{ linkedPagesTitle }}</span>
@@ -298,14 +298,15 @@
 
                   <!-- Render items as router links so mobile card shows clickable links (id-based navigation) -->
                   <mat-card-content class="info-card-content">
-                    @for (link of linkedItems; track trackById(link)) {
-                      <div class="selectedItemRow">
-                        <a
-                          class="selectedItemText typo-item-label"
-                          [routerLink]="['/item', link.id]"
-                        >{{ link.label || link.id }}</a>
-                      </div>
-                    }
+                    <ul class="visited-list">
+                      @for (link of linkedItems; track trackById(link)) {
+                        <li class="listStyle selectedItemRow">
+                          <a class="selectedItemLink linkedItemText" [routerLink]="['/item', link.id]">
+                            <span class="selectedItemText typo-item-label">{{ link.label || link.id }}</span>
+                          </a>
+                        </li>
+                      }
+                    </ul>
                   </mat-card-content>
 
                 </app-thematic-card>

@@ -289,7 +289,7 @@ describe('DisplayComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Linked Item A');
 
     // There should be an anchor linking to the item id inside the card
-    const mobileLink: HTMLAnchorElement | null = fixture.nativeElement.querySelector('app-thematic-card a.selectedItemText');
+    const mobileLink: HTMLAnchorElement | null = fixture.nativeElement.querySelector('app-thematic-card a.selectedItemLink');
     expect(mobileLink).withContext('mobile linked pages card contains anchor').toBeTruthy();
     // routerLink should produce an href in the rendered DOM pointing to '/item/QX'
     expect(mobileLink!.getAttribute('href')).toContain('/item/QX');
