@@ -512,15 +512,14 @@ $card-top-offset: 8px;
 /* Make the project title above the search visible on all viewports (previously
    it was mobile-only). This ensures the project label is always prominent. */
 .mobile-project-title {
-  display: block;
+  display: inline-block; /* avoid stretching full width so centering + max-width works */
   text-align: center;
-  width: 100%;
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary, #111);
-  margin-top: 6px;
-  margin-bottom: 4px;
-  padding: 0 8px;
+  margin: 6px auto 4px auto; /* center horizontally and keep vertical spacing */
+  padding: 0 12px; /* breathing room from viewport edges */
+  max-width: calc(100% - 48px); /* prevent the label from touching the viewport edges */
     /* Allow wrapping instead of truncation so long project names flow to next line
       (useful on narrow viewports or when user has a long project name). */
     white-space: normal; /* permit wrapping */

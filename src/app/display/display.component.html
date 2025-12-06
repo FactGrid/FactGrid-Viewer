@@ -29,7 +29,14 @@
              is selected. We therefore only render the title when id !== 'all' and when the
              name is not the placeholder '-' (legacy placeholder used in the project list). -->
         @if (currentProject && currentProject.id !== 'all' && currentProject.name && currentProject.name.trim() !== '-') {
-          <div class="mobile-project-title" aria-hidden="false">{{ currentProject.name }}</div>
+          <a
+            class="mobile-project-title selectedItemLink"
+            [routerLink]="['/item', currentProject.id]"
+            (click)="$event.stopPropagation()"
+            [attr.aria-label]="currentProject.name + ' — ouvrir'"
+          >
+            {{ currentProject.name }}
+          </a>
         }
 
         <span class="example-spacer"></span>
@@ -41,7 +48,7 @@
         <!-- header overlay removed — using subtler animation timing instead -->
       </mat-toolbar>
 
-      <hr class="toolbar-separator" />
+   <!--    <hr class="toolbar-separator" />-->
 
       <!-- Project sub-header removed for all viewports (project label shown above search instead) -->
 

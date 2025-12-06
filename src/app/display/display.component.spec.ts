@@ -215,6 +215,9 @@ describe('DisplayComponent', () => {
       fixture.nativeElement.querySelector('.mobile-project-title');
     expect(mobileTitle).withContext('project title shown in top toolbar').toBeTruthy();
     expect(mobileTitle!.textContent).toContain('My project');
+    // it should be a link to the project's item page
+    expect(mobileTitle!.tagName).toBe('A');
+    expect((mobileTitle as HTMLAnchorElement).getAttribute('href')).toContain('/item/Q10');
 
     // project-sub-header-card should not be present
     const cardEl: HTMLElement | null = fixture.nativeElement.querySelector(
@@ -233,6 +236,9 @@ describe('DisplayComponent', () => {
       fixture.nativeElement.querySelector('.mobile-project-title');
     expect(mobileTitle).withContext('mobile project title shown in top toolbar').toBeTruthy();
     expect(mobileTitle!.textContent).toContain('My project');
+    // mobile project title must be clickable and link to the project item
+    expect(mobileTitle!.tagName).toBe('A');
+    expect((mobileTitle as HTMLAnchorElement).getAttribute('href')).toContain('/item/Q10');
 
     // on mobile the right-hand project block is not rendered (we show a compact title above the search)
     const rightBlock: HTMLElement | null = fixture.nativeElement.querySelector(
