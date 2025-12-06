@@ -549,12 +549,12 @@ $card-top-offset: 8px;
 @media (min-width: 700px) {
   .search-host {
     width: min(720px, calc(86% - 24px));
-    margin-right: 16px;
+    margin-right: 12px;
   }
 
   .top-toolbar.item-open .search-host {
     width: min(360px, calc(38% - 24px));
-    margin-right: 16px;
+    margin-right: 12px;
   }
 }
 
