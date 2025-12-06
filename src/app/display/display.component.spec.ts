@@ -266,11 +266,13 @@ describe('DisplayComponent', () => {
     expect(mobileTitle).withContext('mobile project title shown in top toolbar').toBeTruthy();
     expect(mobileTitle!.textContent).toContain('My project');
 
+    // on mobile the right-hand project block is not rendered (we show a compact title above the search)
     const rightBlock: HTMLElement | null = fixture.nativeElement.querySelector('.project-sub-header-right');
-    expect(rightBlock).withContext('right project sub-header exists in DOM').toBeTruthy();
-    // ensure the right-hand block is hidden via CSS on mobile (computed style display:none)
-    const display = window.getComputedStyle(rightBlock as Element).getPropertyValue('display');
-    expect(display).toBe('none');
+    expect(rightBlock).withContext('right project sub-header should be absent on mobile').toBeNull();
+
+    // on mobile the project sub-header card should not be rendered (we show a centered title instead)
+    const projectCardMobile: HTMLElement | null = fixture.nativeElement.querySelector('app-thematic-card.project-sub-header-card');
+    expect(projectCardMobile).withContext('project sub-header card should be absent on mobile').toBeNull();
   });
 
   it('mobile: should render linked pages as a thematic card when backList exists', () => {

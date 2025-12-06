@@ -686,28 +686,9 @@ $card-top-offset: 8px;
     max-width: 100%; /* Let flex container handle it */
   }
 
-  /* tighten spacing between the sub-header and the content column in mobile.
-     Several small paddings/margins add up; remove the parent padding and pull
-     the content up slightly so the first thematic card visually sits closer
-     to the drawer-toggle area without overlapping. */
-  .parent {
-    padding-top: 0; /* remove extra gap */
-    margin-top: -6px; /* pull content up a little — conservative value */
-  }
-
-  /* also remove the top margin/padding applied by the grid itself so
-     the first thematic card truly sits flush under the sub-header */
-  .thematic-cards-grid {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    gap: 6px; /* slightly reduced gap in very narrow screens */
-  }
-
-  /* ensure the very first child doesn't carry its own top margin that would
-     counteract the nudge — reset if present */
-  .parent > *:first-child {
-    margin-top: 0 !important;
-  }
+    /* Removed content-nudging rules: the project sub-header card is no longer
+      rendered in mobile, so we keep normal layout behavior for the grid and
+      avoid artificial negative margins / padding hacks. */
 
 } /* end @media (max-width: 600px) */
 

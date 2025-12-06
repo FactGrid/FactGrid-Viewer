@@ -85,7 +85,7 @@
       <hr class="toolbar-separator" />
 
       <!-- Selected project display (above the grid) -->
-      @if (currentProject && currentProject.id !== 'all') {
+      @if (!isMobile && currentProject && currentProject.id !== 'all') {
         <app-thematic-card [collapsible]="false" class="project-sub-header-card" [showHeader]="false" [resetKey]="currentProject.id">
           <!-- inner wrapper aligned to the grid gutters so left/right edges match child1/child2 cards -->
           <div class="project-sub-header-inner">
