@@ -1497,9 +1497,9 @@ $card-top-offset: 8px;
 
   /* pull the grid up a little more for very small screens */
   .parent {
-    /* Pull slightly up but avoid overlapping under header/backdrop to prevent blur.
-       Smaller nudge reduces the chance the card sits beneath header overlays. */
-    margin-top: -8px; /* less aggressive than -18px */
+    /* Removed negative nudges: keep natural spacing so the first thematic card
+       does not overlap the toolbar/separator on very narrow screens. */
+    margin-top: 0 !important;
   }
 
   /* reduce the gap between stacked cards to a minimum */
