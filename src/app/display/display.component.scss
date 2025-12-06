@@ -1297,7 +1297,9 @@ $card-top-offset: 8px;
      structure (safety for app-thematic-card defaults) */
   :host ::ng-deep .thematic-cards-grid > app-thematic-card:first-child,
   :host ::ng-deep .thematic-cards-grid > .thematic-card:first-child {
-    margin-top: 0 !important;
+    /* restore a small top-gap on the very first card on very narrow screens
+       so it doesn't sit flush against the toolbar separator (desktop-like) */
+    margin-top: #{$card-top-offset} !important;
   }
 }
 
