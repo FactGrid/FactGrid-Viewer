@@ -519,6 +519,7 @@ $card-top-offset: 8px;
   color: var(--text-primary, #111);
   margin: 6px auto 4px auto; /* center horizontally and keep vertical spacing */
   padding: 0 12px; /* breathing room from viewport edges */
+  line-height: 1.05; /* tighter interline spacing for mobile project label */
   max-width: calc(100% - 48px); /* prevent the label from touching the viewport edges */
     /* Allow wrapping instead of truncation so long project names flow to next line
       (useful on narrow viewports or when user has a long project name). */
