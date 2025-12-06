@@ -17,6 +17,28 @@
   z-index: 1000;
 }
 
+/* Centered title inside the toolbar — elegant "academic" font */
+.toolbar-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  font-size: 20px;
+  color: #0b2545; /* slightly inky, academic blue */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.9); /* light emboss */
+  pointer-events: none; /* don't block clicks in the toolbar */
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .toolbar-title {
+    font-size: 18px;
+  }
+}
+
 /* When the display component places a .top-toolbar directly underneath
    the main app toolbar we want them to look like a single contiguous
    block. Remove the thin separator/box-shadow that visually creates a

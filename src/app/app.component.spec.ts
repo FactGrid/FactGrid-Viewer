@@ -59,4 +59,27 @@ describe('AppComponent', () => {
     const homeBtn = compiled.querySelector('button[aria-label="Accueil"]');
     expect(homeBtn).toBeNull();
   });
+
+  it('should render the centered FactGrid title when not on the home page', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.isHome = false;
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+
+    const title = compiled.querySelector('.toolbar-title');
+    expect(title).toBeTruthy();
+    expect(title.textContent.trim()).toEqual('FactGrid');
+  });
+
+  it('should not render the FactGrid title on the home page', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.isHome = true;
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement;
+
+    const title = compiled.querySelector('.toolbar-title');
+    expect(title).toBeNull();
+  });
 });
