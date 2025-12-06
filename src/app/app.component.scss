@@ -30,10 +30,9 @@
   color: #1976d2; /* use same blue as the search loupe (active) */
   text-shadow: 0 1px 0 rgba(255,255,255,0.85); /* subtle emboss */
   pointer-events: none; /* don't block clicks in the toolbar */
-  padding: 6px 12px;
-  border: 1px solid #000; /* black border */
-  border-radius: 8px;
-  background: rgba(255,255,255,0.9);
+  padding-bottom: 4px; /* leave space for underline */
+  border-bottom: 2px solid #000; /* thin black rule under the title */
+  background: transparent;
   white-space: nowrap;
   transform-origin: center center;
 }

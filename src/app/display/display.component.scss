@@ -521,14 +521,41 @@ $card-top-offset: 8px;
   margin-top: 6px;
   margin-bottom: 4px;
   padding: 0 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    /* Allow wrapping instead of truncation so long project names flow to next line
+      (useful on narrow viewports or when user has a long project name). */
+    white-space: normal; /* permit wrapping */
+    overflow-wrap: anywhere; /* break long words if necessary */
+    word-break: break-word; /* ensure very long tokens wrap */
+}
+
+/* On desktop align project label to the left to match toolbar layout */
+@media (min-width: 700px) {
+  .mobile-project-title {
+    text-align: left;
+    width: auto;
+    margin-left: 8px; /* a small gap from the left controls */
+    align-self: center;
+  }
 }
 
 .top-toolbar.item-open .search-host {
   width: min(360px, 38%);
   box-shadow: 0 10px 24px rgba(10, 20, 30, 0.07);
+}
+
+/* Desktop tweak: keep the search host slightly inset from the right edge so
+   the right-most history button never touches the toolbar boundary. Reduce
+   computed width by a small gutter and add a margin-right. */
+@media (min-width: 700px) {
+  .search-host {
+    width: min(720px, calc(86% - 24px));
+    margin-right: 12px;
+  }
+
+  .top-toolbar.item-open .search-host {
+    width: min(360px, calc(38% - 24px));
+    margin-right: 12px;
+  }
 }
 
 /* micro parallax: when pinned, reduce transform and add slight elevation — gentler than the accentuated variant */
