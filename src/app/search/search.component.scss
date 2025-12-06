@@ -550,7 +550,7 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   color: rgba(0,0,0,0.6);
   padding: 0 8px;
   flex-shrink: 0;
-  margin-right: 8px;
+  margin-right: 0; /* ensure no right gutter on desktop — symmetry with history button */
 }
 
 .project-select-btn:hover {
