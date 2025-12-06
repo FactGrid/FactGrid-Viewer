@@ -25,7 +25,7 @@
         </div>
 
         <!-- Show selected project title above search (mobile behaviour used on all viewports) -->
-        @if (currentProject && currentProject.id !== 'all') {
+        @if (currentProject && currentProject.id !== 'all' && currentProject.name && currentProject.name.trim() !== '-') {
           <div class="mobile-project-title" aria-hidden="false">{{ currentProject.name }}</div>
         }
 

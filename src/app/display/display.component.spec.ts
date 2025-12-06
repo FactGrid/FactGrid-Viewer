@@ -251,6 +251,31 @@ describe('DisplayComponent', () => {
       .toBeNull();
   });
 
+  it("doesn't render project title when project is the '-' placeholder (desktop)", () => {
+    component.item = null; // header visible
+    component.currentProject = { id: '-', name: '-' } as any;
+    fixture.detectChanges();
+
+    const mobileTitle: HTMLElement | null =
+      fixture.nativeElement.querySelector('.mobile-project-title');
+    expect(mobileTitle)
+      .withContext("project title placeholder '-' should not be rendered")
+      .toBeNull();
+  });
+
+  it("doesn't render project title when project is the '-' placeholder (mobile)", () => {
+    component.item = null; // header visible
+    component.currentProject = { id: '-', name: '-' } as any;
+    component.isMobile = true;
+    fixture.detectChanges();
+
+    const mobileTitle: HTMLElement | null =
+      fixture.nativeElement.querySelector('.mobile-project-title');
+    expect(mobileTitle)
+      .withContext("mobile project title placeholder '-' should not be rendered")
+      .toBeNull();
+  });
+
   it('mobile: should render linked pages as a thematic card when backList exists', () => {
     // ensure the component is in item-state so the stacked card area is rendered
     component.item = {} as any;
