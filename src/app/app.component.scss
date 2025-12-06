@@ -24,18 +24,19 @@
   top: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  font-size: 20px;
-  color: #0b2545; /* slightly inky, academic blue */
-  text-shadow: 0 1px 0 rgba(255,255,255,0.9); /* light emboss */
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  font-size: 24px; /* larger to balance toolbar icons */
+  color: #174a7a; /* navy / marine blue (not too dark) */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85); /* subtle emboss */
   pointer-events: none; /* don't block clicks in the toolbar */
   white-space: nowrap;
+  transform-origin: center center;
 }
 
 @media (max-width: 700px) {
   .toolbar-title {
-    font-size: 18px;
+    font-size: 20px;
   }
 }
 
