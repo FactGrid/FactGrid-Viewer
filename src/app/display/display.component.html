@@ -13,52 +13,8 @@
     </div>
   } @else {
 
-  <!-- Conteneur principal avec drawer -->
-  <mat-drawer-container class="drawer-container" [autosize]="true">
-    <mat-drawer
-      #drawer
-      [mode]="isMobile ? 'over' : 'push'"
-      [opened]="drawerOpened"
-      position="start"
-      class="app-drawer"
-      style="background: #ffffff;"
-    >
-      <mat-toolbar class="side-toolbar">
-        <span class="example-spacer"></span>
-        <!-- Use project-standard icon + label (translated main page) next to the toolbar title -->
-        <button
-          mat-button
-          class="toolbar-btn close-btn"
-          (click)="drawerOpened = false; drawer.close()"
-          [attr.aria-label]="mainPage"
-          [matTooltip]="mainPage"
-        >
-          <span class="close-label">{{ mainPage }}</span>
-          <mat-icon class="direction-icon" aria-hidden="true">chevron_right</mat-icon>
-        </button>
-      </mat-toolbar>
-
-      <div class="info-card-content">
-        <!-- Drawer heading for linked pages (display the title at the top of the list).
-             On mobile we will render the backList as a thematic card inside the
-             content area instead of in the drawer, so keep drawer list desktop-only. -->
-        @if (!isMobile) {
-          <!-- Drawer-specific listing (desktop/tablet) -->
-          <div class="drawer-heading" role="heading" aria-level="2">{{ linkedPagesTitle }}</div>
-          @for (link of linkedItems; track trackById(link)) {
-          <div class="selectedItemRow">
-            <a
-              class="selectedItemText typo-item-label"
-              [routerLink]="['/item', link.id]"
-              (click)="isMobile ? drawer.close() : null"
-            >{{ link.label || link.id }}</a>
-          </div>
-        }
-        }
-      </div>
-    </mat-drawer>
-
-    <mat-drawer-content>
+  <!-- Conteneur principal (drawer removed) -->
+  <div class="display-container">
       <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
       <mat-toolbar class="top-toolbar" [class.home-state]="!item" [class.item-open]="item">
         <div class="home-header" [@homeHeader]="headerAnimState" (@homeHeader.start)="onHeaderAnimationStart($event)" (@homeHeader.done)="onHeaderAnimationDone($event)">
@@ -68,8 +24,8 @@
           }
         </div>
 
-        <!-- Mobile: show project title centered above search when a project is selected -->
-        @if (currentProject && currentProject.id !== 'all' && isMobile) {
+        <!-- Show selected project title above search (mobile behaviour used on all viewports) -->
+        @if (currentProject && currentProject.id !== 'all') {
           <div class="mobile-project-title" aria-hidden="false">{{ currentProject.name }}</div>
         }
 
@@ -84,43 +40,7 @@
 
       <hr class="toolbar-separator" />
 
-      <!-- Selected project display (above the grid) -->
-      @if (!isMobile && currentProject && currentProject.id !== 'all') {
-        <app-thematic-card [collapsible]="false" class="project-sub-header-card" [showHeader]="false" [resetKey]="currentProject.id">
-          <!-- inner wrapper aligned to the grid gutters so left/right edges match child1/child2 cards -->
-          <div class="project-sub-header-inner">
-            <div class="project-sub-header">
-            <div class="project-sub-header-left">
-              <!-- Drawer toggle (left) + item id link -->
-              <button
-                mat-icon-button
-                class="drawer-toggle-btn"
-                (click)="toggleLinkedPages()"
-                [attr.aria-label]="linkedPagesTitle"
-                matTooltip="{{ linkedPagesTitle }}"
-              >
-                <mat-icon aria-hidden="true">chevron_left</mat-icon>
-              </button>
-
-              <!-- item id moved into the title card (top-right) -->
-            </div>
-
-            <div class="project-sub-header-right" [class.mobile-hidden]="isMobile" [matTooltip]="currentProject.description">
-              <a
-                class="project-link"
-                [href]="factGridUrl + currentProject.id"
-                target="_blank"
-                rel="noopener noreferrer"
-                [attr.aria-label]="currentProject.name"
-                [attr.title]="currentProject.description || currentProject.name"
-              >
-                <span class="project-name">{{ currentProject.name }}</span>
-              </a>
-            </div>
-            </div>
-          </div>
-        </app-thematic-card>
-      }
+      <!-- Project sub-header removed for all viewports (project label shown above search instead) -->
 
       <div class="parent">
         <div class="child1">
@@ -149,20 +69,7 @@
                     <div class="itemDescription">{{ description }}</div>
                   }
 
-                   <div class="factgrid-global">
-                    <!-- Contextual toggle for linked pages — left on mobile -->
-                    <button
-                      class="selectedItemLink linked-pages-btn"
-                      (click)="toggleLinkedPages($event)"
-                      aria-label="Ouvrir le panneau des pages liées"
-                      matTooltip="Pages liées"
-                    >
-                      <mat-icon aria-hidden="true">chevron_left</mat-icon>
-                      <span class="linked-pages-label">{{ linkedPagesTitle }}</span>
-                      </button>
-                      <!-- Mobile-only FactGrid link (aligned to the right of pages liées) -->
-                      <!-- mobile ID link removed (now shown in sub-header) -->
-                  </div>
+                   <!-- factgrid-global: removed drawer toggle button (linked pages are displayed as a thematic card now) -->
                 </div>
   
               </app-thematic-card>
@@ -287,9 +194,9 @@
               }
             </ng-container>
 
-              <!-- Mobile: render the 'linked pages' (backList) as a thematic card inside
-                   the stacked cards area (only when we have at least one linked item) -->
-                            @if (isMobile && linkedItems?.length) {
+                  <!-- Render the 'linked pages' (backList) as a thematic card inside
+                    the stacked cards area whenever we have at least one linked item -->
+                  @if (linkedItems?.length) {
                               <app-thematic-card class="mobile-linked-pages-card thematic-card--compact" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
                   <!-- Project a small header when rendering mobile-only linked pages so tests can query the title reliably -->
                   <div card-header>
@@ -457,7 +364,6 @@
           </div>
         </div>
       </div>
-    </mat-drawer-content>
-  </mat-drawer-container>
+  </div> <!-- .display-container -->
   }
 }

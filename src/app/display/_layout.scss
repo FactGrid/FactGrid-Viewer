@@ -63,25 +63,13 @@ body {
   background-color: var(--background-page);
 }
 
-.drawer-container {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  background-color: var(--background-page);
-  display: flex;
-  flex-direction: column;
-}
-
-.app-drawer {
-  width: 340px;
-  background-color: var(--background-drawer);
-  box-shadow: var(--shadow-lg);
-}
+/* Drawer UI removed: layout uses a simple full-width container for the display.
+   The template still includes the 'drawer-container' wrapper for historic reasons
+   (and to avoid touching many layout consumers), but drawer-specific styles
+   and fixed-width sidebars have been removed. */
 
 @media (max-width: 1280px) {
-  .app-drawer {
-    width: 300px;
-  }
+  /* No app-drawer on smaller screens — nothing to adjust here anymore. */
 }
 
 .parent {

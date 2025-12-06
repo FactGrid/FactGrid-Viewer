@@ -26,9 +26,7 @@ describe('IframesDisplayComponent', () => {
       {
         property: 'P999',
         label: 'External',
-        claims: [
-          { mainsnak: { datavalue: { value: 'https://example.com' } } },
-        ],
+        claims: [{ mainsnak: { datavalue: { value: 'https://example.com' } } }],
       },
     ];
     fixture.detectChanges();

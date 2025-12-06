@@ -67,7 +67,6 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     results.push(array.slice(i, i + chunkSize));
   }
 
-  
   return results;
 }
 
@@ -220,8 +219,6 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filterInput.setValue('', { emitEvent: false });
     });
 
-
-  
     const overlaySub = this.overlayOpen$?.subscribe();
     if (overlaySub) this.subscriptions.push(overlaySub);
 
@@ -256,12 +253,21 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     }
     this.clickedItemId = itemId;
-    console.log('[Search] onItemRowClick', itemId, 'clicked, current clickedItemId:', this.clickedItemId);
+    console.log(
+      '[Search] onItemRowClick',
+      itemId,
+      'clicked, current clickedItemId:',
+      this.clickedItemId
+    );
     // Changement de couleur temporaire (par exemple 200ms)
     setTimeout(() => {
       this.clickedItemId = null;
       // Always emit selection event so embedding parents can react
-      const hasParent = !!(this.itemSelected && (this.itemSelected as any).observers && (this.itemSelected as any).observers.length);
+      const hasParent = !!(
+        this.itemSelected &&
+        (this.itemSelected as any).observers &&
+        (this.itemSelected as any).observers.length
+      );
       this.itemSelected.emit(itemId);
       // Only navigate when running standalone (no parent subscribers)
       if (!hasParent) {
@@ -606,7 +612,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           // debug: log overlay element and its computed styles so we can inspect in browser devtools
           try {
             if (open) {
-              const pane = document.querySelector('.cdk-overlay-pane.search-items_panel') as HTMLElement | null;
+              const pane = document.querySelector(
+                '.cdk-overlay-pane.search-items_panel'
+              ) as HTMLElement | null;
               if (pane) {
                 const rect = pane.getBoundingClientRect();
               } else {

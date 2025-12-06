@@ -175,15 +175,8 @@ $card-top-offset: 8px;
   padding: 0; /* remove extra offset */
 }
 
-/* Drawer heading: show the 'linked pages' title at the top of the list inside the drawer */
-.drawer-heading {
-  font-size: 1.05rem;
-  font-weight: 600;
-  padding: 10px 16px;
-  color: var(--text-primary, #111);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  margin-bottom: 10px;
-}
+/* Drawer UI removed from layout — keep linked-pages display inside the stacked card area
+   so we don't need the old drawer heading/controls any more. */
 
 /* Hover & focus: match selectedItemLink interactions */
 .linked-pages-btn:hover,
@@ -419,18 +412,6 @@ $card-top-offset: 8px;
   box-shadow: 0 6px 18px rgba(10, 20, 30, 0.04);
 }
 
-/* toolbar project pill */
-.project-sub-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* left: drawer + id ; right: project */
-  padding: 6px 24px; /* Match parent padding roughly */
-  margin-bottom: 0;
-  background-color: #fafafa; /* Subtle background to distinguish from content */
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  position: relative; /* ensure stacking context for z-index */
-  z-index: 110; /* sit above the top-toolbar (z-index 100) so sub-header is never hidden */
-}
 
 /* Place the project header as a proper thematic-card variant that aligns
    with the left/right edges of the child columns. The card is a full-width
@@ -441,33 +422,10 @@ $card-top-offset: 8px;
 /* Full-viewport variant: project header should visually span the full
    viewport width and sit above the grid. Keep the same visual frame (radius
    + shadow) so it looks like other thematic cards but edge-to-edge. */
-:host ::ng-deep app-thematic-card.project-sub-header-card {
-  width: 100vw;
-  max-width: 100vw;
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0 0 10px 0; /* small breathing gap before the grid */
-  border-radius: 0; /* Remove radius to look like a section */
-  box-shadow: none !important; /* Remove shadow to make it invisible */
-  background: transparent !important; /* Transparent background */
-  border: none !important; /* No border */
-  z-index: 50; /* below top-toolbar but above content if needed */
-  padding: 0 !important; /* Remove default card padding to allow precise inner alignment */
-}
 
 /* inner wrapper that should align with the grid gutters.
    With the simplified layout (no card margins, standard parent padding),
    we just need to match the parent's padding. */
-.project-sub-header-card .project-sub-header-inner {
-  box-sizing: border-box;
-  /* Default (Desktop): Parent uses --spacing-lg (32px) */
-  --left-inset: var(--spacing-lg);
-  --right-inset: var(--spacing-lg);
-  width: calc(100% - (var(--left-inset) + var(--right-inset)));
-  margin-left: var(--left-inset);
-  margin-right: var(--right-inset);
-}
 
 /* Large screens (>=1280px) - Parent uses --spacing-lg by default, but let's check _layout.scss.
    Actually _layout.scss doesn't change parent padding on large screens, it stays spacing-lg.
@@ -478,163 +436,22 @@ $card-top-offset: 8px;
    So we can stick to the default. */
 
 /* Small screens — Parent uses --spacing-md (16px) now (updated in _layout.scss) */
-@media (max-width: 813px) {
-  .project-sub-header-card .project-sub-header-inner {
-    --left-inset: var(--spacing-md);
-    --right-inset: var(--spacing-md);
-    width: calc(100% - (var(--left-inset) + var(--right-inset)));
-    margin-left: var(--left-inset);
-    margin-right: var(--right-inset);
-  }
-}
+/* project sub-header card removed — no viewport-specific inner wrapper needed */
 
 /* keep the inner layout of the project sub-header visually neutral so the
    thematic card frame provides the border/background */
-.project-sub-header-card .project-sub-header {
-  /* Match the visual padding of standard card headers:
-     Standard header padding is 6px 16px.
-     Since we removed card padding (3px) globally via --thematic-card-margin:0 and
-     thematic-card padding logic, we need to ensure this header looks right.
-     Actually, thematic-card padding is internal to the card.
-     If we set --thematic-card-margin: 0, the card touches the edge.
-     The card's internal padding is --thematic-card-padding (3px).
-     So content starts at 3px + 16px = 19px.
-     We removed padding on .project-sub-header-card (padding: 0 !important).
-     So we need to add that 19px here. */
-  padding: calc(6px + var(--thematic-card-padding, 3px)) calc(16px + var(--thematic-card-padding, 3px));
-  /* Reduce left padding to bring the drawer button closer to the edge */
-  padding-left: 0; 
-  background: transparent; /* card's background is provided by the component */
-  border: none;
-  display: flex;
-  align-items: center; /* ensure left/right items are vertically centered */
-  justify-content: space-between;
-}
 
-.project-sub-header-left,
-.project-sub-header-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #555;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
 
-.project-sub-header-left {
-  justify-content: flex-start;
-}
-
-.project-sub-header-right {
-  justify-content: flex-end;
-}
 
 /* make the project label anchor appearance neutral but interactive */
-.project-sub-header-right .project-link {
-  display: inline-flex;
-  align-items: center;
-  /* Ensure the project label is clearly visible */
-  color: var(--text-primary, #111);
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  line-height: 1.2;
-  max-width: 100%; /* Ensure it can shrink */
-}
 
-.project-sub-header-right .project-link .project-name {
-  /* Simple text alignment */
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-.project-sub-header-right .project-link:hover,
-.project-sub-header-right .project-link:focus {
-  text-decoration: underline;
-}
 
-.project-sub-header .project-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 320px; /* Allow more space than in toolbar */
-}
 
-@media (max-width: 813px) {
-  .project-sub-header-right .project-link {
-    /* Mobile: reduce padding */
-    padding: 2px 4px;
-    max-width: 100%; /* Ensure it doesn't overflow */
-    overflow: hidden; /* Contain the text */
-  }
+/* project-specific header and drawer related mobile tweaks removed — replaced by a single
+   top-toolbar layout with the project title shown above the search field. */
 
-  .project-sub-header-right .project-link .project-name {
-    /* Mobile: ellipsis for long names */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block; /* Ensure ellipsis works */
-    max-width: 100%; /* Let container dictate width */
-    font-size: 0.9rem;
-  }
-  
-  /* Ensure the right container allows shrinking */
-  .project-sub-header-right {
-    min-width: 0;
-    flex: 1;
-    justify-content: flex-end;
-    overflow: hidden; /* Crucial for flex child truncation */
-    /* hide the right project label on mobile — we show the title above the search */
-      display: none;
-    }
-
-    /* Template-driven helper: force-hide right-hand project info when the component
-       is in mobile-mode (isMobile=true). This ensures tests can assert the same
-       behavior regardless of the test runner viewport size. */
-    .project-sub-header-right.mobile-hidden {
-      display: none !important;
-  }
-
-  /* reduce vertical space for the chevron drawer button under the toolbar-separator */
-  .project-sub-header-card {
-    /* remove most of the breathing on mobile so the content grid sits closer */
-    margin: 0 0 0 0; /* remove bottom gap on mobile */
-  }
-
-  .project-sub-header {
-    padding: 2px 0; /* minimal vertical padding */
-    min-height: 40px; /* keep touch target viable */
-    margin-bottom: 4px;
-  }
-
-  .mobile-project-title {
-    display: block;
-    text-align: center;
-    width: 100%;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-primary, #111);
-    margin-top: 6px;
-    margin-bottom: 4px;
-    padding: 0 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-.drawer-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: 36px;
-}
+/* drawer toggle / old drawer controls removed — UI now renders linked pages as a thematic card */
 
 .title-card-id {
   position: absolute;
@@ -657,40 +474,34 @@ $card-top-offset: 8px;
 }
 
 @media (max-width: 600px) {
-  .project-sub-header {
-    padding: 6px 0; /* remove lateral padding */
-    min-height: 48px; /* Ensure sufficient height so it doesn't collapse */
-    margin-bottom: 10px; /* small breathing room under the sub-header */
-  }
+  /* project sub-header / drawer-specific rules removed in favor of a simpler top-toolbar layout */
 
-  /* Drawer button pinned to the very left of viewport */
-  .project-sub-header-left .drawer-toggle-btn {
-    /* Pull button to the exact left gutter of the viewport by using the
-       inner wrapper's --left-inset. This keeps the button visually flush
-       with the app edge across breakpoints instead of hardcoded offsets. */
-    margin-left: calc(-1 * var(--left-inset));
-    /* make sure the button has a small visual offset when needed */
-    padding-left: 6px;
-  }
+  /* Drawer button removed — no toggle present with the new top-toolbar layout */
 
-  /* On narrow screens, align the project info to the right edge of the viewport */
-  .project-sub-header-right {
-    padding-right: 6px;
-    justify-content: flex-end;
-    /* Pull the right block slightly out to the viewport edge so the
-       project name sits closer to the right on narrow screens */
-    margin-right: calc(-1 * var(--right-inset));
-  }
-
-  .project-sub-header .project-name {
-    max-width: 100%; /* Let flex container handle it */
-  }
+  /* project-sub-header references removed — nothing to align on narrow screens */
 
     /* Removed content-nudging rules: the project sub-header card is no longer
       rendered in mobile, so we keep normal layout behavior for the grid and
       avoid artificial negative margins / padding hacks. */
 
 } /* end @media (max-width: 600px) */
+
+/* Make the project title above the search visible on all viewports (previously
+   it was mobile-only). This ensures the project label is always prominent. */
+.mobile-project-title {
+  display: block;
+  text-align: center;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary, #111);
+  margin-top: 6px;
+  margin-bottom: 4px;
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .top-toolbar.item-open .search-host {
   width: min(360px, 38%);
@@ -1376,29 +1187,9 @@ body {
   background-color: var(--background-page);
 }
 
-.drawer-container {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  background-color: var(--background-page);
-  display: flex;
-  flex-direction: column;
-}
-
-.app-drawer {
-  width: 340px;
-  /* Ensure drawer is opaque and uses project drawer background color */
-  /* harden: ensure fully opaque white background so the drawer is never transparent */
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-  box-shadow: var(--shadow-lg);
-}
-
-@media (max-width: 1280px) {
-  .app-drawer {
-    width: 300px;
-  }
-}
+/* Drawer container / fixed side-drawer CSS removed — we keep a simple full-width
+   content layout for the Display component. The HTML still uses class="drawer-container"
+   for compatibility with older markup but no drawer-specific styles are applied here. */
 
 .parent {
   display: flex;
@@ -1485,15 +1276,7 @@ $card-top-offset: 8px;
    at collapsing vertical spacing so the first thematic card sits visually flush
    under the project sub-header and drawer affordance. */
 @media (max-width: 420px) {
-  .project-sub-header-card {
-    margin-bottom: 0 !important; /* no breathing gap */
-    padding-bottom: 0 !important;
-  }
-
-  .project-sub-header {
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
+  /* project sub-header / drawer removed — no special narrow-screen tweaks required */
 
   /* pull the grid up a little more for very small screens */
   .parent {
@@ -1958,25 +1741,9 @@ button[mat-icon-button] .mat-icon {
   color: var(--primary-color) !important;
 }
 
-:host ::ng-deep .mat-drawer-content {
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Safety: ensure Angular Material drawer host element is opaque when opened */
-:host ::ng-deep .mat-drawer,
-:host ::ng-deep .mat-drawer .mat-drawer-inner-container,
-:host ::ng-deep .mat-drawer .mat-drawer-content {
-  /* ensure all internal material drawer containers are opaque */
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-  color: var(--text-primary) !important;
-}
-
-:host ::ng-deep .mat-drawer-container {
-  position: relative;
-}
+/* Angular Material drawer overrides removed: no host-level styles required because
+   drawers are no longer used by DisplayComponent. If Material Drawer is reintroduced
+   here later, add targeted overrides instead of global rules. */
 
 /* ========================================
    SPINNER ET ÉTATS DE CHARGEMENT

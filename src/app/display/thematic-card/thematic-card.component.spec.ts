@@ -113,7 +113,10 @@ describe('ThematicCardComponent', () => {
   it('collapse button exposes aria-label and keeps text for non-mobile', () => {
     component.collapsible = true;
     component.startCollapsed = true;
-    component.ngOnChanges({ startCollapsed: new SimpleChange(null, true, true), collapsible: new SimpleChange(null, true, true) });
+    component.ngOnChanges({
+      startCollapsed: new SimpleChange(null, true, true),
+      collapsible: new SimpleChange(null, true, true),
+    });
     fixture.detectChanges();
 
     const el: HTMLElement = fixture.nativeElement;

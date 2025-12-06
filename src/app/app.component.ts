@@ -16,7 +16,6 @@ import { SelectedResearchFieldService } from './services/selected-research-field
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { SelectedLangService } from './selected-lang.service';
-import { DrawerService } from './services/drawer.service';
 
 export interface Lang {
   name: string;
@@ -48,7 +47,6 @@ export class AppComponent implements OnInit {
   private request = inject(RequestService);
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
   private lang = inject(SelectedLangService);
-  private drawerService = inject(DrawerService);
 
   langs: Lang[] = [
     { name: 'English', code: 'en' },
@@ -136,7 +134,6 @@ export class AppComponent implements OnInit {
   // Project selection UI moved into Search / Display components —
   // method toggleResearchField removed from template usage.
 
-  toggleDrawer() {
-    this.drawerService.toggle();
-  }
+  // drawer/toggle removed — the app no longer opens a global side drawer from the
+  // top toolbar. Any drawer-related UI was migrated to in-content thematic cards.
 }

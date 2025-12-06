@@ -96,7 +96,8 @@ describe('SearchComponent', () => {
     (component as any).researchFields$.next((component as any).researchFields);
     fixture.detectChanges();
 
-    const btn: HTMLButtonElement | null = fixture.nativeElement.querySelector('.project-select-btn');
+    const btn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('.project-select-btn');
     expect(btn).withContext('project button present').toBeTruthy();
 
     // open the overlay
@@ -114,7 +115,9 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
     tick(50);
 
-    expect(overlayContainer.getContainerElement().querySelector('.compact-project-panel')).toBeNull();
+    expect(
+      overlayContainer.getContainerElement().querySelector('.compact-project-panel')
+    ).toBeNull();
     const srf = TestBed.inject(SelectedResearchFieldService);
     // fall back to checking existence of selected item in the service
     const sel = srf.getSelectedResearchField();
@@ -122,10 +125,16 @@ describe('SearchComponent', () => {
   }));
 
   it('compact wrapper contains history button and input', fakeAsync(() => {
-    const wrapper: HTMLElement | null = fixture.nativeElement.querySelector('.new-item-search-container');
+    const wrapper: HTMLElement | null = fixture.nativeElement.querySelector(
+      '.new-item-search-container'
+    );
     expect(wrapper).withContext('compact wrapper present').toBeTruthy();
-    expect(wrapper!.querySelector('.new-history-btn')).withContext('history button present in wrapper').toBeTruthy();
-    expect(wrapper!.querySelector('.new-search-input')).withContext('compact input present in wrapper').toBeTruthy();
+    expect(wrapper!.querySelector('.new-history-btn'))
+      .withContext('history button present in wrapper')
+      .toBeTruthy();
+    expect(wrapper!.querySelector('.new-search-input'))
+      .withContext('compact input present in wrapper')
+      .toBeTruthy();
   }));
 
   it('renders label when selectedItemsList uses top-level label property', fakeAsync(() => {
@@ -168,7 +177,9 @@ describe('SearchComponent', () => {
     tick(250);
 
     expect(captured).toEqual(['Q77']);
-    expect(overlayContainer.getContainerElement().querySelector('.compact-history-panel')).toBeNull();
+    expect(
+      overlayContainer.getContainerElement().querySelector('.compact-history-panel')
+    ).toBeNull();
   }));
 
   it('clicking the history button twice toggles the history overlay (open -> close)', fakeAsync(() => {
@@ -185,14 +196,18 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
     tick(50);
 
-    expect(overlayContainer.getContainerElement().querySelector('.compact-history-panel')).toBeTruthy();
+    expect(
+      overlayContainer.getContainerElement().querySelector('.compact-history-panel')
+    ).toBeTruthy();
 
     // Close by clicking the button again
     btn!.click();
     fixture.detectChanges();
     tick(50);
 
-    expect(overlayContainer.getContainerElement().querySelector('.compact-history-panel')).toBeNull();
+    expect(
+      overlayContainer.getContainerElement().querySelector('.compact-history-panel')
+    ).toBeNull();
   }));
 
   it('clicking the backdrop closes the history overlay', fakeAsync(() => {
@@ -214,6 +229,8 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
     tick(50);
 
-    expect(overlayContainer.getContainerElement().querySelector('.compact-history-panel')).toBeNull();
+    expect(
+      overlayContainer.getContainerElement().querySelector('.compact-history-panel')
+    ).toBeNull();
   }));
 });

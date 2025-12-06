@@ -5,7 +5,6 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { DisplayComponent } from './display.component';
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { DrawerService } from '../services/drawer.service';
 import { BackListService } from '../services/back-list.service';
 import { BackListDetailsService } from '../services/back-list-details.service';
 import { of } from 'rxjs';
@@ -53,16 +52,16 @@ describe('DisplayComponent', () => {
     expect((spy.calls.mostRecent().args as any[])[0]).toContain(expected);
   });
 
-  it('should render contextual "Pages liées" button and call DrawerService.toggle() when clicked', () => {
-    const drawerService = TestBed.inject(DrawerService);
-    const spy = spyOn(drawerService, 'toggle');
-
-    // ensure existence of the top section; we verify behaviour via the exposed method
+  it('should render linked pages as a thematic card when item and linkedItems exist', () => {
     component.item = { id: 'Q1', label: 'Test' } as any;
+    component.id = 'Q1';
+    component.linkedItems = [{ id: 'QZ', label: 'Linked Z' } as any];
+    component.linkedPagesTitle = 'Linked pages now';
     fixture.detectChanges();
 
-    component.toggleLinkedPages();
-    expect(spy).toHaveBeenCalled();
+    const cardTitle = fixture.nativeElement.querySelector('.typo-thematic-card-title');
+    expect(cardTitle).toBeTruthy();
+    expect(cardTitle!.textContent).toContain('Linked pages now');
   });
 
   it('should show selected item id in sub-header and link to FactGrid', () => {
@@ -77,28 +76,21 @@ describe('DisplayComponent', () => {
     expect(idLink!.getAttribute('href')).toContain('Q42');
   });
 
-  it('should use the translated linkedPagesTitle for the button label', () => {
+  it('should show linkedPagesTitle on the linked pages card when linkedItems are present', () => {
     component.item = { id: 'Q7' } as any;
     component.id = 'Q7';
     component.linkedPagesTitle = 'pages liées test';
+    component.linkedItems = [{ id: 'Q1', label: 'L1' } as any];
     fixture.detectChanges();
 
-    const label = fixture.nativeElement.querySelector('.linked-pages-label');
-    expect(label).toBeTruthy();
-    expect(label.textContent.trim()).toBe('pages liées test');
+    const title = fixture.nativeElement.querySelector('.typo-thematic-card-title');
+    expect(title).toBeTruthy();
+    expect(title.textContent).toContain('pages liées test');
   });
 
-  it('should display the linkedPagesTitle as a heading at the top of the drawer content', () => {
-    component.linkedPagesTitle = 'Linked pages header test';
-    component.item = { id: 'Q100' } as any;
-    fixture.detectChanges();
+  // drawer no longer used: we render linked pages as thematic card inside the grid
 
-    const heading: HTMLElement | null = fixture.nativeElement.querySelector('.drawer-heading');
-    expect(heading).withContext('drawer heading exists').toBeTruthy();
-    expect(heading!.textContent!.trim()).toBe('Linked pages header test');
-  });
-
-  it('close icon button should exist and use the toolbar-btn style', () => {
+  it('close icon / drawer button should not exist (drawer removed)', () => {
     // prepare
     component.item = { id: 'Q7' } as any;
     component.id = 'Q7';
@@ -106,30 +98,15 @@ describe('DisplayComponent', () => {
     fixture.detectChanges();
 
     const btn: HTMLButtonElement | null = fixture.nativeElement.querySelector('.close-btn');
-    expect(btn).withContext('close button exists').toBeTruthy();
-    // the close button now displays the translated main page label
-    expect(btn!.getAttribute('aria-label')).toBe(component.mainPage);
-    const labelSpan: HTMLElement | null = btn!.querySelector('.close-label');
-    expect(labelSpan).withContext('close button shows mainPage text').toBeTruthy();
-    expect(labelSpan!.textContent!.trim()).toBe(component.mainPage);
-
-    // ensure a directional affordance exists (arrow pointing right)
-    const dirIcon = btn!.querySelector('.direction-icon');
-    expect(dirIcon).withContext('directional icon present in close button').toBeTruthy();
-    // the icon should render the chevron_right glyph
-    expect(dirIcon!.textContent!.trim()).toBe('chevron_right');
+    expect(btn).withContext('close button should not be present since drawer removed').toBeNull();
   });
 
-  it('drawer element should exist and have an opaque background when opened', () => {
-    component.drawerOpened = true;
+  it('drawer UI removed — app-drawer should not be present', () => {
+    component.item = { id: 'Q1' } as any;
     fixture.detectChanges();
 
     const drawerEl: HTMLElement | null = fixture.nativeElement.querySelector('.app-drawer');
-    expect(drawerEl).withContext('drawer element present').toBeTruthy();
-
-    // inline style was added to force an opaque white background
-    const inlineBg = (drawerEl as HTMLElement).getAttribute('style') || '';
-    expect(inlineBg).toContain('background: #ffffff');
+    expect(drawerEl).withContext('drawer element should not be present after refactor').toBeNull();
   });
 
   it('should fall back to English label when user-lang label is empty', () => {
@@ -145,7 +122,10 @@ describe('DisplayComponent', () => {
     );
 
     // Ensure setBackList converts pages into simple {id, label} entries
-    spyOn(backListDetails, 'setBackList').and.returnValues([{ id: 'Q1', label: '' }], [{ id: 'Q1', label: 'English name' }]);
+    spyOn(backListDetails, 'setBackList').and.returnValues(
+      [{ id: 'Q1', label: '' }],
+      [{ id: 'Q1', label: 'English name' }]
+    );
 
     component.itemId = 'Q1';
     (component as any).loadBackList();
@@ -165,7 +145,10 @@ describe('DisplayComponent', () => {
       ])
     );
 
-    spyOn(backListDetails, 'setBackList').and.returnValues([{ id: 'Q2', label: '' }], [{ id: 'Q2', label: '' }]);
+    spyOn(backListDetails, 'setBackList').and.returnValues(
+      [{ id: 'Q2', label: '' }],
+      [{ id: 'Q2', label: '' }]
+    );
 
     component.itemId = 'Q2';
     (component as any).loadBackList();
@@ -222,38 +205,22 @@ describe('DisplayComponent', () => {
     expect(component.headerAnimating).toBeFalse();
   });
 
-  it('should show selected project in sub-header when present', () => {
+  it('shows the selected project label above the search when present', () => {
     component.item = null; // make header show
     component.currentProject = { id: 'Q10', name: 'My project', description: 'Sample' } as any;
     fixture.detectChanges();
 
-    const cardEl: HTMLElement | null = fixture.nativeElement.querySelector('app-thematic-card.project-sub-header-card');
-    expect(cardEl).withContext('thematic card wrapper exists for project sub-header').toBeTruthy();
+    // Since the project sub-header card is removed, we should see the project title above the search
+    const mobileTitle: HTMLElement | null =
+      fixture.nativeElement.querySelector('.mobile-project-title');
+    expect(mobileTitle).withContext('project title shown in top toolbar').toBeTruthy();
+    expect(mobileTitle!.textContent).toContain('My project');
 
-    // ensure the project card is NOT inside the .parent column container
-    const cardInsideParent: HTMLElement | null = fixture.nativeElement.querySelector('.parent app-thematic-card.project-sub-header-card');
-    expect(cardInsideParent).withContext('project card is not nested inside .parent').toBeFalsy();
-
-    // confirm it exists as a direct child near the layout top (inside mat-drawer-content)
-    const topCard = fixture.nativeElement.querySelector('mat-drawer-content > app-thematic-card.project-sub-header-card');
-    expect(topCard).withContext('project thematic card is present above the grid inside mat-drawer-content').toBeTruthy();
-
-    // inner wrapper should align the visual edges with the grid gutters
-    const innerWrapper = fixture.nativeElement.querySelector('.project-sub-header-inner');
-    expect(innerWrapper).withContext('project sub-header inner wrapper exists to match the grid gutters').toBeTruthy();
-
-    // label should appear inside the project-link element
-    const projectLink = fixture.nativeElement.querySelector('.project-link');
-    expect(projectLink).withContext('project link exists').toBeTruthy();
-    expect(projectLink!.querySelector('.project-name')).toBeTruthy();
-
-    const nameEl: HTMLElement | null = fixture.nativeElement.querySelector('.project-name');
-    expect(nameEl).withContext('project label present').toBeTruthy();
-    expect(nameEl!.textContent).toContain('My project');
-
-    const linkEl: HTMLAnchorElement | null = fixture.nativeElement.querySelector('.project-link');
-    expect(linkEl).withContext('project link exists').toBeTruthy();
-    expect(linkEl!.getAttribute('href')).toContain('Q10');
+    // project-sub-header-card should not be present
+    const cardEl: HTMLElement | null = fixture.nativeElement.querySelector(
+      'app-thematic-card.project-sub-header-card'
+    );
+    expect(cardEl).withContext('project sub-header card should not be present').toBeNull();
   });
 
   it('mobile: shows centered project title above search and hides right label', () => {
@@ -262,17 +229,26 @@ describe('DisplayComponent', () => {
     component.isMobile = true;
     fixture.detectChanges();
 
-    const mobileTitle: HTMLElement | null = fixture.nativeElement.querySelector('.mobile-project-title');
+    const mobileTitle: HTMLElement | null =
+      fixture.nativeElement.querySelector('.mobile-project-title');
     expect(mobileTitle).withContext('mobile project title shown in top toolbar').toBeTruthy();
     expect(mobileTitle!.textContent).toContain('My project');
 
     // on mobile the right-hand project block is not rendered (we show a compact title above the search)
-    const rightBlock: HTMLElement | null = fixture.nativeElement.querySelector('.project-sub-header-right');
-    expect(rightBlock).withContext('right project sub-header should be absent on mobile').toBeNull();
+    const rightBlock: HTMLElement | null = fixture.nativeElement.querySelector(
+      '.project-sub-header-right'
+    );
+    expect(rightBlock)
+      .withContext('right project sub-header should be absent on mobile')
+      .toBeNull();
 
     // on mobile the project sub-header card should not be rendered (we show a centered title instead)
-    const projectCardMobile: HTMLElement | null = fixture.nativeElement.querySelector('app-thematic-card.project-sub-header-card');
-    expect(projectCardMobile).withContext('project sub-header card should be absent on mobile').toBeNull();
+    const projectCardMobile: HTMLElement | null = fixture.nativeElement.querySelector(
+      'app-thematic-card.project-sub-header-card'
+    );
+    expect(projectCardMobile)
+      .withContext('project sub-header card should be absent on mobile')
+      .toBeNull();
   });
 
   it('mobile: should render linked pages as a thematic card when backList exists', () => {
@@ -283,15 +259,21 @@ describe('DisplayComponent', () => {
     component.linkedItems = [{ id: 'QX', label: 'Linked Item A' } as any];
     component.linkedPagesTitle = 'Pages liées mobile';
     fixture.detectChanges();
-    const cardTitle: HTMLElement | null = fixture.nativeElement.querySelector('.typo-thematic-card-title');
-    expect(cardTitle).withContext('thematic card title present for linked pages on mobile').toBeTruthy();
+    const cardTitle: HTMLElement | null = fixture.nativeElement.querySelector(
+      '.typo-thematic-card-title'
+    );
+    expect(cardTitle)
+      .withContext('thematic card title present for linked pages on mobile')
+      .toBeTruthy();
     expect(cardTitle!.textContent).toContain('Pages liées mobile');
 
     // Ensure the linked item label is present inside the card content
     expect(fixture.nativeElement.textContent).toContain('Linked Item A');
 
     // There should be an anchor linking to the item id inside the card
-    const mobileLink: HTMLAnchorElement | null = fixture.nativeElement.querySelector('app-thematic-card a.selectedItemLink');
+    const mobileLink: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      'app-thematic-card a.selectedItemLink'
+    );
     expect(mobileLink).withContext('mobile linked pages card contains anchor').toBeTruthy();
     // routerLink should produce an href in the rendered DOM pointing to '/item/QX'
     expect(mobileLink!.getAttribute('href')).toContain('/item/QX');
@@ -303,7 +285,8 @@ describe('DisplayComponent', () => {
     fixture.detectChanges();
 
     // Drawer heading is only rendered for non-mobile view; on mobile it should be absent
-    const drawerHeading: HTMLElement | null = fixture.nativeElement.querySelector('.drawer-heading');
+    const drawerHeading: HTMLElement | null =
+      fixture.nativeElement.querySelector('.drawer-heading');
     expect(drawerHeading).toBeNull();
   });
 });

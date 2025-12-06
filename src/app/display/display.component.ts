@@ -9,7 +9,7 @@ import {
   ViewContainerRef,
   ComponentRef as NgComponentRef,
   SimpleChange,
-  } from '@angular/core';
+} from '@angular/core';
 import { trigger, state, style, transition, animate, AnimationEvent } from '@angular/animations';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -41,7 +41,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgClass } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { DrawerService } from '../services/drawer.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 import { ItemDisplayDispatcherService } from './services/item-display-dispatcher.service';
@@ -102,7 +101,10 @@ import { RequestService } from '../services/request.service';
     ]),
     trigger('searchMove', [
       state('home', style({ transform: 'translateY(0)', width: 'min(720px, 86%)', opacity: 1 })),
-      state('pinned', style({ transform: 'translateY(-6px)', width: 'min(360px, 38%)', opacity: 0.95 })),
+      state(
+        'pinned',
+        style({ transform: 'translateY(-6px)', width: 'min(360px, 38%)', opacity: 0.95 })
+      ),
       // subtle movement when pinning the search widget
       transition('home => pinned', [animate('220ms ease-out')]),
       transition('pinned => home', [animate('200ms ease-in')]),
@@ -134,7 +136,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private observer = inject(BreakpointObserver);
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
-  private drawerService = inject(DrawerService);
 
   // Données principales
   item: any;
@@ -219,7 +220,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   isTranscription = false;
   isInfo = false;
   isMobile = false;
-  drawerOpened = false;
   isAliases = false;
 
   // visual state for the startup header and search transition
@@ -275,15 +275,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription2: Subscription;
   subscription3: Subscription;
 
-  // Public helper used by the template to open/close the linked-pages drawer
-  // We keep the DrawerService as the single source of truth for drawer state
-  toggleLinkedPages(event?: Event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    this.drawerService.toggle();
-  }
+  // Drawer removed — no toggle helper required
   sparqlSubscription: Subscription | null = null;
   sparqlCardsSubscription: Subscription | null = null;
   selectedResearchFieldSubscription: Subscription;
@@ -332,7 +324,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.isSpinner = true;
     this.isInfo = false;
-    this.drawerOpened = false;
     this.newSearch = this.lang.getTranslation('newSearch', this.lang.selectedLang);
     this.linkedPagesTitle = this.lang.getTranslation('linkedPagesTitle', this.lang.selectedLang);
     this.mainPage = this.lang.getTranslation('mainPage', this.lang.selectedLang);
@@ -369,10 +360,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.lang.getTranslation('subtitle_life_and_family', this.lang.selectedLang) ||
       'Life and family';
 
-    // Abonnement aux commandes du drawer
+    // Subscription to route params (item id)
     this.subscription0 = this.route.paramMap.subscribe((params) => {
       this.itemId = params.get('id');
-      this.drawerOpened = false; // Fermer le drawer à chaque changement d'item
       if (this.itemId) {
         this.loadBackList();
         this.loadItem();
@@ -385,18 +375,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    // Abonnement aux commandes du drawer depuis app.component
-    const drawerSubscription = this.drawerService.commands$.subscribe((command) => {
-      if (command === 'toggle') {
-        this.drawerOpened = !this.drawerOpened;
-      } else if (command === 'open') {
-        this.drawerOpened = true;
-      } else if (command === 'close') {
-        this.drawerOpened = false;
-      }
-      this.drawerService.setState(this.drawerOpened);
-    });
-    this.subscriptions.push(drawerSubscription);
+    // Drawer removed — no subscription needed.
 
     // Keep the component aware of small-handset viewports globally so that
     // template conditionals for mobile-only UI (e.g. .mobile-project-title)
@@ -1232,7 +1211,12 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     // If we're on the homepage (no current item), animate header first
-    console.log('[Display] onSearchItemSelected received', itemId, 'current item:', this.item ? this.item[0]?.id || 'present' : 'none');
+    console.log(
+      '[Display] onSearchItemSelected received',
+      itemId,
+      'current item:',
+      this.item ? this.item[0]?.id || 'present' : 'none'
+    );
     if (!this.item) {
       // play header closing animation and pin the search
       this.pendingNavigationItemId = itemId;
@@ -1268,7 +1252,12 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Animation callback: when header closing animation completes, navigate to pending item
   onHeaderAnimationDone(e: AnimationEvent) {
-    console.log('[Display] header animation done event', e.toState, 'pending id', this.pendingNavigationItemId);
+    console.log(
+      '[Display] header animation done event',
+      e.toState,
+      'pending id',
+      this.pendingNavigationItemId
+    );
     // animation finished — clear the visual flag so overlays and UI feedback hide
     this.headerAnimating = false;
     // ensure the animation finished going to 'closed'

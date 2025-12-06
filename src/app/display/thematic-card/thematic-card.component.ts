@@ -17,7 +17,13 @@ import { trigger, transition, style, animate } from '@angular/animations';
 @Component({
   selector: 'app-thematic-card',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatTooltipModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+  ],
   templateUrl: './thematic-card.component.html',
   styleUrls: ['./thematic-card.component.scss'],
   encapsulation: ViewEncapsulation.None,
