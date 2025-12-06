@@ -27,9 +27,13 @@
   font-weight: 700;
   letter-spacing: 0.8px;
   font-size: 24px; /* larger to balance toolbar icons */
-  color: #174a7a; /* navy / marine blue (not too dark) */
+  color: #1976d2; /* use same blue as the search loupe (active) */
   text-shadow: 0 1px 0 rgba(255,255,255,0.85); /* subtle emboss */
   pointer-events: none; /* don't block clicks in the toolbar */
+  padding: 6px 12px;
+  border: 1px solid #000; /* black border */
+  border-radius: 8px;
+  background: rgba(255,255,255,0.9);
   white-space: nowrap;
   transform-origin: center center;
 }
