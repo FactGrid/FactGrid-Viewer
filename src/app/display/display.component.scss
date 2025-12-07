@@ -46,6 +46,183 @@ $card-top-offset: 8px;
   color: #222;
 }
 
+.mobile-project-title, .project-title {
+  display: inline-flex;
+  align-items: center; /* vertical-align with the text */
+  gap: 4px; /* reduced gap so icon sits closer to the text */
+
+  .mobile-project-name, .project-name {
+    color: #000 !important; /* keep the project name black */
+    font-size: 0.98rem;
+    line-height: 1; /* tighter line height so icon centers properly */
+    text-decoration: none;
+  }
+
+  /* keep the clear button visually small and aligned */
+  .clear-project {
+    min-width: 26px !important;
+    width: 26px !important;
+    height: 26px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-left: 2px !important;
+    border-radius: 4px !important;
+    color: rgba(0, 0, 0, 0.6) !important; /* subtle dark icon, leaves project name fully black */
+    background: transparent !important;
+  }
+
+  /* When using a mat-chip as a compact clear control (mobile) ensure it
+     visually matches the button variant and remains tightly aligned with
+     the project name. */
+  mat-chip.clear-project {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px !important;
+    min-width: 20px !important;
+    height: 26px !important;
+    line-height: 1 !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    color: rgba(0, 0, 0, 0.6) !important;
+    font-weight: 400 !important;
+  }
+
+  /* Stronger color rule for the inner remove icon (Material can style this
+     differently). Make the cross solid and visible on all backgrounds. */
+  mat-chip.clear-project .mat-icon,
+  mat-chip.clear-project .mat-mdc-chip-remove,
+  .clear-project .mat-icon {
+    color: rgba(0, 0, 0, 0.9) !important;
+    vertical-align: middle !important;
+  }
+
+  /* scale down the material icon inside the button */
+  .clear-project .mat-icon {
+    font-size: 16px !important;
+    line-height: 1 !important;
+  }
+
+  /* Desktop tweak: the chip rendered inline can be slightly lower than the
+     visual center of the single-line title on some fonts/browsers. Apply a
+     small negative translateY only for desktop (non-mobile) to visually
+     center the chip against a single-line title without affecting mobile
+     (where absolute positioning is used). */
+  /* Desktop: deterministic centering (avoid magic translateY). Using explicit
+     box dimensions + flex centering is more robust across browsers. */
+  @media (min-width: 701px) {
+    .clear-project {
+      height: 28px !important;
+      min-width: 28px !important;
+      line-height: 28px !important;
+      padding: 0 6px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transform: none !important;
+      margin-left: 4px !important;
+    }
+
+    mat-chip.clear-project {
+      height: 28px !important;
+      line-height: 28px !important;
+      padding: 0 6px !important;
+    }
+
+    /* Keep the internal touch target accessible but avoid growing layout footprint */
+    :host ::ng-deep .mobile-project-title .clear-project .mat-mdc-button-touch-target,
+    :host ::ng-deep .project-title .clear-project .mat-mdc-button-touch-target {
+      width: 44px !important;
+      height: 44px !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+    }
+  }
+}
+
+
+/* Mobile specific tweaks: reduce the perceived weight of the project title
+   and make the clear icon visually match the text. */
+@media (max-width: 700px) {
+  .mobile-project-title, .project-title {
+    position: relative; /* allow absolute positioning of the chip for consistent alignment */
+    .mobile-project-name, .project-name {
+      font-weight: 300 !important; /* slightly lighter on mobile */
+      font-size: 0.96rem !important;
+    }
+
+    .clear-project {
+      width: 24px !important;
+      height: 24px !important;
+      line-height: 24px !important;
+      color: rgba(0, 0, 0, 0.9) !important; /* stronger contrast so icon appears similar weight */
+      margin-left: 2px !important; /* slightly tighter spacing on mobile */
+    }
+
+    .clear-project .mat-icon {
+      font-size: 15px !important;
+      color: rgba(0,0,0,0.9) !important;
+    }
+  }
+
+  /* Material MDC creates an internal touch target span which defaults to 48px.
+     That can create unexpected spacing/visual "air" around the icon. We
+     override it here (scoped to the component) to make the touch target match
+     the smaller icon size so the visible cross sits closer to the text while
+     preserving a reasonable click area. */
+  :host ::ng-deep .mobile-project-title .clear-project .mat-mdc-button-touch-target,
+  :host ::ng-deep .project-title .clear-project .mat-mdc-button-touch-target {
+    /* keep the recommended touch target while allowing it to overlap the
+       button area instead of increasing its layout footprint */
+    width: 44px !important;
+    height: 44px !important;
+    left: 50% !important; /* keep it centered within the button */
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  /* Keep the anchor and button packed tightly */
+  .mobile-project-title, .project-title {
+     /* Prevent wrapping so the close icon cannot be pushed to a new line. The
+       anchor will shrink and show an ellipsis when required keeping the icon
+       visually attached to the title. */
+     white-space: nowrap;
+    overflow: hidden;
+
+     /* On mobile we often render a two-line title. `align-items:center` was
+       centering the chip relative to the full block which visually placed
+       the chip slightly below the middle of the first line. Align top and
+       nudge the chip vertically so it visually centers against the first
+       line of the wrapped title. */
+     align-items: flex-start;
+
+    .mobile-project-name, .project-name {
+      display: inline-block; /* predictable inline sizing */
+      max-width: calc(100% - 52px); /* leave room for the button without wrapping */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      line-height: 1.05; /* slightly taller so first line center is easier to match */
+    }
+
+    /* Allow the touch-target to visually overflow the button without pushing
+       layout — ensures accessibility while keeping visual proximity. */
+    /* Position the clear control absolutely so it's always aligned to the
+       top area of the title container — this keeps the chip visually aligned
+       to the first line whether the title wraps to 1, 2 or 3 lines. */
+    .clear-project {
+      overflow: visible !important;
+      position: absolute !important;
+      right: 6px !important; /* small inset from the right */
+      top: 6px !important; /* anchor to top area (visually matches first line) */
+      margin-top: 0 !important; /* reset margin variant used earlier */
+    }
+  }
+}
+
 /* Wiki entries: keep stacking behavior and mobile wrapping here */
 .external-links .header-spacer .wikiEntry {
   display: block;
@@ -518,7 +695,7 @@ $card-top-offset: 8px;
 
 /* Make the project title above the search visible on all viewports (previously
    it was mobile-only). This ensures the project label is always prominent. */
-.mobile-project-title {
+  .mobile-project-title, .project-title {
   display: inline-block; /* avoid stretching full width so centering + max-width works */
   text-align: center;
   font-size: 1rem;
@@ -537,7 +714,7 @@ $card-top-offset: 8px;
 
 /* On desktop align project label to the left to match toolbar layout */
 @media (min-width: 700px) {
-  .mobile-project-title {
+  .mobile-project-title, .project-title {
     text-align: left;
     width: auto;
     margin-left: 8px; /* a small gap from the left controls */
@@ -547,7 +724,7 @@ $card-top-offset: 8px;
 
 /* When the display toolbar is in home-state (homepage), keep the project title centered
    regardless of viewport width so the label appears visually centered on the landing page. */
-.top-toolbar.home-state .mobile-project-title {
+.top-toolbar.home-state .mobile-project-title, .top-toolbar.home-state .project-title {
   text-align: center !important;
   margin-left: auto !important;
   margin-right: auto !important;

@@ -29,14 +29,27 @@
              is selected. We therefore only render the title when id !== 'all' and when the
              name is not the placeholder '-' (legacy placeholder used in the project list). -->
         @if (currentProject && currentProject.id !== 'all' && currentProject.name && currentProject.name.trim() !== '-') {
-          <a
-            class="mobile-project-title selectedItemLink"
-            [routerLink]="['/item', currentProject.id]"
-            (click)="$event.stopPropagation()"
-            [attr.aria-label]="currentProject.name + ' — ouvrir'"
-          >
-            {{ currentProject.name }}
-          </a>
+          <div class="mobile-project-title project-title selectedItemLink">
+            <a
+              class="mobile-project-name project-name"
+              [routerLink]="['/item', currentProject.id]"
+              (click)="$event.stopPropagation()"
+              [attr.aria-label]="currentProject.name + ' — ouvrir'"
+            >
+              {{ currentProject.name }}
+            </a>
+            <!-- clear project control: use a closable mat-chip on all viewports
+                 (more consistent visual and behaviour across mobile & desktop) -->
+            <mat-chip
+              class="clear-project"
+              removable
+              (removed)="clearCurrentProject($event)"
+              aria-label="Retirer le projet sélectionné"
+              title="Annuler la sélection du projet"
+            >
+              <mat-icon matChipRemove>close</mat-icon>
+            </mat-chip>
+          </div>
         }
 
         <span class="example-spacer"></span>
