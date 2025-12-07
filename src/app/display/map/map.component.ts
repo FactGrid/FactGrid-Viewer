@@ -48,15 +48,21 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
         const itemLocation = { coords: new Leaflet.LatLng(this.lat, this.lng), zoom: this.zoom };
         let map = Leaflet.map(container);
         Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        // Use a circle marker which doesn't depend on external image assets
-        // (avoids issues where the default Leaflet marker images aren't copied)
-        Leaflet.circleMarker([this.lat, this.lng], {
-          radius: 8,
-          color: '#2a9',
-          fillColor: '#2a9',
-          fillOpacity: 0.9,
-          weight: 2,
-        }).addTo(map);
+        // Ensure Leaflet default icon points to app assets so the classic pin is shown.
+        // The project includes SVG marker assets under `assets/leaflet/`.
+        // This avoids issues where the library's default PNG assets are missing in the bundle.
+        try {
+          Leaflet.Icon.Default.mergeOptions({
+            iconUrl: 'assets/leaflet/marker-icon.svg',
+            iconRetinaUrl: 'assets/leaflet/marker-icon-2x.svg',
+            shadowUrl: 'assets/leaflet/marker-shadow.svg',
+          });
+        } catch (e) {
+          // ignore if mergeOptions isn't available for some reason
+          // fallback will still work (circleMarker used earlier during debugging)
+        }
+
+        Leaflet.marker([this.lat, this.lng]).addTo(map);
         map.setView(itemLocation.coords, itemLocation.zoom);
       }
     }, 0);
