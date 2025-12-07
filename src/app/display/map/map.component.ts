@@ -48,21 +48,17 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
         const itemLocation = { coords: new Leaflet.LatLng(this.lat, this.lng), zoom: this.zoom };
         let map = Leaflet.map(container);
         Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        // Ensure Leaflet default icon points to app assets so the classic pin is shown.
-        // The project includes SVG marker assets under `assets/leaflet/`.
-        // This avoids issues where the library's default PNG assets are missing in the bundle.
-        try {
-          // Use absolute paths so icons load correctly regardless of the current route
-          // (relative 'assets/...' can resolve to a wrong path on nested routes).
-          Leaflet.Icon.Default.mergeOptions({
-            iconUrl: '/assets/leaflet/marker-icon.svg',
-            iconRetinaUrl: '/assets/leaflet/marker-icon-2x.svg',
-            shadowUrl: '/assets/leaflet/marker-shadow.svg',
-          });
-        } catch (e) {
-          // ignore if mergeOptions isn't available for some reason
-          // fallback will still work (circleMarker used earlier during debugging)
-        }
+        // Fix Leaflet's default icon path issues with Webpack/Angular
+        // We delete the default _getIconUrl method so Leaflet doesn't try to guess paths
+        // and instead uses the URLs we provide in mergeOptions.
+        const iconDefault = Leaflet.Icon.Default.prototype as any;
+        delete iconDefault._getIconUrl;
+
+        Leaflet.Icon.Default.mergeOptions({
+          iconUrl: '/assets/leaflet/marker-icon.svg',
+          iconRetinaUrl: '/assets/leaflet/marker-icon-2x.svg',
+          shadowUrl: '/assets/leaflet/marker-shadow.svg',
+        });
 
         Leaflet.marker([this.lat, this.lng]).addTo(map);
         map.setView(itemLocation.coords, itemLocation.zoom);
