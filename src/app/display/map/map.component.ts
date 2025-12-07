@@ -52,10 +52,12 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
         // The project includes SVG marker assets under `assets/leaflet/`.
         // This avoids issues where the library's default PNG assets are missing in the bundle.
         try {
+          // Use absolute paths so icons load correctly regardless of the current route
+          // (relative 'assets/...' can resolve to a wrong path on nested routes).
           Leaflet.Icon.Default.mergeOptions({
-            iconUrl: 'assets/leaflet/marker-icon.svg',
-            iconRetinaUrl: 'assets/leaflet/marker-icon-2x.svg',
-            shadowUrl: 'assets/leaflet/marker-shadow.svg',
+            iconUrl: '/assets/leaflet/marker-icon.svg',
+            iconRetinaUrl: '/assets/leaflet/marker-icon-2x.svg',
+            shadowUrl: '/assets/leaflet/marker-shadow.svg',
           });
         } catch (e) {
           // ignore if mergeOptions isn't available for some reason
