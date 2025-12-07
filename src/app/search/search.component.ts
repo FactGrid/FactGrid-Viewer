@@ -25,6 +25,7 @@ import {
   take,
   catchError,
   forkJoin,
+  distinctUntilChanged,
 } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -464,6 +465,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         try {
           // cache fast search results for a short TTL to reduce duplicate requests when typing
           this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+
+          // OPTIMIZATION: Warm up the individual entity cache with these results.
+          // If the user later switches to a project search that returns these same IDs,
+          // we won't need to fetch their details again via wbgetentities.
+          items.forEach((item: WikibaseEntity) => {
+            this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60);
+          });
         } catch (e) {}
         return out;
       })
@@ -480,6 +488,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         startWith(this.searchInput.value || ''),
         tap((label) => (this.isSearching = !!label && label.length > 0)),
         debounceTime(250),
+        distinctUntilChanged(),
         switchMap((label) => {
           const searchTerm = normalizeString(label as string);
           if (!searchTerm) {
