@@ -1,4 +1,5 @@
 ﻿import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
@@ -232,5 +233,82 @@ describe('SearchComponent', () => {
     expect(
       overlayContainer.getContainerElement().querySelector('.compact-history-panel')
     ).toBeNull();
+  }));
+
+  it('caches wbsearch results to avoid duplicate searchItem calls', fakeAsync(() => {
+    // ensure cache is clean
+    const cache = (component as any).searchCache;
+    try {
+      cache.clearGeneric();
+      cache.invalidateCache();
+    } catch {}
+
+    const response = { searchinfo: { totalhits: 1 }, search: [{ id: 'Q1', label: 'Cached item', aliases: [], description: '' }] };
+    const searchSpy = spyOn((component as any).request, 'searchItem').and.returnValue(of(response));
+
+    // first call -> network
+    let called = 0;
+    (component as any)
+      .fetchAutocompleteEntities('cached', 'fr', 50)
+      .subscribe((res: any) => {
+        expect(res.items.length).toBe(1);
+        called++;
+      });
+    tick(10);
+    expect(searchSpy.calls.count()).toBe(1);
+
+    // second call with same parameters -> should hit cache (no additional network call)
+    (component as any)
+      .fetchAutocompleteEntities('cached', 'fr', 50)
+      .subscribe((res: any) => {
+        expect(res.items.length).toBe(1);
+        called++;
+      });
+    tick(10);
+
+    expect(searchSpy.calls.count()).toBe(1, 'request.searchItem should have been called only once');
+    expect(called).toBe(2, 'both subscriptions should have received results');
+  }));
+
+  it('caches project search titles and entities (getQidsList + getItem)', fakeAsync(() => {
+    const cache = (component as any).searchCache;
+    try {
+      cache.clearGeneric();
+      cache.invalidateCache();
+    } catch {}
+
+    const titles = ['Page:Q100'];
+    const entitiesResponse = { entities: { Q100: { id: 'Q100', labels: { fr: { value: 'ProjectItem' } }, descriptions: { fr: { value: 'desc' } }, aliases: {} } } };
+
+    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    const getItemSpy = spyOn((component as any).request, 'getItem').and.returnValue(of(entitiesResponse));
+
+    // first search with project -> should call network
+    let firstDone = false;
+    (component as any)
+      .fetchAutocompleteEntities('projsearch', 'fr', 50, 'Q10')
+      .subscribe((res: any) => {
+        expect(res.items.length).toBe(1);
+        firstDone = true;
+      });
+    tick(10);
+    expect(qidsSpy.calls.count()).toBe(1);
+    expect(getItemSpy.calls.count()).toBe(1);
+    expect(firstDone).toBeTrue();
+
+    // second call same params -> qids list hits cache -> getQidsList should not be called again
+    let secondDone = false;
+    (component as any)
+      .fetchAutocompleteEntities('projsearch', 'fr', 50, 'Q10')
+      .subscribe((res: any) => {
+        expect(res.items.length).toBe(1);
+        secondDone = true;
+      });
+    tick(10);
+
+    expect(qidsSpy.calls.count()).toBe(1, 'getQidsList should not have been called a second time');
+    // getItem may be called if entity cache was not populated first; after first run entity should be cached, so expect no additional getItem calls
+    expect(getItemSpy.calls.count()).toBeLessThanOrEqual(1, 'getItem should not be called more than once overall');
+    expect(secondDone).toBeTrue();
   }));
 });

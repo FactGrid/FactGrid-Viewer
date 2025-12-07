@@ -405,6 +405,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   ): Observable<{ items: WikibaseEntity[]; total: number }> {
     // If a project is selected, use Cirrus search (action=query list=search) with
     // property filters (haswbstatement:P131=...) to restrict results to items in that project.
+    // Build cache keys used for accelerated lookup and to avoid duplicate API calls
+    const wbsearchKey = `wbsearch:${this.lang.selectedLang}:${searchTerm}:${maxResults}`;
+
     if (
       selectedProjectId &&
       selectedProjectId !== 'all' &&
@@ -413,9 +416,24 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     ) {
       const filters = this.buildSearchFilters(selectedProjectId, searchTerm);
       const srsearch = filters.join(' ');
+      const qidsKey = `qids:${selectedProjectId}:${srsearch}:${maxResults}`;
+
+      // Try cache for the Cirrus titles result first
+      const cachedTitles = this.searchCache.getItem(qidsKey);
+      if (Array.isArray(cachedTitles) && cachedTitles.length > 0) {
+        const ids = cachedTitles
+          .map((t: string) => (t ? String(t).split(':').pop() : ''))
+          .filter(Boolean);
+        // Use fetchEntities (which has entity-level caching) to return typed results
+        return this.fetchEntities(ids).pipe(map((items) => ({ items, total: items.length })));
+      }
       // getQidsList returns page titles (e.g. Q123). Use it to then fetch entities data.
       return this.request.getQidsList(srsearch, maxResults).pipe(
         switchMap((titles: string[]) => {
+          // cache titles list for a short time (2 minutes) to avoid re-requesting repeated searches
+          try {
+            this.searchCache.setItem(qidsKey, titles, 1000 * 60 * 2);
+          } catch (e) {}
           const ids = (titles || [])
             .map((t) => (t ? String(t).split(':').pop() : ''))
             .filter(Boolean);
@@ -425,6 +443,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     // Default: use the faster wbsearchentities path when no project filter is active.
+    // Fast path: cached wbsearch response
+    const cachedSearch = this.searchCache.getItem(wbsearchKey);
+    if (cachedSearch) {
+      return of(cachedSearch);
+    }
+
     return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
       map((res: any) => {
         const total = res.searchinfo?.totalhits ?? res.search?.length ?? 0;
@@ -436,7 +460,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             .map((a: any) => a.value),
           description: e.description || '',
         }));
-        return { items, total };
+        const out = { items, total };
+        try {
+          // cache fast search results for a short TTL to reduce duplicate requests when typing
+          this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+        } catch (e) {}
+        return out;
       })
     );
   }
@@ -522,7 +551,23 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private fetchEntities(ids: string[]): Observable<WikibaseEntity[]> {
     if (ids.length === 0) return of([]);
-    const chunks = chunkArray(ids, 50);
+    // Try to reuse per-entity cache entries before issuing any network requests
+    const lang = this.lang.selectedLang;
+    const cached: WikibaseEntity[] = [];
+    const missingIds: string[] = [];
+    ids.forEach((id) => {
+      const key = `entity:${id}:${lang}`;
+      const c = this.searchCache.getItem(key);
+      if (c) cached.push(c);
+      else missingIds.push(id);
+    });
+
+    if (missingIds.length === 0) {
+      // All entities were cached
+      return of(cached);
+    }
+
+    const chunks = chunkArray(missingIds, 50);
     const requests = chunks.map((chunk) => {
       const idsParam = chunk.join('|');
       const getEntitiesUrl =
@@ -534,11 +579,20 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       return this.request.getItem(getEntitiesUrl).pipe(
         map((res: any) => {
           if (!res.entities) return [];
-          return this.adaptEntities(Object.values(res.entities), this.lang.selectedLang);
+          const adapted = this.adaptEntities(Object.values(res.entities), this.lang.selectedLang);
+          // cache each entity individually
+          try {
+            adapted.forEach((ent) =>
+              this.searchCache.setItem(`entity:${ent.id}:${lang}`, ent, 1000 * 60 * 60)
+            );
+          } catch (e) {}
+          return adapted;
         })
       );
     });
-    return requests.length > 0 ? forkJoin(requests).pipe(map((results) => results.flat())) : of([]);
+    // combine network results with cached entities for final response
+    const fetched$ = requests.length > 0 ? forkJoin(requests).pipe(map((results) => results.flat())) : of([] as WikibaseEntity[]);
+    return fetched$.pipe(map((fetched) => [...cached, ...fetched]));
   }
 
   private filterResultsLocally(
