@@ -1028,6 +1028,14 @@ $card-top-offset: 8px;
   box-sizing: border-box !important;
 }
 
+/* Ensure all card headers inside the stacked mobile card grid have a
+   consistent left inset so titles line up visually regardless of
+   compact/flush variants or projected vs. built-in headers. */
+:host ::ng-deep .thematic-cards-grid > app-thematic-card header.card-header,
+:host ::ng-deep .thematic-cards-grid > .thematic-card header.card-header {
+  padding-left: 16px !important; /* matches card body horizontal padding */
+}
+
 :host ::ng-deep .thematic-cards-grid app-sparql-display .cardBackground,
 :host ::ng-deep .thematic-cards-grid app-generic-list-display .cardBackground,
 :host ::ng-deep .thematic-cards-grid app-iframes-display .cardBackground {
