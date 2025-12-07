@@ -95,10 +95,11 @@ $card-top-offset: 8px;
 
 /* Small helpers specific to DisplayComponent */
 .itemTitle-row {
+  /* Force the ID to render on its own line above the title (DOM order places ID first) */
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .factgrid-link-desktop {
@@ -128,12 +129,10 @@ $card-top-offset: 8px;
     align-items: flex-start;
   }
 
-  /* On narrow screens the card ID must be shown on a separate line above
-     the title and aligned to the right to avoid overlapping long titles. */
+  /* mobile-specific tweaks no longer need to re-order the ID (DOM already
+     renders the ID first). Keep a small vertical gap to separate it from the title. */
   .title-card-id {
-    position: static; /* participate in flow instead of absolute */
-    order: -1;        /* render before the title within the column layout */
-    align-self: flex-end; /* align the id to the right */
+    align-self: flex-end; /* keep the id visually aligned to the right */
     margin-bottom: 6px; /* space between id and title */
   }
 
@@ -465,11 +464,12 @@ $card-top-offset: 8px;
 /* drawer toggle / old drawer controls removed — UI now renders linked pages as a thematic card */
 
 .title-card-id {
-  position: absolute;
-  right: 12px;
-  top: 8px; /* slightly above title */
+  /* place the id inline in the flow; rely on flexbox to align it to the right */
+  position: static;
   display: inline-flex;
   align-items: center;
+  align-self: flex-end;
+  margin-bottom: 6px;
 }
 
 .title-card-id .title-id {

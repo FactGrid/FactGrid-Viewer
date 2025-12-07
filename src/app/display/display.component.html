@@ -61,21 +61,14 @@
               <app-thematic-card [collapsible]="false" class="info-themed-card" [resetKey]="id">
                 <div class="info-themed-content">
                   <div class="itemTitle-row">
-                        @if (id && isMobile) {
-                          <!-- Mobile-only: place ID on its own line above the title and align right -->
+                        @if (id) {
+                          <!-- Render the ID once, always above the title. CSS aligns it to the right on larger viewports. -->
                           <div class="title-card-id">
                             <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
                           </div>
                         }
 
                         <div class="itemTitle">{{ label }}</div>
-
-                        @if (id && !isMobile) {
-                          <!-- Desktop-only: top-right item id inside title card -->
-                          <div class="title-card-id">
-                            <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
-                          </div>
-                        }
                         <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
                         <!-- item ID moved to the sub-header above — avoid duplicate here -->
                   

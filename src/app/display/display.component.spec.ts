@@ -375,4 +375,20 @@ describe('DisplayComponent', () => {
 
     expect(idxId).withContext('id must appear before title in DOM when mobile').toBeLessThan(idxTitle);
   });
+
+  it('desktop: should render the FactGrid id above the title in the item header', () => {
+    component.item = { id: 'Q1', label: 'Un titre assez long pour vérifier le wrapping' } as any;
+    component.id = 'Q1';
+    component.isMobile = false; // desktop-mode
+    fixture.detectChanges();
+
+    const itemRow: HTMLElement | null = fixture.nativeElement.querySelector('.itemTitle-row');
+    expect(itemRow).withContext('item title row exists').toBeTruthy();
+
+    const children = Array.from(itemRow!.children).filter((n: any) => n.nodeType === 1) as HTMLElement[];
+    const idxId = children.findIndex((c) => c.classList.contains('title-card-id'));
+    const idxTitle = children.findIndex((c) => c.classList.contains('itemTitle'));
+
+    expect(idxId).withContext('id must appear before title in DOM for desktop view as well').toBeLessThan(idxTitle);
+  });
 });

@@ -78,6 +78,12 @@
   transition: none;
 }
 
+/* reduce horizontal gap when two toolbar buttons are paired and we want them closer */
+.toolbar-btn.tight {
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
 .mat-icon,
 .material-icons,
 mat-icon {
