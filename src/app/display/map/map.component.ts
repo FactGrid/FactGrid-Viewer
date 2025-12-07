@@ -12,6 +12,18 @@ import { ActivatedRoute, ParamMap } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import * as Leaflet from 'leaflet';
 
+// Fix Leaflet's default icon path issues with Webpack/Angular
+// This must be done at module level to ensure it applies globally and correctly
+// before any map instance is created.
+const iconDefault = Leaflet.Icon.Default.prototype as any;
+delete iconDefault._getIconUrl;
+
+Leaflet.Icon.Default.mergeOptions({
+  iconUrl: '/assets/leaflet/marker-icon.svg',
+  iconRetinaUrl: '/assets/leaflet/marker-icon-2x.svg',
+  shadowUrl: '/assets/leaflet/marker-shadow.svg',
+});
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -48,17 +60,6 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
         const itemLocation = { coords: new Leaflet.LatLng(this.lat, this.lng), zoom: this.zoom };
         let map = Leaflet.map(container);
         Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        // Fix Leaflet's default icon path issues with Webpack/Angular
-        // We delete the default _getIconUrl method so Leaflet doesn't try to guess paths
-        // and instead uses the URLs we provide in mergeOptions.
-        const iconDefault = Leaflet.Icon.Default.prototype as any;
-        delete iconDefault._getIconUrl;
-
-        Leaflet.Icon.Default.mergeOptions({
-          iconUrl: '/assets/leaflet/marker-icon.svg',
-          iconRetinaUrl: '/assets/leaflet/marker-icon-2x.svg',
-          shadowUrl: '/assets/leaflet/marker-shadow.svg',
-        });
 
         Leaflet.marker([this.lat, this.lng]).addTo(map);
         map.setView(itemLocation.coords, itemLocation.zoom);
