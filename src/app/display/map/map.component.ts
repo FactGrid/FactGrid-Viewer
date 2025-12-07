@@ -48,7 +48,15 @@ export class MapComponent implements OnInit, OnDestroy, AfterViewInit {
         const itemLocation = { coords: new Leaflet.LatLng(this.lat, this.lng), zoom: this.zoom };
         let map = Leaflet.map(container);
         Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        Leaflet.marker([this.lat, this.lng]).addTo(map);
+        // Use a circle marker which doesn't depend on external image assets
+        // (avoids issues where the default Leaflet marker images aren't copied)
+        Leaflet.circleMarker([this.lat, this.lng], {
+          radius: 8,
+          color: '#2a9',
+          fillColor: '#2a9',
+          fillOpacity: 0.9,
+          weight: 2,
+        }).addTo(map);
         map.setView(itemLocation.coords, itemLocation.zoom);
       }
     }, 0);
