@@ -22,6 +22,9 @@ Leaflet.Icon.Default.mergeOptions({
   iconUrl: '/assets/leaflet/marker-icon.svg',
   iconRetinaUrl: '/assets/leaflet/marker-icon-2x.svg',
   shadowUrl: '/assets/leaflet/marker-shadow.svg',
+  iconSize: [32, 48],
+  iconAnchor: [16, 48],
+  shadowSize: [60, 20],
 });
 
 @Component({
