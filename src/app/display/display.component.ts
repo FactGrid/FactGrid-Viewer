@@ -32,6 +32,7 @@ import { SparqlDisplayService, SparqlAllCardsState } from './services/sparql-dis
 import { IframesDisplayComponent } from './iframes-display/iframes-display.component';
 import { TextDisplayComponent } from './text-display/text-display.component';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -72,7 +73,12 @@ import { RequestService } from '../services/request.service';
     MatListModule,
     MatTooltipModule,
     MatIconModule,
+    // mat-chip used for compact/closable project label on mobile
+    // small import cost and keeps behaviour consistent with Material visuals
     MatCardModule,
+    MatChipsModule,
+    // ensure mat-chips are available in the standalone component
+    // NOTE: using MatChipsModule below
     NgClass,
     TextDisplayComponent,
     // SparqlDisplayComponent, // removed from static imports to enable lazy loading
@@ -300,6 +306,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   currentProject: ResearchField | null = null;
 
   ngOnInit(): void {
+
     this.subtitle = this.lang.getTranslation('subtitle', this.lang.selectedLang);
 
     // Gestion de l’ancien format (simple string) et du nouveau (JSON)
@@ -390,6 +397,35 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch {}
       });
     this.subscriptions.push(bpSub);
+  }
+
+  /**
+   * Clear the selected research field (reset to 'all').
+   * If an event is provided, stop its propagation (prevent parent link clicks).
+   */
+  // The removed event from MatChip is not a DOM Event and won't have
+  // stopPropagation — calling stopPropagation blindly can throw and prevent
+  // the actual reset logic. Accept any type and call stopPropagation only
+  // when it's a function (safe no-op otherwise).
+  clearCurrentProject(event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      try {
+        event.stopPropagation();
+      } catch {}
+    }
+    try {
+      this.selectedResearchFieldService.setSelectedResearchField({
+        id: 'all',
+        name: 'all',
+        description: '',
+      });
+      // the subscription to selectedResearchField$ will update `currentProject`
+      try {
+        this.cdr.detectChanges();
+      } catch {}
+    } catch (e) {
+      // swallow — not critical
+    }
   }
 
   // Dynamic component hosts for lazy-loading sparql display instances

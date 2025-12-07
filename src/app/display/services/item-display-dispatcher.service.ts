@@ -257,6 +257,14 @@ export class ItemDisplayDispatcherService {
           if (idx >= 0) item[1].splice(idx, 1);
         }
       }
+      // If P48 wasn't present or didn't populate anything, also try P625
+      if (target.locationAndSituation.length === 0 && claims.P625 !== undefined) {
+        target.locationAndSituation.push(claims.P625);
+        if (Array.isArray(item[1])) {
+          const idx = item[1].indexOf('P625');
+          if (idx >= 0) item[1].splice(idx, 1);
+        }
+      }
     }
     return target.locationAndSituation.length > 0;
   }

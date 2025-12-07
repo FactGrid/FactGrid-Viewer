@@ -61,7 +61,30 @@ export class BlockDisplayService {
   }
 
   setPlaceDisplay(item: any, locationAndSituation: any[]): any[] {
-    return this.populateDisplay(item, locationAndSituation, PLACE_DISPLAY_PROPERTIES);
+    // First handle the configured place properties
+    this.populateDisplay(item, locationAndSituation, PLACE_DISPLAY_PROPERTIES);
+
+    // In addition, support direct coordinate claims that are not part of
+    // PLACE_DISPLAY_PROPERTIES (e.g. P48 and P625). Ensure we remove the
+    // properties from the index and don't duplicate entries when called
+    // multiple times.
+    const claims = item[0].claims || {};
+
+    // P48 (geographic coordinates) fallback
+    if (claims.P48 !== undefined) {
+      const idx48 = item[1].indexOf('P48');
+      if (idx48 >= 0) item[1].splice(idx48, 1);
+      if (!locationAndSituation.includes(claims.P48)) locationAndSituation.push(claims.P48);
+    }
+
+    // P625 (another coordinate property) fallback
+    if (claims.P625 !== undefined) {
+      const idx625 = item[1].indexOf('P625');
+      if (idx625 >= 0) item[1].splice(idx625, 1);
+      if (!locationAndSituation.includes(claims.P625)) locationAndSituation.push(claims.P625);
+    }
+
+    return locationAndSituation;
   }
 
   setPersonDisplay(item: any, lifeAndFamily: any[]): any[] {

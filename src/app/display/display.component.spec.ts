@@ -7,6 +7,7 @@ import { DisplayComponent } from './display.component';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { BackListService } from '../services/back-list.service';
 import { BackListDetailsService } from '../services/back-list-details.service';
+import { SelectedResearchFieldService } from '../services/selected-research-field.service';
 import { of } from 'rxjs';
 import { fakeAsync, tick } from '@angular/core/testing';
 
@@ -215,15 +216,59 @@ describe('DisplayComponent', () => {
       fixture.nativeElement.querySelector('.mobile-project-title');
     expect(mobileTitle).withContext('project title shown in top toolbar').toBeTruthy();
     expect(mobileTitle!.textContent).toContain('My project');
-    // it should be a link to the project's item page
-    expect(mobileTitle!.tagName).toBe('A');
-    expect((mobileTitle as HTMLAnchorElement).getAttribute('href')).toContain('/item/Q10');
+    // the project title and a small 'clear' button are wrapped in a container; find the anchor inside
+    const anchor = mobileTitle!.querySelector('.mobile-project-name') as HTMLAnchorElement | null;
+    expect(anchor).withContext('project title should be a link inside the container').toBeTruthy();
+    expect(anchor!.getAttribute('href')).toContain('/item/Q10');
 
     // project-sub-header-card should not be present
     const cardEl: HTMLElement | null = fixture.nativeElement.querySelector(
       'app-thematic-card.project-sub-header-card'
     );
     expect(cardEl).withContext('project sub-header card should not be present').toBeNull();
+  });
+
+  it('renders a clear-project button next to the mobile project title and clearing resets selection to all', () => {
+    component.item = null; // header visible
+    component.currentProject = { id: 'Q10', name: 'My project', description: 'Sample' } as any;
+    fixture.detectChanges();
+
+    const clearEl: HTMLElement | null = fixture.nativeElement.querySelector('.clear-project');
+    expect(clearEl).withContext('clear project control should be present next to project title').toBeTruthy();
+
+    // Trigger clearing via component method (removal event or click should call the same handler).
+    const srf = TestBed.inject(SelectedResearchFieldService);
+    component.clearCurrentProject();
+    fixture.detectChanges();
+
+    const selected = srf.getSelectedResearchField();
+    expect(selected.id).toBe('all');
+  });
+
+  it('desktop: uses mat-chip clear control next to project title', () => {
+    component.item = null; // header visible
+    component.currentProject = { id: 'Q20', name: 'Desktop project', description: 'Sample' } as any;
+    component.isMobile = false;
+    fixture.detectChanges();
+
+    const chipEl: HTMLElement | null = fixture.nativeElement.querySelector('mat-chip.clear-project');
+    expect(chipEl).withContext('mat-chip should be present on desktop as clear control').toBeTruthy();
+  });
+
+  it('mat-chip removed event (non-DOM) should still clear selection', () => {
+    component.item = null; // header visible
+    component.currentProject = { id: 'Q10', name: 'My project', description: 'Sample' } as any;
+    fixture.detectChanges();
+
+    const srf = TestBed.inject(SelectedResearchFieldService);
+
+    // Simulate removed event emitted by MatChip — this is not a DOM event
+    // and does not have stopPropagation. Ensure the handler still clears.
+    component.clearCurrentProject({} as any);
+    fixture.detectChanges();
+
+    const now = srf.getSelectedResearchField();
+    expect(now.id).toBe('all');
   });
 
   it('mobile: shows centered project title above search and hides right label', () => {
@@ -236,9 +281,10 @@ describe('DisplayComponent', () => {
       fixture.nativeElement.querySelector('.mobile-project-title');
     expect(mobileTitle).withContext('mobile project title shown in top toolbar').toBeTruthy();
     expect(mobileTitle!.textContent).toContain('My project');
-    // mobile project title must be clickable and link to the project item
-    expect(mobileTitle!.tagName).toBe('A');
-    expect((mobileTitle as HTMLAnchorElement).getAttribute('href')).toContain('/item/Q10');
+    // mobile project title container contains the anchor link
+    const anchorMobile = mobileTitle!.querySelector('.mobile-project-name') as HTMLAnchorElement | null;
+    expect(anchorMobile).toBeTruthy();
+    expect(anchorMobile!.getAttribute('href')).toContain('/item/Q10');
 
     // on mobile the right-hand project block is not rendered (we show a compact title above the search)
     const rightBlock: HTMLElement | null = fixture.nativeElement.querySelector(

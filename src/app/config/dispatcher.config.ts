@@ -5,7 +5,7 @@ export const HEADER_DISPLAY_PROPERTIES = [
 ];
 
 export const PLACE_DISPLAY_PROPERTIES = [
-  { property: 'P625', comment: 'geographic coordinates (Wikidata P625)' },
+  { property: 'P47', comment: 'localisation' },
   { property: 'P297', comment: 'territorial affiliation' },
   { property: 'P466', comment: 'capital of' },
   { property: 'P538', comment: 'historical county' },
@@ -113,6 +113,7 @@ export const EXCLUDED_DISPLAY_PROPERTIES = [
 export const ORG_DISPLAY_PROPERTIES = [
   { property: 'P8', comment: 'part of' },
   { property: 'P83', comment: 'place' },
+  { property: 'P47', comment: 'localisation' },
   // { property: 'P208', comment: 'address' }, // commenté dans le service
   { property: 'P49', comment: 'begin date' },
   { property: 'P6', comment: 'continuation of' },

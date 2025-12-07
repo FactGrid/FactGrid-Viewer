@@ -110,24 +110,43 @@ $card-top-offset: 8px;
      small negative translateY only for desktop (non-mobile) to visually
      center the chip against a single-line title without affecting mobile
      (where absolute positioning is used). */
-  /* Desktop: deterministic centering (avoid magic translateY). Using explicit
-     box dimensions + flex centering is more robust across browsers. */
+  /* Desktop: deterministic centering using vertical-align: middle.
+     This aligns the chip with the visual center of the text (x-height)
+     rather than the geometric center (which includes descenders), fixing
+     the "chip too low" perception. */
   @media (min-width: 701px) {
+    .project-title {
+      display: inline-block !important; /* use block layout for vertical-align */
+      align-items: unset !important;
+      gap: 0 !important; /* gap not supported in inline-block */
+    }
+
+    .project-name {
+      display: inline-block !important;
+      vertical-align: middle !important;
+    }
+
     .clear-project {
-      height: 28px !important;
+      height: 30px !important;
       min-width: 28px !important;
-      line-height: 28px !important;
+      line-height: 30px !important;
       padding: 0 6px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       transform: none !important;
-      margin-left: 4px !important;
+      
+      /* Align the chip's middle with the text's visual middle */
+      vertical-align: middle !important;
+      align-self: auto !important;
+      
+      /* Re-add spacing since gap is gone */
+      margin-left: 6px !important;
     }
 
     mat-chip.clear-project {
-      height: 28px !important;
-      line-height: 28px !important;
+      height: 30px !important;
+      line-height: 30px !important;
       padding: 0 6px !important;
     }
 
