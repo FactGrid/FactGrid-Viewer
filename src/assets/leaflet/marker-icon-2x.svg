@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96" width="64" height="96" role="img" aria-label="map marker retina">
   <g fill="none" fill-rule="evenodd">
-    <path d="M32 0c13.255 0 24 10.745 24 24 0 13.255-13.744 30.173-21.104 37.661C32.26 70.007 32 72 32 72s-.26-1.993-2.896-10.339C17.744 54.173 4 37.255 4 24 4 10.745 22.745 0 32 0z" fill="#2a9"/>
+    <path d="M32 0c13.255 0 24 10.745 24 24 0 13.255-13.744 30.173-21.104 37.661C32.26 70.007 32 72 32 72s-.26-1.993-2.896-10.339C17.744 54.173 4 37.255 4 24 4 10.745 22.745 0 32 0z" fill="#2981ca"/>
     <circle cx="32" cy="24" r="10" fill="#fff" opacity="0.95"/>
   </g>
 </svg>
