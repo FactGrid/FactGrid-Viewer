@@ -161,6 +161,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   // ========== SUBSCRIPTIONS ==========
   private subscriptions: Subscription[] = [];
 
+  // monotonic id for current search query — used to guard against stale responses
+  private currentQueryId = 0;
+
   // ========== SUBJECTS ==========
   showInDescriptionSubject = new BehaviorSubject<boolean>(false);
 
@@ -435,10 +438,50 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           try {
             this.searchCache.setItem(qidsKey, titles, 1000 * 60 * 2);
           } catch (e) {}
-          const ids = (titles || [])
-            .map((t) => (t ? String(t).split(':').pop() : ''))
-            .filter(Boolean);
-          return this.fetchEntities(ids).pipe(map((items) => ({ items, total: items.length })));
+
+          // If Cirrus returned titles, fetch entities and apply client-side filtering
+          // with phrase-priority. Keep behaviour straightforward: if titles are
+          // empty, return an empty result (no complex fallback queries).
+          if (Array.isArray(titles) && titles.length > 0) {
+            const ids = (titles || []).map((t) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
+            return this.fetchEntities(ids).pipe(
+              map((items) => {
+                const normalized = normalizeString(searchTerm);
+                // token-based (non-consecutive) filtered results
+                const filtered = items.filter((it) => this.matchesAllTokens(it, normalized, this.showInDescription));
+
+                // phrase priority: find items where the full normalized search term
+                // appears as a substring in the item label/aliases/description
+                const phraseMatches = items.filter((it) => {
+                  const lbl = normalizeString(it.label);
+                  const aliases = (it.aliases || []).map(normalizeString);
+                  const desc = normalizeString(it.description);
+                  return (
+                    (lbl && lbl.includes(normalized)) ||
+                    aliases.some((a) => a.includes(normalized)) ||
+                    (this.showInDescription && desc.includes(normalized))
+                  );
+                });
+
+                // mark items with an exactPhraseMatch flag (used by template for styling)
+                items.forEach((it) => {
+                  (it as any).exactPhraseMatch = phraseMatches.includes(it);
+                });
+
+                const resultItems =
+                  phraseMatches.length > 0
+                    ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))]
+                    : filtered;
+
+                // If our client-side filter removed all entries, return the raw
+                // items — don't attempt additional fallback queries here.
+                return { items: resultItems.length ? resultItems : items, total: resultItems.length ? resultItems.length : items.length };
+              })
+            );
+          }
+
+          // No titles returned -> return empty result for project-mode
+          return of({ items: [], total: 0 });
         })
       );
     }
@@ -491,6 +534,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         distinctUntilChanged(),
         switchMap((label) => {
           const searchTerm = normalizeString(label as string);
+          // New query id assigned for this particular user input state.
+          // We DO NOT clear the existing items immediately here — keeping the
+          // previous results visible while a new request is in flight avoids
+          // flicker/brief disappearance of results while the user types.
+          // The queryId + searchTerm guard below still protects against stale
+          // results overwriting fresh ones when responses arrive out-of-order.
+          const myQueryId = ++this.currentQueryId;
           if (!searchTerm) {
             this.searchCache.invalidateCache();
             this.resetSearchState();
@@ -504,7 +554,15 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             50,
             selectedId
           ).pipe(
-            map(({ items }) => {
+            // attach the query id and explicit searchTerm so we can ignore stale responses
+            map(({ items }) => ({ items, searchTerm, queryId: myQueryId })),
+            map(({ items, searchTerm, queryId }) => {
+              // Guard: only apply results if this response belongs to the most recent query
+              const currentNormalized = normalizeString(this.searchInput.value || '');
+              if (queryId !== this.currentQueryId || currentNormalized !== searchTerm) {
+                // stale / out-of-order result: ignore
+                return [] as WikibaseEntity[];
+              }
               this.updateItemsList(items);
               return items;
             }),
@@ -541,9 +599,42 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     if (selectedId && selectedId !== '-' && selectedId !== 'Q0' && selectedId !== 'all') {
       filters.push(`haswbstatement:P131=${selectedId}`);
     }
-    // Use OR to match both exact term and prefix. 
-    // This fixes issues where "Pierre*" might fail but "Pierre" would succeed (e.g. stop words or exact matches).
-    filters.push(`(${searchTerm} OR ${searchTerm}*)`);
+    // Require ALL tokens for project-mode CirrusSearch queries, but allow
+    // partial typing by appending a wildcard to each token. The leading
+    // '+' ensures each token must appear somewhere in the indexed document
+    // (title, aliases, descriptions or claims). Example: `+jacques* +louis*`.
+    // Treat short tokens (length < 3) as permissive (do not prepend '+') to
+    // avoid overly strict queries for partial typing like "Jacques Louis D" or "Jacques Louis Da".
+    const tokens = searchTerm.split(' ').filter((t) => t.length > 0);
+    if (tokens.length > 0) {
+      // Treat the final token as the 'typing' token and keep it permissive
+      // (no leading '+') so partial typing like "Jule" can match "Jules".
+      // For non-final tokens require the token only when it's sufficiently
+      // long (>= 3 characters) to avoid overly restrictive queries.
+      // Option A: if there are multiple tokens and the final token is a
+      // single character (user is typing a new short token like "D"), omit
+      // that final token entirely from the server query so we don't ask
+      // Cirrus for one-letter partial matches — client-side filtering will
+      // handle permissive matching and adjacency.
+      let effectiveTokens = tokens.slice();
+      const last = tokens[tokens.length - 1];
+      if (tokens.length > 1 && last.length === 1) {
+        // drop the final single-character typing token for server query
+        effectiveTokens = tokens.slice(0, tokens.length - 1);
+      }
+
+      const query = effectiveTokens
+        .map((t, i) => {
+          const isLastEff = i === effectiveTokens.length - 1;
+          // if this maps to the final effective token, keep it permissive
+          if (isLastEff) return `${t}*`;
+          return t.length >= 3 ? `+${t}*` : `${t}*`;
+        })
+        .join(' ');
+      filters.push(query);
+    } else {
+      filters.push(searchTerm);
+    }
     return filters;
   }
 
@@ -629,10 +720,28 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     const normalizedLabel = normalizeString(item.label);
     const normalizedAliases = (item.aliases || []).map(normalizeString);
     const normalizedDesc = normalizeString(item.description);
+
+    // If the entire normalized search term is contained as a phrase -> accept
     if (normalizedLabel.includes(searchTerm)) return true;
     if (normalizedAliases.some((alias) => alias.includes(searchTerm))) return true;
     if (showInDescription && normalizedDesc.includes(searchTerm)) return true;
-    return false;
+
+    // Otherwise, require tokens to match words by prefix (avoid internal-substring matches)
+    const tokens = (searchTerm || '').split(' ').map((t) => t.trim()).filter(Boolean);
+    if (tokens.length === 0) return true;
+
+    const labelWords = normalizedLabel.split(/[^a-z0-9]+/).filter(Boolean);
+    const aliasWords = normalizedAliases.flatMap((a) => a.split(/[^a-z0-9]+/).filter(Boolean));
+    const descWords = normalizedDesc.split(/[^a-z0-9]+/).filter(Boolean);
+
+    return tokens.every((token) => {
+      if (!token) return true;
+      if (token.length === 1) return true;
+      if (labelWords.some((w) => w.startsWith(token))) return true;
+      if (aliasWords.some((w) => w.startsWith(token))) return true;
+      if (showInDescription && descWords.some((w) => w.startsWith(token))) return true;
+      return false;
+    });
   }
 
   private updateItemsList(items: WikibaseEntity[]): void {
@@ -740,6 +849,97 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       aliases: e.aliases?.[lang]?.map((a: any) => a.value) || [],
       description: e.descriptions?.[lang]?.value || '',
     }));
+  }
+
+  /**
+   * Ensure that an entity matches ALL tokens from the search term.
+   * Each token must be contained in the item's label or aliases (or description if enabled).
+   */
+  private matchesAllTokens(item: WikibaseEntity, searchTerm: string, showInDescription: boolean): boolean {
+    const normalizedLabel = normalizeString(item.label);
+    const normalizedAliases = (item.aliases || []).map(normalizeString);
+    const normalizedDesc = normalizeString(item.description);
+
+    // tokenized words (split on non-alphanumeric chars after normalization)
+    const labelWords = normalizedLabel.split(/[^a-z0-9]+/).filter(Boolean);
+    const aliasWords = normalizedAliases.flatMap((a) => a.split(/[^a-z0-9]+/).filter(Boolean));
+    const descWords = normalizedDesc.split(/[^a-z0-9]+/).filter(Boolean);
+
+    const tokens = (searchTerm || '')
+      .split(' ')
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (tokens.length === 0) return true; // nothing to require
+
+    // Quick path for single-token queries
+    if (tokens.length === 1) {
+      const token = tokens[0];
+      if (!token) return true;
+      if (token.length === 1) return true; // permissive for single-char typing
+      if (labelWords.some((w) => w.startsWith(token))) return true;
+      if (aliasWords.some((w) => w.startsWith(token))) return true;
+      if (showInDescription && descWords.some((w) => w.startsWith(token))) return true;
+      return false;
+    }
+
+    // For multi-token queries, require all tokens to match.
+    // Special-case: if the final token is a short fragment (<=2 chars) and
+    // doesn't match on its own, allow it to match as the start of the next
+    // word following a match for the penultimate token (adjacent pair).
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (!token) continue;
+
+      // permissive for any single-character tokens
+      if (token.length === 1) continue;
+
+      // if a non-final token, require it to match normally
+      if (i < tokens.length - 1) {
+        if (
+          labelWords.some((w) => w.startsWith(token)) ||
+          aliasWords.some((w) => w.startsWith(token)) ||
+          (showInDescription && descWords.some((w) => w.startsWith(token)))
+        ) {
+          continue; // matched normally
+        }
+
+        // otherwise this token failed to match
+        return false;
+
+        // otherwise this token failed to match
+        return false;
+      }
+
+      // final token: normal match or permissive if single-char. If the
+      // final token doesn't match on its own and is short (<= 2 chars),
+      // perform an adjacency check: look for a consecutive pair of words in
+      // label/aliases/description where the first startsWith the penultimate
+      // token and the second startsWith the final token.
+      if (
+        labelWords.some((w) => w.startsWith(token)) ||
+        aliasWords.some((w) => w.startsWith(token)) ||
+        (showInDescription && descWords.some((w) => w.startsWith(token)))
+      ) {
+        continue;
+      }
+      // final didn't match directly — try adjacency if token is sufficiently short
+      if (token.length <= 2) {
+        const prev = tokens[tokens.length - 2];
+        const checkAdjacentArray = (arr: string[]) => {
+          for (let k = 0; k < arr.length - 1; k++) {
+            if (arr[k].startsWith(prev) && arr[k + 1].startsWith(token)) return true;
+          }
+          return false;
+        };
+        if (checkAdjacentArray(labelWords) || checkAdjacentArray(aliasWords) || (showInDescription && checkAdjacentArray(descWords))) {
+          continue;
+        }
+      }
+
+      return false;
+    }
+
+    return true;
   }
 
   researchFieldSelect(researchField: any) {
