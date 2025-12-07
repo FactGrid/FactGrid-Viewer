@@ -214,7 +214,10 @@
                               <app-thematic-card class="mobile-linked-pages-card thematic-card--compact" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
                   <!-- Project a small header when rendering mobile-only linked pages so tests can query the title reliably -->
                   <div card-header>
-                    <span class="typo-thematic-card-title">{{ linkedPagesTitle }}</span>
+                    <!-- use the same structure as the default thematic-card header so spacing aligns -->
+                    <div class="title">
+                      <span class="title-text typo-thematic-card-title">{{ linkedPagesTitle }}</span>
+                    </div>
                   </div>
 
                   <!-- Render items as router links so mobile card shows clickable links (id-based navigation) -->
