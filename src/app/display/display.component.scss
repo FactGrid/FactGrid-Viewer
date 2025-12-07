@@ -99,7 +99,10 @@ $card-top-offset: 8px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  /* smaller vertical gap between id and title for a tighter visual grouping */
+  gap: 4px;
+  /* add a small top padding so the id doesn't hug the card top */
+  padding-top: 8px;
 }
 
 .factgrid-link-desktop {
@@ -469,7 +472,11 @@ $card-top-offset: 8px;
   display: inline-flex;
   align-items: center;
   align-self: flex-end;
-  margin-bottom: 6px;
+  /* give breathing room from top + right edges of the card */
+  margin-top: 8px;
+  margin-right: 10px;
+  /* keep a small distance to the title underneath */
+  margin-bottom: 4px;
 }
 
 .title-card-id .title-id {
