@@ -379,6 +379,25 @@ describe('SearchComponent', () => {
     expect((component as any).matchesAllTokens(item3, 'jacques louis da', false)).toBeFalse();
   });
 
+  it('mergeResultsPreservingPriorMatches keeps prior matching items when server omits them', () => {
+    // prior item that should match the extended query
+    const prev = { id: 'Q1', label: 'Jacques Louis David', aliases: [], description: '' } as any;
+    // prior unrelated item that should not be preserved
+    const prevUnrelated = { id: 'Qx', label: 'Some Other Person', aliases: [], description: '' } as any;
+    (component as any).items = [prev, prevUnrelated];
+
+    // server returned a different set which omits the desired 'Q1' item
+    const newItems = [{ id: 'Q2', label: 'Pauline Jeanne David', aliases: [], description: '' } as any];
+
+    const merged = (component as any).mergeResultsPreservingPriorMatches('jacques louis da', newItems);
+    // 'Jacques Louis David' should be preserved because it still matches the tokens
+    expect(merged.some((i: any) => i.id === 'Q1')).toBeTrue();
+    // unrelated previous item should not be preserved
+    expect(merged.some((i: any) => i.id === 'Qx')).toBeFalse();
+    // original new items should still be present
+    expect(merged.some((i: any) => i.id === 'Q2')).toBeTrue();
+  });
+
   it('filters project results client-side to require all tokens (removes unrelated entries)', fakeAsync(() => {
     const cache = (component as any).searchCache;
     try { cache.clearGeneric(); cache.invalidateCache(); } catch {}

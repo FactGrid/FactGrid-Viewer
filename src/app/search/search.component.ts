@@ -563,7 +563,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                 // stale / out-of-order result: ignore
                 return [] as WikibaseEntity[];
               }
-              this.updateItemsList(items);
+              // Merge new results with previously-displayed items when those
+              // previous items still match the current search term. This keeps
+              // items the user already saw (and that are still relevant) visible
+              // even if the server's returned set temporarily omits them.
+              const merged = this.mergeResultsPreservingPriorMatches(searchTerm, items);
+              this.updateItemsList(merged);
               return items;
             }),
             catchError((err) => {
@@ -849,6 +854,41 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       aliases: e.aliases?.[lang]?.map((a: any) => a.value) || [],
       description: e.descriptions?.[lang]?.value || '',
     }));
+  }
+
+  /**
+   * Merge the newly-retrieved items with previously-displayed items that
+   * still match the current search term. This prevents brief disappearance of
+   * a previously-selected item when transient server results omit it.
+   */
+  private mergeResultsPreservingPriorMatches(searchTerm: string, newItems: WikibaseEntity[]): WikibaseEntity[] {
+    // preserve identity by id
+    const byId = new Map<string, WikibaseEntity>();
+    newItems.forEach((it) => byId.set(it.id, it));
+
+    // collect previously displayed items that still match the search term
+    const preserved: WikibaseEntity[] = [];
+    (this.items || []).forEach((it) => {
+      if (byId.has(it.id)) return; // already included
+      // keep only if it still matches our search criteria
+      if (this.matchesAllTokens(it, searchTerm, this.showInDescription)) {
+        preserved.push(it);
+      }
+    });
+
+    const merged = [...newItems, ...preserved];
+
+    // recompute phrase-priority on the merged set so exact phrase matches
+    // remain first (consistent with existing behaviour)
+    const normalized = searchTerm;
+    const phraseMatches = merged.filter((it) => {
+      const lbl = normalizeString(it.label);
+      const aliases = (it.aliases || []).map(normalizeString);
+      const desc = normalizeString(it.description);
+      return (lbl && lbl.includes(normalized)) || aliases.some((a) => a.includes(normalized)) || (this.showInDescription && desc.includes(normalized));
+    });
+    merged.forEach((it) => ((it as any).exactPhraseMatch = phraseMatches.includes(it)));
+    return phraseMatches.length ? [...phraseMatches, ...merged.filter((m) => !phraseMatches.includes(m))] : merged;
   }
 
   /**
