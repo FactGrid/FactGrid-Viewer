@@ -541,7 +541,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     if (selectedId && selectedId !== '-' && selectedId !== 'Q0' && selectedId !== 'all') {
       filters.push(`haswbstatement:P131=${selectedId}`);
     }
-    filters.push(`${searchTerm}*`);
+    // Use OR to match both exact term and prefix. 
+    // This fixes issues where "Pierre*" might fail but "Pierre" would succeed (e.g. stop words or exact matches).
+    filters.push(`(${searchTerm} OR ${searchTerm}*)`);
     return filters;
   }
 
