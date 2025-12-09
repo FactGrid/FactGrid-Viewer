@@ -48,7 +48,6 @@
         </button>
 
         <!-- Compact suggestions dropdown via CDK Overlay -->
-        @if (overlayOpen$ | async) {
           <ng-template
           
           
@@ -89,7 +88,6 @@
               </div>
             </div>
           </ng-template>
-          }
 
           <!-- Inline fallback when overlay fails to attach (useful on home page / integration contexts) -->
           @if ((overlayOpen$ | async) && !overlayAttached) {
