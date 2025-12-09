@@ -89,26 +89,7 @@
             </div>
           </ng-template>
 
-          <!-- Inline fallback when overlay fails to attach (useful on home page / integration contexts) -->
-          @if ((overlayOpen$ | async) && !overlayAttached) {
-            <div class="search-items_inner inline-fallback" role="list" aria-label="suggestions-inline">
-              <div class="compact-suggestions">
-                <ul>
-                  @for (item of (filteredItems$ | async)?.slice(0,50); track trackById(item)) {
-                    <li class="compact-suggestion-item" [class.clicked]="clickedItemId === item.id" [class.exact-match]="item.exactPhraseMatch">
-                      <a class="compact-suggestion-link" href="#" (click)="onItemRowClick(item.id, $event)" [attr.aria-label]="item.label + ' — ouvrir'">
-                        <div class="typo-item-label">{{ item.label }}</div>
-                        <div *ngIf="item.description" class="typo-item-desc">{{ item.description }}</div>
-                      </a>
-                    </li>
-                  }
-                </ul>
-                <div *ngIf="currentTotalCount > ((filteredItems$ | async)?.length || 0)" class="see-more inline">
-                  <button type="button" (click)="seeMore()">Voir {{ currentTotalCount - ((filteredItems$ | async)?.length || 0) }} autres résultats</button>
-                </div>
-              </div>
-            </div>
-          }
+          <!-- Inline fallback removed: overlay-only suggestions to avoid flicker -- see commit history for previous behavior -->
 
         <!-- Projects overlay anchored to the left project button (compact mode) -->
         @let projects = filteredResearchFields$ | async;

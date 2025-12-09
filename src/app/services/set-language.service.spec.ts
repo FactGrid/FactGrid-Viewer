@@ -33,7 +33,8 @@ describe('SetLanguageService', () => {
     const outFr = service.item(res, 'fr');
     expect(outFr[0].label).toBe('Français');
     expect(outFr[0].description).toBe('Desc FR');
-    expect(outFr[0].aliases).toEqual(['alias1']);
+    // no fallback for aliases: since there are only en aliases, fr should not show them
+    expect(outFr[0].aliases).toBeUndefined();
   });
 
   it('item2() should expose external link when datatype is external-id and claim P236 exists', () => {

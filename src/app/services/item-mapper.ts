@@ -13,20 +13,22 @@ export function mapEntityToDisplayItem(entity: any, sourceProject?: string): Dis
   const id = entity.id || entity.pageid || entity.title || '';
 
   // label / description / aliases appear either at top-level or in label/description maps
-  const label = entity.labels?.en?.value || entity.labels?.fr?.value || entity.label || entity.name || undefined;
+  // Prefer top-level prepared fields (label/description) which are likely already
+  // language-selected upstream. Fall back to label/descriptions maps only when
+  // the top-level field is not present.
+  const label = entity.label || entity.name || entity.labels?.en?.value || entity.labels?.fr?.value || undefined;
   const description =
-    entity.descriptions?.en?.value || entity.descriptions?.fr?.value || entity.description || undefined;
+    entity.description || entity.descriptions?.en?.value || entity.descriptions?.fr?.value || undefined;
 
   const aliases = (() => {
     if (Array.isArray(entity.aliases)) return entity.aliases;
+    // If aliases are already present as a language-selected array (e.g. ['a','b'])
+    // we keep them. If aliases is an object keyed by language (raw API), do NOT
+    // flatten across languages here — aliases must be language-specific and
+    // should be prepared earlier by SetLanguageService. Returning undefined
+    // prevents mixing languages in the DisplayItem.
     if (entity.aliases && typeof entity.aliases === 'object') {
-      // entity.aliases: { en: [{...}], fr: [{...}] }
-      const flat: string[] = [];
-      for (const lang of Object.keys(entity.aliases)) {
-        const arr = entity.aliases[lang] || [];
-        for (const a of arr) flat.push(a?.value || a || '');
-      }
-      return flat.filter(Boolean);
+      return undefined;
     }
     return undefined;
   })();

@@ -56,43 +56,15 @@ export class SetLanguageService {
   ) {
     if (!obj) return [];
 
-    // prefer requested language, with sensible fallbacks similar to getLangValue
-    const pick = (key: string | undefined) => (key ? obj[key] : undefined);
-
-    // special handling for chinese variants
-    if (lang === 'zh') {
-      if (obj['zh']) return Array.isArray(obj['zh']) ? obj['zh'].map((a) => a.value) : [];
-      if (obj['zh-cn']) return Array.isArray(obj['zh-cn']) ? obj['zh-cn'].map((a) => a.value) : [];
-      if (obj['zh-hans'])
-        return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
-      if (obj['zh-hant'])
-        return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
-    }
-    if (lang === 'zh-hans') {
-      if (obj['zh-hans'])
-        return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
-      if (obj['zh']) return Array.isArray(obj['zh']) ? obj['zh'].map((a) => a.value) : [];
-      if (obj['zh-hant'])
-        return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
-    }
-    if (lang === 'zh-hant') {
-      if (obj['zh-hant'])
-        return Array.isArray(obj['zh-hant']) ? obj['zh-hant'].map((a) => a.value) : [];
-      if (obj['zh']) return Array.isArray(obj['zh']) ? obj['zh'].map((a) => a.value) : [];
-      if (obj['zh-hans'])
-        return Array.isArray(obj['zh-hans']) ? obj['zh-hans'].map((a) => a.value) : [];
-    }
+    // Strict behavior: only return aliases for the exactly requested language.
+    // No fallback: if the requested language does not exist in the aliases object,
+    // we return an empty array. This ensures aliases are shown only for the
+    // language explicitly selected by the user.
+    if (!lang) return [];
 
     if (obj[lang]) return Array.isArray(obj[lang]) ? obj[lang].map((a) => a.value) : [];
 
-    for (const code of fallbackOrder) {
-      if (obj[code]) return Array.isArray(obj[code]) ? obj[code].map((a) => a.value) : [];
-    }
-
-    // last resort: take first available language
-    const keys = Object.keys(obj);
-    if (keys.length > 0 && Array.isArray(obj[keys[0]])) return obj[keys[0]].map((a) => a.value);
-
+    // no fallback for aliases: return an empty array when the exact language key is missing
     return [];
   }
 

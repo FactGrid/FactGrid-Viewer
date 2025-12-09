@@ -163,6 +163,11 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   overlayOpen$: Observable<boolean>;
   // runtime flag set when an overlay pane with expected class is present
   overlayAttached = false;
+  // --- adaptive attach latency estimator (persisted) ---
+  private overlayAttachLatencyEstimateMs = 100; // initial guess (ms)
+  private overlayAttachLatencyAlpha = 0.25; // EMA alpha
+  private readonly OVERLAY_ESTIMATE_KEY = 'search.overlayAttachEstimateMs';
+  private lastOverlayOpenTimestamp: number | null = null;
   // history overlay behaviour (for visited items panel)
   historyOverlayOpen$ = new BehaviorSubject<boolean>(false);
   // pagination/pages removed for compact-only mode
@@ -253,6 +258,17 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.searchInput.valueChanges.subscribe(() => {
       this.filterInput.setValue('', { emitEvent: false });
     });
+
+    // hydrate persisted attach-latency estimate if available
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(this.OVERLAY_ESTIMATE_KEY) : null;
+      if (raw != null) {
+        const parsed = Number(raw);
+        if (!Number.isNaN(parsed) && isFinite(parsed) && parsed > 0) {
+          this.overlayAttachLatencyEstimateMs = Math.max(10, Math.round(parsed));
+        }
+      }
+    } catch {}
 
     const overlaySub = this.overlayOpen$?.subscribe();
     if (overlaySub) this.subscriptions.push(overlaySub);
@@ -981,11 +997,32 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
               opacity: style.opacity,
               zIndex: style.zIndex,
             });
-            // mark that the overlay pane exists so template fallback can hide
-            try { this.overlayAttached = true; } catch {}
+            // mark that the overlay pane exists so template can hide other UI
+            try {
+              this.overlayAttached = true;
+            } catch {}
+            // If we previously recorded when overlayOpen moved to true, use
+            // that to compute an observed attach latency and update our EMA
+            try {
+              const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              if (this.lastOverlayOpenTimestamp != null) {
+                const observed = Math.max(0, now - this.lastOverlayOpenTimestamp);
+                this.overlayAttachLatencyEstimateMs = Math.round(
+                  this.overlayAttachLatencyAlpha * observed + (1 - this.overlayAttachLatencyAlpha) * this.overlayAttachLatencyEstimateMs
+                );
+                try { if (typeof localStorage !== 'undefined') localStorage.setItem(this.OVERLAY_ESTIMATE_KEY, String(this.overlayAttachLatencyEstimateMs)); } catch (e) {}
+                // clear marker
+                this.lastOverlayOpenTimestamp = null;
+              }
+            } catch (e) {}
           } else {
             console.info('[SearchComponent] overlay DOM not found (no pane with .search-items_panel)');
+            // Mark not attached
             try { this.overlayAttached = false; } catch {}
+            // start timing when overlayOpen -> true and no pane yet
+            try {
+              this.lastOverlayOpenTimestamp = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            } catch {}
           }
 
           // Inspect whether the global overlay container exists and how many children it has
@@ -1011,8 +1048,8 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         /* ignore DOM errors in test env */
       }
       // overlayOpen$ debug removed — keep behaviour but do not log to console in production
-      try {
-        if (typeof window !== 'undefined') {
+        try {
+          if (typeof window !== 'undefined') {
           // Toggle body scroll-lock on small screens only; but always attempt to log
           if (window.innerWidth <= 700) {
             document.body.classList.toggle('no-overlay-scroll', !!open);
