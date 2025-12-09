@@ -1,5 +1,6 @@
 import { of } from 'rxjs';
 import { SparqlDisplayService } from './sparql-display.service';
+import { SparqlTuple } from '../../services/sparql-types';
 
 describe('SparqlDisplayService', () => {
   let service: SparqlDisplayService;
@@ -14,7 +15,7 @@ describe('SparqlDisplayService', () => {
       getTranslation: (k: string) => (k === 'buildingTitle' ? 'Buildings' : ''),
     };
 
-    const sampleRows = [
+    const sampleRows: SparqlTuple[] = [
       ['', []],
       ['', []],
       ['', []],
@@ -34,7 +35,7 @@ describe('SparqlDisplayService', () => {
       getTranslation: (k: string) => (k === 'workTitle' ? 'Work' : ''),
     };
 
-    const sampleRows = [
+    const sampleRows: SparqlTuple[] = [
       ['', []],
       ['', []],
       ['', []],

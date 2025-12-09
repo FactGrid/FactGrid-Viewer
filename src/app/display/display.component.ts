@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { trigger, state, style, transition, animate, AnimationEvent } from '@angular/animations';
 import { Observable, Subscription } from 'rxjs';
+import { SparqlTuple } from '../services/sparql-types';
 import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackListDetailsService } from '../services/back-list-details.service';
@@ -54,7 +55,7 @@ import {
   ResearchField,
 } from '../services/selected-research-field.service';
 import { SearchCacheService } from '../services/search-cache.service';
-import { RequestService } from '../services/request.service';
+import { RequestService, CommonsImageMetadata } from '../services/request.service';
 
 @Component({
   selector: 'app-display',
@@ -270,7 +271,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   sparqlSubject2: string;
   sparqlSubject3: string;
   sparqlSubject4: string;
-  sparql$: Observable<any[][]> | null = null;
+  sparql$: Observable<SparqlTuple[]> | null = null;
 
   // Titres/listes calculés au niveau parent pour les cartes SPARQL (via le service)
   sparqlCards$: Observable<SparqlAllCardsState> | null = null;
@@ -442,6 +443,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   // use central SearchCacheService for generic cache storage
   private searchCache = inject(SearchCacheService);
   private request = inject(RequestService);
+  // typed metadata shape from RequestService
+  // (import kept inline to avoid further circulars — RequestService exports CommonsImageMetadata)
 
   // --- Image caption helpers (Commons) -------------------------------------------------
   private filenameFromUrl(url?: string) {
@@ -476,7 +479,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     const candidate = picture.full || picture.thumbnail || picture.uniqueKey;
     const fileName = this.filenameFromUrl(candidate);
     this.request.getCommonsImageMetadata(fileName || candidate).subscribe(
-      (meta) => {
+      (meta: CommonsImageMetadata | null) => {
         picture.captionLoading = false;
         if (meta && meta.descriptionHtml) {
           try {
@@ -827,7 +830,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       // sparql lists (async pipe) : attendre explicitement que le champ soit bien initialisé
       const waitForSparqlObservable = () => {
         if (this.item[0].sparql && typeof this.item[0].sparql.subscribe === 'function') {
-          this.sparql$ = this.item[0].sparql as Observable<any[][]>;
+          this.sparql$ = this.item[0].sparql as Observable<SparqlTuple[]>;
           // Délègue la construction des titres/listes au service
           this.sparqlCards$ = this.sparqlDisplayService.buildAllCardsState(this.sparql$, this.lang);
           // Subscribe and create the SPARQL components dynamically when data arrives

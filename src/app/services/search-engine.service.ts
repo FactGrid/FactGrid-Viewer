@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, switchMap, tap, debounceTime, takeWhile, filter } from 'rxjs/operators';
-import { RequestService } from '../services/request.service';
+import { RequestService, WBSearchResponse, GetEntitiesResponse } from '../services/request.service';
 import { SelectedLangService } from '../selected-lang.service';
 
 @Injectable({
@@ -19,7 +19,7 @@ export class SearchEngineService {
     de.pipe(
       debounceTime(400),
       switchMap((label) => this.request.searchItem(label, this.lang.selectedLang)),
-      map((res) => this.createList(res)),
+      map((res: WBSearchResponse) => this.createList(res)),
       map((res) =>
         res ==
         'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=&format=json&origin=*'
@@ -34,16 +34,11 @@ export class SearchEngineService {
     );
   }
 
-  createList(re) {
+  createList(re: WBSearchResponse) {
     //create an url whith the elements of an array
     let list = '';
     let url = '';
-    let arr = re.search;
-    if (arr === undefined) {
-      arr = [];
-    } else {
-      arr = arr;
-    }
+    const arr = re.search ?? [];
     for (let i = 0; i < arr.length; i++) {
       list = list + '|' + arr[i].id;
     }

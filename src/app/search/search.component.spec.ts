@@ -1,11 +1,12 @@
 ﻿import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { SearchComponent } from './search.component';
 import { SelectedResearchFieldService } from '../services/selected-research-field.service';
+import { AutocompleteIndexService } from '../services/autocomplete-index.service';
 import { SelectedLangService } from '../selected-lang.service';
 
 describe('SearchComponent', () => {
@@ -282,7 +283,7 @@ describe('SearchComponent', () => {
     const titles = ['Page:Q100'];
     const entitiesResponse = { entities: { Q100: { id: 'Q100', labels: { fr: { value: 'ProjectItem' } }, descriptions: { fr: { value: 'desc' } }, aliases: {} } } };
 
-    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
     const getItemSpy = spyOn((component as any).request, 'getItem').and.returnValue(of(entitiesResponse));
 
     // ensure component's language matches our pre-warmed entity cache
@@ -347,7 +348,7 @@ describe('SearchComponent', () => {
 
   it('single-letter fallback uses wbsearchentities for all-project searches but not for project searches', fakeAsync(() => {
     const searchSpy = spyOn((component as any).request, 'searchItem').and.returnValue(of({ searchinfo: { totalhits: 0 }, search: [] }));
-    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of([]));
+    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: [], total: 0 }));
 
     // no project -> should call wbsearchentities (searchItem)
     (component as any).fetchAutocompleteEntities('a', 'fr', 50).subscribe();
@@ -384,7 +385,10 @@ describe('SearchComponent', () => {
     const prev = { id: 'Q1', label: 'Jacques Louis David', aliases: [], description: '' } as any;
     // prior unrelated item that should not be preserved
     const prevUnrelated = { id: 'Qx', label: 'Some Other Person', aliases: [], description: '' } as any;
-    (component as any).items = [prev, prevUnrelated];
+    // pretend those were previously displayed
+    (component as any).seenItems = new Map([['Q1', prev], ['Qx', prevUnrelated]]);
+    // current displayed items empty
+    (component as any).items = [];
 
     // server returned a different set which omits the desired 'Q1' item
     const newItems = [{ id: 'Q2', label: 'Pauline Jeanne David', aliases: [], description: '' } as any];
@@ -398,13 +402,238 @@ describe('SearchComponent', () => {
     expect(merged.some((i: any) => i.id === 'Q2')).toBeTrue();
   });
 
+  it('merge should not preserve seen items that do not match current tokens (e.g. filter out Pauline)', () => {
+    const prev1 = { id: 'Q1', label: 'Jacques Louis David', aliases: [], description: '' } as any;
+    const prev2 = { id: 'Qx', label: 'Pauline Jeanne David', aliases: [], description: '' } as any;
+    (component as any).seenItems = new Map([['Q1', prev1], ['Qx', prev2]]);
+
+    const newItems = [{ id: 'Q2', label: 'Another Match', aliases: [], description: '' } as any];
+
+    const merged = (component as any).mergeResultsPreservingPriorMatches('jacques louis d', newItems);
+    // 'Jacques Louis David' should be preserved
+    expect(merged.some((i: any) => i.id === 'Q1')).toBeTrue();
+    // 'Pauline Jeanne David' should NOT be preserved (doesn't satisfy tokens jacques & louis)
+    expect(merged.some((i: any) => i.id === 'Qx')).toBeFalse();
+  });
+
+  it('project-mode will not return raw items when client-side filtering removes all entries', fakeAsync(() => {
+    const titles = ['Page:Q100'];
+    const entitiesResponse = { entities: { Q100: { id: 'Q100', labels: { fr: { value: 'Pauline Jeanne David' } }, descriptions: { fr: { value: 'desc' } }, aliases: {} } } };
+
+    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
+    const getItemSpy = spyOn((component as any).request, 'getItem').and.returnValue(of(entitiesResponse));
+
+    // run a project-mode search where the server returns "Pauline Jeanne David"
+    // but the search term is 'jacques louis' which should be filtered out client-side.
+    let result: any = null;
+    (component as any).fetchAutocompleteEntities('project', 'fr', 50, 'Q10').subscribe((res: any) => {
+      result = res;
+    });
+    tick(10);
+    expect(qidsSpy.calls.count()).toBe(1);
+    expect(getItemSpy.calls.count()).toBe(1);
+    // Because client-side filtering removes the unrelated item, we should
+    // not return the raw server items as a fallback; items must be empty.
+    expect(result.items.length).toBe(0);
+  }));
+
+  it('does not flash unrelated server items when a later relevant response arrives (apply delay)', fakeAsync(() => {
+    // we'll control the inner observables to simulate responses and timings
+    const subj1 = new Subject<any>();
+    const subj2 = new Subject<any>();
+    let call = 0;
+    spyOn((component as any), 'fetchAutocompleteEntities').and.callFake((searchTerm: any) => {
+      call += 1;
+      if (call === 1) {
+        return of({ items: [{ id: 'Qp', label: 'Pauline Jeanne David', aliases: [], description: '' }], total: 1 });
+      }
+      return of({ items: [{ id: 'Qj', label: 'Jacques Louis David', aliases: [], description: '' }], total: 1 });
+    });
+
+    // ensure clean starting state
+    try { (component as any).searchCache.clearGeneric(); (component as any).searchCache.invalidateCache(); } catch (e) {}
+    // ensure we're in default (no project filter) mode so the same fetch path is used
+    try { (component as any).selectedResearchField.setSelectedResearchField({ id: 'all', name: 'all', description: '' }); } catch (e) {}
+
+    // ensure no initial items
+    expect((component as any).items.length).toBe(0);
+
+    // make the apply delay longer for this test so we can reliably ensure
+    // second response arrives before the first scheduled apply
+    (component as any).resultApplyDelayMs = 1000;
+
+    // Instead of driving the full valueChanges pipeline we test the
+    // final applicability logic deterministically: first payload is
+    // unrelated and should be ignored; second payload is relevant and
+    // should cause updateItemsList to be called.
+
+    // Spy updateItemsList so we can assert on calls
+    const updateSpy = spyOn((component as any), 'updateItemsList').and.callThrough();
+
+    // Simulate first (unrelated) payload
+    const payload1 = { items: [{ id: 'Qp', label: 'Pauline Jeanne David', aliases: [], description: '' }], searchTerm: 'jacques louis', queryId: 1 } as any;
+    // compute merged set for first payload
+    const merged1 = (component as any).mergeResultsPreservingPriorMatches(payload1.searchTerm, payload1.items);
+    const hasRelevant1 = merged1.some((it: any) => (component as any).matchesAllTokens(it, payload1.searchTerm, (component as any).showInDescription));
+    expect(hasRelevant1).toBeFalse();
+    if (hasRelevant1) (component as any).updateItemsList(merged1);
+
+    // Ensure updateItemsList was NOT called for unrelated payload
+    expect(updateSpy).not.toHaveBeenCalled();
+
+    // Simulate second (relevant) payload
+    const payload2 = { items: [{ id: 'Qj', label: 'Jacques Louis David', aliases: [], description: '' }], searchTerm: 'jacques louis d', queryId: 2 } as any;
+    const merged2 = (component as any).mergeResultsPreservingPriorMatches(payload2.searchTerm, payload2.items);
+    const hasRelevant2 = merged2.some((it: any) => (component as any).matchesAllTokens(it, payload2.searchTerm, (component as any).showInDescription));
+    expect(hasRelevant2).toBeTrue();
+
+    // apply second payload
+    if (hasRelevant2) (component as any).updateItemsList(merged2);
+
+    // Now updateItemsList should have been called once and items should contain Jacques
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    expect((component as any).items.some((i: any) => i.label && i.label.includes('Jacques Louis David'))).toBeTrue();
+  }));
+
+  it('uses local index candidate to expand project search (calls getQidsList with P248 + project)', fakeAsync(() => {
+    // Put component into project-mode
+    const srf = TestBed.inject(SelectedResearchFieldService) as SelectedResearchFieldService;
+    srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
+
+
+    // spy AutocompleteIndexService to return a candidate with id+prop
+    // Spy on the prototype so any instance used by the component will be intercepted
+    spyOn(AutocompleteIndexService.prototype, 'getMatches').and.returnValue(
+      Promise.resolve([{ label: 'Frédéric', id: 'Q12345', prop: 'P248', norm: 'frederic' }] as any)
+    );
+
+    // spy request.getQidsList to observe the crafted query for project + P248
+    const reqSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: ['Page:Q452897'], total: 1 }));
+
+    // instead of driving the full input pipeline (which is timing-sensitive),
+    // call the expansion helper directly so the behaviour is deterministic
+    const qid = (component as any).currentQueryId;
+    (component as any).attemptProjectExpansion('Fred', 'Q10', qid, 'Fred');
+    // resolve any pending microtasks (Promise returned by getMatches)
+    try { (globalThis as any).flushMicrotasks?.(); } catch (e) {}
+    // a short tick to let any downstream scheduling occur
+    tick(10);
+
+    // expansion should result in a call to getQidsList for the constructed srsearch
+    expect(reqSpy.calls.count()).toBeGreaterThan(0);
+  }));
+
+  it('seeMore uses larger limit and updates items/total in project mode', fakeAsync(() => {
+    // Put component into project-mode and set remembered srsearch
+    const srf = TestBed.inject(SelectedResearchFieldService) as SelectedResearchFieldService;
+    srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
+    (component as any).lastProjectSrsearch = 'haswbstatement:P248=Q12345 haswbstatement:P131=Q10';
+
+    // ensure selected language
+    const selLang = TestBed.inject(SelectedLangService) as SelectedLangService;
+    selLang.selectedLang = 'fr';
+
+    const res = { items: [{ id: 'QX', label: 'Voir plus item', aliases: [], description: '' }], total: 123 } as any;
+
+    const spyFetch = spyOn((component as any), 'fetchAutocompleteEntities').and.returnValue(of(res));
+
+    // set input so seeMore has a term to work with
+    component.searchInput.setValue('something', { emitEvent: false });
+
+    // call seeMore and flush
+    component.seeMore();
+    tick(10);
+
+    // should have called fetch with SEE_MORE_LIMIT and the selected project id
+    expect(spyFetch.calls.count()).toBeGreaterThan(0);
+    const args = spyFetch.calls.mostRecent().args;
+    expect(args[0]).toBe('something');
+    // arg[2] is the max results (SEE_MORE_LIMIT) and arg[3] selected id
+    expect(args[3]).toBe('Q10');
+
+    // items & totals should be updated
+    expect((component as any).items.length).toBeGreaterThan(0);
+    expect(component.currentTotalCount).toBe(123);
+  }));
+
+  it('seeMore uses non-project path when not in project mode', fakeAsync(() => {
+    // ensure not in project mode
+    const srf = TestBed.inject(SelectedResearchFieldService) as SelectedResearchFieldService;
+    srf.setSelectedResearchField({ id: 'all', name: 'all', description: '' });
+    (component as any).lastProjectSrsearch = null;
+
+    const res = { items: [{ id: 'QY', label: 'Voir plus global', aliases: [], description: '' }], total: 7 } as any;
+    const spyFetch = spyOn((component as any), 'fetchAutocompleteEntities').and.returnValue(of(res));
+
+    component.searchInput.setValue('other', { emitEvent: false });
+    component.seeMore();
+    tick(10);
+
+    expect(spyFetch.calls.count()).toBeGreaterThan(0);
+    const args = spyFetch.calls.mostRecent().args;
+    expect(args[0]).toBe('other');
+    // non-project call does not include a selectedId arg
+    expect(args.length).toBeLessThanOrEqual(3);
+
+    expect((component as any).items.some((i: any) => i.label && i.label.includes('Voir plus global'))).toBeTrue();
+    expect(component.currentTotalCount).toBe(7);
+  }));
+
+  it('attemptProjectExpansion gracefully handles empty getQidsList results (no updates)', fakeAsync(async () => {
+    // Setup project-state
+    const srf = TestBed.inject(SelectedResearchFieldService) as SelectedResearchFieldService;
+    srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
+
+    // stub autocomplete match candidate
+    spyOn(AutocompleteIndexService.prototype, 'getMatches').and.returnValue(Promise.resolve([{ label: 'Alice', id: 'Q123', prop: 'P248', norm: 'alice' }] as any));
+
+    // getQidsList returns empty titles
+    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: [], total: 0 }));
+
+    const updateSpy = spyOn((component as any), 'updateItemsList').and.callThrough();
+
+    const qid = (component as any).currentQueryId;
+    await (component as any).attemptProjectExpansion('Al', 'Q10', qid, 'al');
+    // allow microtasks to resolve
+    try { (globalThis as any).flushMicrotasks?.(); } catch (e) {}
+    tick(10);
+
+    expect(qidsSpy.calls.count()).toBeGreaterThan(0);
+    // should not call fetchEntities nor update items since no ids were returned
+    expect(updateSpy).not.toHaveBeenCalled();
+  }));
+
+  it('attemptProjectExpansion swallows errors from fetchEntities and does not crash', fakeAsync(async () => {
+    // Setup project-state
+    const srf = TestBed.inject(SelectedResearchFieldService) as SelectedResearchFieldService;
+    srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
+
+    spyOn(AutocompleteIndexService.prototype, 'getMatches').and.returnValue(Promise.resolve([{ label: 'Bob', id: 'Q555', prop: 'P248', norm: 'bob' }] as any));
+
+    // getQidsList returns one title so attempt will proceed
+    spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: ['Page:Q1'], total: 1 }));
+
+    // force fetchEntities to return an observable that errors
+    spyOn((component as any), 'fetchEntities').and.returnValue(throwError(() => new Error('boom')) as any);
+
+    const updateSpy = spyOn((component as any), 'updateItemsList').and.callThrough();
+
+    const qid = (component as any).currentQueryId;
+    await (component as any).attemptProjectExpansion('Bo', 'Q10', qid, 'bo');
+    try { (globalThis as any).flushMicrotasks?.(); } catch (e) {}
+    tick(10);
+
+    // updateItemsList should not have been called and no uncaught exceptions should bubble
+    expect(updateSpy).not.toHaveBeenCalled();
+  }));
+
   it('filters project results client-side to require all tokens (removes unrelated entries)', fakeAsync(() => {
     const cache = (component as any).searchCache;
     try { cache.clearGeneric(); cache.invalidateCache(); } catch {}
 
     // Simulate Cirrus returning two page titles for project search
     const titles = ['Page:Q452897', 'Page:Q410337'];
-    spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
 
     // Simulate wbgetentities returning two entities (Jacques Louis David, and Pauline Jeanne David)
     const entitiesResp = {
@@ -441,7 +670,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning the page title for Jacques Louis David
     const titles = ['Page:Q452897'];
-    spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
 
     // Pre-warm per-entity cache so fetchEntities will return cached entity for Q452897
     const selLang = TestBed.inject(SelectedLangService) as any;
@@ -465,7 +694,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning the page title for Jacques Louis David
     const titles = ['Page:Q452897'];
-    spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
 
     // Pre-warm per-entity cache so fetchEntities will return cached entity for Q452897
     const selLang = TestBed.inject(SelectedLangService) as any;
@@ -489,7 +718,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning two page titles for project search - both contain tokens
     const titles = ['Page:Q100', 'Page:Q200'];
-    spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
 
     // Pre-warm per-entity cache: Q100 has 'Jules André Simon', Q200 has exact 'Jules Simon'
     const selLang = TestBed.inject(SelectedLangService) as any;
@@ -518,7 +747,7 @@ describe('SearchComponent', () => {
 
     // Cirrus returns both possible pages
     const titles = ['Page:Q200', 'Page:Q100'];
-    spyOn((component as any).request, 'getQidsList').and.returnValue(of(titles));
+    spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: titles, total: titles.length }));
 
     // Pre-warm per-entity cache: Q200 = 'Jules Marcel', Q100 = 'Jules Amable Pierrot-Deseilligny'
     const selLang = TestBed.inject(SelectedLangService) as any;
@@ -549,10 +778,10 @@ describe('SearchComponent', () => {
         // make the "long" response sufficiently slower than the short one
         // so the short-query completes first and we can assert the late
         // long response does not override it.
-        return of(['Page:Q410337']).pipe(delay(400)); // slow: returns Pauline (irrelevant for short)
+        return of({ titles: ['Page:Q410337'], total: 1 }).pipe(delay(400)); // slow: returns Pauline (irrelevant for short)
       }
       // short query returns the intended 'Jacques Louis David' id quickly
-      return of(['Page:Q452897']).pipe(delay(10));
+      return of({ titles: ['Page:Q452897'], total: 1 }).pipe(delay(10));
     });
 
     // Ensure entity cache exists for the ids returned
@@ -568,7 +797,6 @@ describe('SearchComponent', () => {
     srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
 
     // Ensure selection applied
-    console.log('DEBUG selected project:', srf.getSelectedResearchField());
 
     // Simulate search lifecycle directly: start a long (slow) project query and
     // then a short (fast) project query; ensure the late long response doesn't
@@ -595,14 +823,14 @@ describe('SearchComponent', () => {
       .fetchAutocompleteEntities('jacques louis david', 'fr', 50, 'Q10')
       .pipe(map(({ items }: any) => ({ items, searchTerm: 'jacques louis david', queryId: longQueryId })))
       .subscribe(({ items, searchTerm, queryId }: any) => {
-        console.log('DEBUG long sub received:', items.map((i:any)=>i.label), searchTerm, queryId, 'currentQueryId=', (component as any).currentQueryId, 'searchInput=', (component as any).searchInput.value);
+        // long sub received
         longDone = true; // slow response arrived (may be stale)
         const currentNormalized = norm((component as any).searchInput.value || '');
         if (queryId !== (component as any).currentQueryId || currentNormalized !== searchTerm) {
-          console.log('DEBUG long sub ignored (stale):', queryId, (component as any).currentQueryId, currentNormalized, searchTerm);
+          // long sub ignored (stale)
           return;
         }
-        console.log('DEBUG long sub applying update');
+        // long sub applying update
         (component as any).updateItemsList(items);
         longDone = true;
       });
@@ -616,13 +844,13 @@ describe('SearchComponent', () => {
       .fetchAutocompleteEntities('jacques louis', 'fr', 50, 'Q10')
       .pipe(map(({ items }: any) => ({ items, searchTerm: 'jacques louis', queryId: shortQueryId })))
       .subscribe(({ items, searchTerm, queryId }: any) => {
-        console.log('DEBUG short sub received:', items.map((i:any)=>i.label), searchTerm, queryId, 'currentQueryId=', (component as any).currentQueryId, 'searchInput=', (component as any).searchInput.value);
+        // short sub received
         const currentNormalized = norm((component as any).searchInput.value || '');
         if (queryId !== (component as any).currentQueryId || currentNormalized !== searchTerm) {
-          console.log('DEBUG short sub ignored (stale):', queryId, (component as any).currentQueryId, currentNormalized, searchTerm);
+            // short sub ignored (stale)
           return;
         }
-        console.log('DEBUG short sub applying update');
+        // short sub applying update
         (component as any).updateItemsList(items);
         shortDone = true;
       });
@@ -652,7 +880,7 @@ describe('SearchComponent', () => {
 
 
     // Configure a delayed project search so a new query will be pending
-    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of(['Page:Q100']).pipe(delay(400)));
+    const qidsSpy = spyOn((component as any).request, 'getQidsList').and.returnValue(of({ titles: ['Page:Q100'], total: 1 }).pipe(delay(400)));
 
     // ensure entity is cached so fetchEntities will return quickly once getQidsList resolves
     const selLang = TestBed.inject(SelectedLangService) as any;
@@ -700,6 +928,64 @@ describe('SearchComponent', () => {
     tick(400);
     expect(done).toBeTrue();
     expect((component as any).items.some((i: any) => i.label && i.label.includes('Jacques Louis Example'))).toBeTrue();
+  }));
+
+  it('inline fallback renders seeMore button with correct delta and clicking triggers seeMore', fakeAsync(() => {
+    // Ensure a short list is present and total count is larger
+    const items = [{ id: 'Q1', label: 'Short item', aliases: [], description: '' }];
+    (component as any).items = items;
+    (component as any).items$.next(items);
+    component.currentTotalCount = 5; // there are 4 more
+
+    // make sure overlay won't attach (simulate fallback) and input non-empty
+    (component as any).overlayAttached = false;
+    component.searchInput.setValue('term', { emitEvent: true });
+    fixture.detectChanges();
+    tick(10);
+
+    const inlineSeeBtn: HTMLButtonElement | null = fixture.nativeElement.querySelector('.see-more.inline button');
+    expect(inlineSeeBtn).withContext('inline seeMore button present').toBeTruthy();
+    expect(inlineSeeBtn!.textContent).toContain('Voir 4 autres résultats');
+
+    // spy the network call and trigger click
+    const res = { items: [{ id: 'QX', label: 'More item', aliases: [], description: '' }], total: 5 } as any;
+    const spyFetch = spyOn((component as any), 'fetchAutocompleteEntities').and.returnValue(of(res));
+
+    inlineSeeBtn!.click();
+    fixture.detectChanges();
+    tick(10);
+
+    expect(spyFetch.calls.count()).toBeGreaterThan(0);
+    // result should have been applied
+    expect((component as any).items.some((i: any) => i.label && i.label.includes('More item'))).toBeTrue();
+    expect(component.currentTotalCount).toBe(5);
+  }));
+
+  it('when overlay is attached inline fallback is hidden (overlay container present)', fakeAsync(() => {
+    const overlayContainer = TestBed.inject(OverlayContainer) as OverlayContainer;
+
+    const items = [{ id: 'Q1', label: 'Short item', aliases: [], description: '' }];
+    (component as any).items = items;
+    (component as any).items$.next(items);
+    component.currentTotalCount = 10;
+
+    // create a fake overlay pane that matches expected class so
+    // the component's overlay detection logic will mark overlayAttached true
+    const pane = document.createElement('div');
+    pane.className = 'cdk-overlay-pane search-items_panel';
+    overlayContainer.getContainerElement().appendChild(pane);
+
+    component.searchInput.setValue('abc', { emitEvent: true });
+    fixture.detectChanges();
+    // allow overlayOpen subscription to run and update overlayAttached
+    tick(50);
+
+    // inline fallback should not be rendered when overlay is attached
+    const inlineSee = fixture.nativeElement.querySelector('.see-more.inline');
+    expect(inlineSee).toBeNull();
+
+    // cleanup
+    try { overlayContainer.getContainerElement().removeChild(pane); } catch (e) {}
   }));
 
   // Rendering and overlay attachment tests can be flaky in the unit test

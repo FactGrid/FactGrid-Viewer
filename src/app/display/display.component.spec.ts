@@ -6,9 +6,11 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DisplayComponent } from './display.component';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { BackListService } from '../services/back-list.service';
+import { SparqlDisplayService } from './services/sparql-display.service';
+import { SelectedLangService } from '../selected-lang.service';
 import { BackListDetailsService } from '../services/back-list-details.service';
 import { SelectedResearchFieldService } from '../services/selected-research-field.service';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('DisplayComponent', () => {
@@ -133,6 +135,42 @@ describe('DisplayComponent', () => {
 
     // after load, label should equal the English fallback
     expect(component.linkedItems[0].label).toBe('English name');
+  });
+
+  it('should build SPARQL cards state from item.sparql (typed SparqlTuple[])', (done) => {
+    // Prepare a sample SparqlTuple stream for sparql4
+    const sampleRows: any[] = [
+      ['', []],
+      ['', []],
+      ['', []],
+      ['', []],
+      ['Q8', [{ item: { id: 'Q1' }, itemLabel: { value: 'House' } }]],
+    ];
+
+    // Build a minimal item payload that passes loadItem() checks
+    const item = {
+      id: 'Q1',
+      label: 'Test',
+      claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }] },
+      sparql: of(sampleRows),
+    } as any;
+
+    // Instead of driving the full loadItem pipeline (which triggers many
+    // downstream services), create the sparql$ stream and feed it to the
+    // display service used by the component. This focuses the test on the
+    // typed pipeline (SparqlTuple[] -> buildAllCardsState).
+    component.item = [item] as any;
+    component.sparql$ = of(sampleRows) as Observable<any>;
+    const sdsvc = TestBed.inject<any>(SparqlDisplayService);
+    const langService = TestBed.inject<any>(SelectedLangService);
+    langService.selectedLang = 'en';
+    component.sparqlCards$ = sdsvc.buildAllCardsState(component.sparql$, langService);
+
+    (component.sparqlCards$ as Observable<any>).subscribe((cards) => {
+      expect(cards.sparql4.list.length).toBeGreaterThan(0);
+      expect(cards.sparql4.title).toBeTruthy();
+      done();
+    });
   });
 
   it('should display id when no label exists in any language', () => {

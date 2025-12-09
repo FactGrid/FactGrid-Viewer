@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { RequestService } from './request.service';
+import { RequestService, WBSearchResponse, GetEntitiesResponse } from './request.service';
 import { SelectedLangService } from '../selected-lang.service';
 import { WikibaseEntity } from '../models/wikibase-entity.model';
 
@@ -46,9 +46,10 @@ export class WikibaseSearchService {
       '&format=json' +
       '&origin=*';
 
-    return this.request.getItem(url).pipe(
-      map((res: any) =>
-        (res.search || []).map((e: any) => ({
+    // use typed search endpoint rather than a raw getItem call
+    return this.request.searchItem(searchTerm, this.lang.selectedLang).pipe(
+      map((res: WBSearchResponse) =>
+        (res.search || []).map((e: WBSearchResponse['search'] extends (infer R)[] ? R : any) => ({
           id: e.id,
           label: e.label,
           aliases: e.aliases || [],
@@ -80,8 +81,8 @@ export class WikibaseSearchService {
         `&languages=${this.lang.selectedLang}` +
         `&origin=*`;
       return this.request.getItem(getEntitiesUrl).pipe(
-        map((res: any) => {
-          if (!res.entities) return [];
+        map((res: GetEntitiesResponse | undefined) => {
+          if (!res || !res.entities) return [];
           return this.adaptEntities(Object.values(res.entities), this.lang.selectedLang);
         })
       );
@@ -113,7 +114,7 @@ export class WikibaseSearchService {
       '&origin=*' +
       `&srsearch=${encodeURIComponent(searchQuery)}` +
       '&srnamespace=120' +
-      '&srlimit=500'
+      '&srlimit=50'
     );
   }
 }

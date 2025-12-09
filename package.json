@@ -25,7 +25,8 @@
                     "theme:burgundy-gold":  "node switch-palette.js 5",
                     "theme:preview":  "start theme-preview.html",
                     "aif:check":  "node ./scripts/aif-check.js",
-                    "check:overlay-style": "node ./scripts/check-overlay-style.js"
+                    "check:overlay-style": "node ./scripts/check-overlay-style.js",
+                    "validate:autocomplete-index": "node tools/validate-autocomplete-index.js"
                 },
     "devDependencies":  {
                             "@angular-devkit/build-angular":  "^20.0.1",

@@ -2,7 +2,37 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { saveAs } from 'file-saver';
-import { expand, map, reduce, catchError, tap, shareReplay } from 'rxjs/operators';
+import { expand, map, reduce, catchError, tap, shareReplay, switchMap } from 'rxjs/operators';
+
+// ---- typed response shapes (small, pragmatic set) ----
+// Commons image metadata adapter
+export interface CommonsImageMetadata {
+  descriptionHtml?: string | null;
+  artist?: string | null;
+  credit?: string | null;
+  licenseShort?: string | null;
+  usageTerms?: string | null;
+}
+
+// Minimal shape for wbsearchentities responses
+export interface WBSearchEntry {
+  id?: string;
+  concepturi?: string;
+  title?: string;
+  label?: string;
+  description?: string;
+  aliases?: any[];
+}
+
+export interface WBSearchResponse {
+  searchinfo?: { totalhits?: number };
+  search?: WBSearchEntry[];
+}
+
+// Minimal shape for wbgetentities responses
+export interface GetEntitiesResponse {
+  entities?: Record<string, any>;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -13,12 +43,14 @@ export class RequestService {
   // simple in-memory cache for commons metadata to avoid repeated requests
   private commonsMetadataCache = new Map<string, any>();
 
+  // simple in-memory cache for commons metadata to avoid repeated requests
+
   /**
    * Fetch metadata for a Commons image (filename or full URL accepted).
    * Uses the MediaWiki API action=query with prop=imageinfo&iiprop=extmetadata.
    * Returns an object with descriptionHtml (if present) and other extmetadata fields.
    */
-  getCommonsImageMetadata(fileOrUrl: string) {
+  getCommonsImageMetadata(fileOrUrl: string): Observable<CommonsImageMetadata | null> {
     if (!fileOrUrl) return of(null);
 
     // try to derive a stable file name like 'File:Example.jpg'
@@ -113,7 +145,7 @@ export class RequestService {
     return forkJoin(requests);
   }
 
-  searchItem(label: string, lang: string, offset: number = 0, limit: number = 50) {
+  searchItem(label: string, lang: string, offset: number = 0, limit: number = 50): Observable<WBSearchResponse> {
     const params = new HttpParams()
       .set('action', 'wbsearchentities')
       .set('search', label)
@@ -126,7 +158,7 @@ export class RequestService {
     return this.http.get('https://database.factgrid.de//w/api.php', { params });
   }
 
-  searchProperty(label: string, lang: string) {
+  searchProperty(label: string, lang: string): Observable<WBSearchResponse> {
     const params = new HttpParams()
       .set('action', 'wbsearchentities')
       .set('type', 'property')
@@ -143,8 +175,8 @@ export class RequestService {
     return this.http.get(re).pipe(catchError(() => of(false)));
   }
 
-  getItem(re: string): Observable<any> {
-    return this.http.get(re).pipe(catchError(() => of(undefined)));
+  getItem(re: string): Observable<GetEntitiesResponse | undefined> {
+    return this.http.get<GetEntitiesResponse>(re).pipe(catchError(() => of(undefined)));
   }
 
   getList(sparql: string): Observable<any> {
@@ -264,33 +296,44 @@ export class RequestService {
     );
   }
 
-  getQidsList(search: string, limit: number = 500): Observable<string[]> {
+  /**
+   * Retrieve a list of page titles (e.g. Page:Q123) from CirrusSearch.
+   * Default behavior: return up to `limit` titles and the server-side total if available.
+   * This will request pages of up to 50 results and stop early once accumulated >= limit.
+   */
+  getQidsList(
+    search: string,
+    limit: number = 50
+  ): Observable<{ titles: string[]; total: number }> {
+    const perPage = Math.min(limit, 50);
+
     const baseParams = new HttpParams()
       .set('action', 'query')
       .set('list', 'search')
       .set('srsearch', search)
       .set('format', 'json')
-      .set('srlimit', String(limit))
+      .set('srlimit', String(perPage))
       .set('srnamespace', '120')
       .set('origin', '*');
 
-    const fetch = (sroffset?: number) => {
+    const fetchPage = (sroffset?: number, acc: string[] = []): Observable<{ titles: string[]; total: number }> => {
       let params = baseParams;
-      if (sroffset !== undefined) {
-        params = params.set('sroffset', sroffset.toString());
-      }
-      return this.http.get<any>('https://database.factgrid.de/w/api.php', { params });
+      if (sroffset !== undefined) params = params.set('sroffset', sroffset.toString());
+      return this.http.get<any>('https://database.factgrid.de/w/api.php', { params }).pipe(
+        switchMap((resp) => {
+          const newTitles = resp?.query?.search?.map((item: any) => item.title) ?? [];
+          const all = acc.concat(newTitles);
+          const totalFromServer = resp?.searchinfo?.totalhits ?? null;
+          // stop early if we've reached the desired overall limit
+          if (resp?.continue && resp.continue.sroffset !== undefined && all.length < limit) {
+            return fetchPage(resp.continue.sroffset, all);
+          }
+          return of({ titles: all.slice(0, limit), total: totalFromServer ?? all.length });
+        }),
+        catchError(() => of({ titles: [], total: 0 }))
+      );
     };
 
-    return fetch().pipe(
-      expand((response) => {
-        if (response.continue && response.continue.sroffset !== undefined) {
-          return fetch(response.continue.sroffset);
-        }
-        return of();
-      }),
-      map((response) => response.query?.search.map((item) => item.title) ?? []),
-      reduce((acc, value) => acc.concat(value), [])
-    );
+    return fetchPage();
   }
 }

@@ -16,7 +16,9 @@ import {
   BehaviorSubject,
   map,
   switchMap,
+  delay,
   tap,
+  finalize,
   debounceTime,
   combineLatest,
   filter,
@@ -26,6 +28,7 @@ import {
   catchError,
   forkJoin,
   distinctUntilChanged,
+  firstValueFrom,
 } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -42,7 +45,8 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { SetLanguageService } from '../services/set-language.service';
-import { RequestService } from '../services/request.service';
+import { RequestService, WBSearchResponse, GetEntitiesResponse } from '../services/request.service';
+import { AutocompleteIndexService } from '../services/autocomplete-index.service';
 import { SelectedLangService } from '../selected-lang.service';
 import { SelectedResearchFieldService } from '../services/selected-research-field.service';
 import { WikibaseSearchService } from '../services/wikibase-search.service';
@@ -68,7 +72,10 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     results.push(array.slice(i, i + chunkSize));
   }
 
+  
+  
   return results;
+  
 }
 
 @Component({
@@ -99,6 +106,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   // ========== SERVICES ==========
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly request = inject(RequestService);
+  private readonly autocompleteIndex = inject(AutocompleteIndexService);
   private readonly setLanguage = inject(SetLanguageService);
   private readonly lang = inject(SelectedLangService);
   private readonly selectedResearchField = inject(SelectedResearchFieldService);
@@ -152,6 +160,8 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   filteredItems$: Observable<WikibaseEntity[]>;
   // Observable indiquant si l'overlay doit être ouvert (utilisé pour debug/contrôle)
   overlayOpen$: Observable<boolean>;
+  // runtime flag set when an overlay pane with expected class is present
+  overlayAttached = false;
   // history overlay behaviour (for visited items panel)
   historyOverlayOpen$ = new BehaviorSubject<boolean>(false);
   // pagination/pages removed for compact-only mode
@@ -162,7 +172,20 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   private subscriptions: Subscription[] = [];
 
   // monotonic id for current search query — used to guard against stale responses
+  // ----- autocomplete limits (tunable) -----
+  private readonly SR_LIMIT = 50; // how many ids to request from CirrusSearch by default
+  private readonly DETAIL_K_DESKTOP = 10; // how many detailed entities to fetch for desktop
+  private readonly DETAIL_K_MOBILE = 5; // for mobile
+  private readonly SEE_MORE_LIMIT = 200; // how many ids to request when user clicks Voir plus
+  private readonly SEE_MORE_DETAILS_DESKTOP = 50; // detailed entities to fetch after See more
+  private readonly SEE_MORE_DETAILS_MOBILE = 20;
+  private readonly EXPANSION_DETAIL_LIMIT = 20; // limit for expansion fetches
   private currentQueryId = 0;
+  // total count of results from last autocomplete fetch (approx. server total if available)
+  currentTotalCount = 0;
+  // remember last project-mode srsearch so 'Voir plus' can re-run with a larger limit
+  private lastProjectSrsearch: string | null = null;
+  private lastProjectSelectedId: string | null = null;
 
   // ========== SUBJECTS ==========
   showInDescriptionSubject = new BehaviorSubject<boolean>(false);
@@ -182,6 +205,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   private broadCacheInput: string = '';
   private broadCacheItems: WikibaseEntity[] = [];
   private broadCacheComplete: boolean = false;
+  // items the component has seen/displayed before — used to preserve
+  // previously-displayed matches during input evolution and merging.
+  private seenItems: Map<string, WikibaseEntity> = new Map();
+  // timer for delayed application of result updates (ms)
+  private resultApplyDelayMs: number = 300;
+  // We use RxJS delay + switchMap to schedule apply; no manual timer
+  // instance is required here.
 
   // pagination removed for compact-only mode
 
@@ -257,12 +287,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     }
     this.clickedItemId = itemId;
-    console.log(
-      '[Search] onItemRowClick',
-      itemId,
-      'clicked, current clickedItemId:',
-      this.clickedItemId
-    );
+    // Item click handling — no debug logging in production code
     // Changement de couleur temporaire (par exemple 200ms)
     setTimeout(() => {
       this.clickedItemId = null;
@@ -275,10 +300,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.itemSelected.emit(itemId);
       // Only navigate when running standalone (no parent subscribers)
       if (!hasParent) {
-        console.log('[Search] no parent subscriber: navigating to', itemId);
         this.router.navigate(['/item', itemId]);
-      } else {
-        console.log('[Search] parent listening — parent should control navigation for', itemId);
       }
       // Ferme le panneau de résultats en vidant la recherche et la liste
       this.searchInput.setValue('', { emitEvent: true });
@@ -404,7 +426,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   private fetchAutocompleteEntities(
     searchTerm: string,
     lang: string,
-    maxResults: number = 50,
+    maxResults: number = this.SR_LIMIT,
     selectedProjectId?: string
   ): Observable<{ items: WikibaseEntity[]; total: number }> {
     // If a project is selected, use Cirrus search (action=query list=search) with
@@ -420,7 +442,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     ) {
       const filters = this.buildSearchFilters(selectedProjectId, searchTerm);
       const srsearch = filters.join(' ');
-      const qidsKey = `qids:${selectedProjectId}:${srsearch}:${maxResults}`;
+        const qidsKey = `qids:${selectedProjectId}:${srsearch}:${maxResults}`;
 
       // Try cache for the Cirrus titles result first
       const cachedTitles = this.searchCache.getItem(qidsKey);
@@ -428,23 +450,38 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         const ids = cachedTitles
           .map((t: string) => (t ? String(t).split(':').pop() : ''))
           .filter(Boolean);
+        // only fetch detailed entities for the top K; prefer smaller payload on mobile
+        const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+        const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
+        const detailsIds = ids.slice(0, detailK);
         // Use fetchEntities (which has entity-level caching) to return typed results
-        return this.fetchEntities(ids).pipe(map((items) => ({ items, total: items.length })));
+        return this.fetchEntities(detailsIds).pipe(map((items) => ({ items, total: cachedTitles.length })));
       }
       // getQidsList returns page titles (e.g. Q123). Use it to then fetch entities data.
       return this.request.getQidsList(srsearch, maxResults).pipe(
-        switchMap((titles: string[]) => {
+        switchMap((result: any) => {
+          const titles: string[] = result?.titles ?? [];
+          const total: number = Number(result?.total ?? (titles || []).length) || 0;
           // cache titles list for a short time (2 minutes) to avoid re-requesting repeated searches
           try {
+            // cache only the titles array (legacy storage format)
             this.searchCache.setItem(qidsKey, titles, 1000 * 60 * 2);
           } catch (e) {}
 
           // If Cirrus returned titles, fetch entities and apply client-side filtering
           // with phrase-priority. Keep behaviour straightforward: if titles are
           // empty, return an empty result (no complex fallback queries).
+          // remember last srsearch for See-more behavior
+          this.lastProjectSrsearch = srsearch;
+          this.lastProjectSelectedId = selectedProjectId ?? null;
+
           if (Array.isArray(titles) && titles.length > 0) {
             const ids = (titles || []).map((t) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
-            return this.fetchEntities(ids).pipe(
+            // only fetch detailed entities for the top-K to reduce payload; leave total as server total
+            const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+            const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
+            const detailsIds = ids.slice(0, detailK);
+            return this.fetchEntities(detailsIds).pipe(
               map((items) => {
                 const normalized = normalizeString(searchTerm);
                 // token-based (non-consecutive) filtered results
@@ -473,9 +510,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                     ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))]
                     : filtered;
 
-                // If our client-side filter removed all entries, return the raw
-                // items — don't attempt additional fallback queries here.
-                return { items: resultItems.length ? resultItems : items, total: resultItems.length ? resultItems.length : items.length };
+                // If our client-side filter removed all entries, do NOT return
+                // the raw items. Returning raw (unfiltered) items caused
+                // transient display of unrelated results — instead return an
+                // empty result and let client-side merging / seenItems decide
+                // whether any previously-seen item should be preserved.
+                return { items: resultItems, total: resultItems.length };
+                return { items: resultItems, total };
               })
             );
           }
@@ -494,7 +535,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
-      map((res: any) => {
+      map((res: WBSearchResponse) => {
         const total = res.searchinfo?.totalhits ?? res.search?.length ?? 0;
         const items = (res.search || []).map((e: any) => ({
           id: e.id,
@@ -555,21 +596,80 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             selectedId
           ).pipe(
             // attach the query id and explicit searchTerm so we can ignore stale responses
-            map(({ items }) => ({ items, searchTerm, queryId: myQueryId })),
-            map(({ items, searchTerm, queryId }) => {
-              // Guard: only apply results if this response belongs to the most recent query
+            map(({ items, total }) => ({ items, total, searchTerm, queryId: myQueryId })),
+            map(({ items, total, searchTerm, queryId }: any) => ({ items, total, searchTerm, queryId })),
+            // Apply updates immediately (no scheduled delay). To avoid
+            // flashing unrelated / noisy payloads we still perform the
+            // stale-guard and a relevance check against tokens. This keeps
+            // behaviour simple and deterministic while refusing to show raw
+            // fallback items that don't match the current search.
+            // payload received — no debug log
+            tap(({ items, total, searchTerm, queryId }: any) => {
+              // record total for UI / See-more behaviour
+              try { this.currentTotalCount = Number(total ?? 0); } catch {}
               const currentNormalized = normalizeString(this.searchInput.value || '');
+              // stale-guard: ignore if query id or normalized input no longer matches
               if (queryId !== this.currentQueryId || currentNormalized !== searchTerm) {
-                // stale / out-of-order result: ignore
-                return [] as WikibaseEntity[];
+                // stale response — ignore silently
+                return;
               }
-              // Merge new results with previously-displayed items when those
-              // previous items still match the current search term. This keeps
-              // items the user already saw (and that are still relevant) visible
-              // even if the server's returned set temporarily omits them.
-              const merged = this.mergeResultsPreservingPriorMatches(searchTerm, items);
+
+              const merged = this.mergeResultsPreservingPriorMatches(searchTerm, items as WikibaseEntity[]);
+
+              // Skip applying if merged contains no relevant matches — this
+              // avoids showing noisy unrelated items returned by the server
+              // while keeping previously-seen matches that still satisfy the
+              // token criteria.
+              const hasRelevant = merged.some((it) => this.matchesAllTokens(it, searchTerm, this.showInDescription));
+              if (!hasRelevant) {
+                // merged set contained no relevant items for current tokens — ignore
+                return;
+              }
+
               this.updateItemsList(merged);
-              return items;
+
+              // --- expansion path (prototype): when in project mode and heuristics indicate
+              // we should attempt an expansion based on local index candidates (e.g. "Fred" -> "Frédéric")
+              try {
+                const tokens = (searchTerm || '').split(' ').filter(Boolean);
+                const firstToken = tokens.length > 0 ? tokens[0] : '';
+                const tokenLen = (firstToken || '').length;
+                const shouldTryExpansion = (() => {
+                  // trigger expansions for short single-token inputs
+                  if (!selectedId) return false; // expansion targets project-mode only for now
+                  // token single OR first token only
+                  if (tokens.length === 1 && tokenLen > 0 && tokenLen <= 6) return true;
+                  // allow expansion if pattern "<firstname> <initial or short fragment>" e.g. "Pierre C" or "Frede Cor"
+                  if (tokens.length >= 2) {
+                    const second = tokens[1];
+                    // initial like 'C' or 'C.'
+                    if (/^[a-z]\.?$/.test(second)) return true;
+                    // small fragment (2..4) likely last name prefix
+                    if (second.length >= 2 && second.length <= 4) return true;
+                  }
+                  return false;
+                })();
+
+                // Debug: show why we choose to expand (or not)
+                try {
+                  console.debug('[SearchComponent] expansion decision', {
+                    searchTerm,
+                    tokens,
+                    firstToken,
+                    tokenLen,
+                    selectedId,
+                    shouldTryExpansion,
+                  });
+                } catch {}
+
+                if (shouldTryExpansion) {
+                  // get local candidates (topN configurable; prototype default = 1)
+                  // Delegate into a helper to keep the pipeline testable.
+                  this.attemptProjectExpansion(firstToken, selectedId, queryId, searchTerm).catch(() => {});
+                }
+              } catch (e) {
+                // ensure expansion failures do not break the main pipeline
+              }
             }),
             catchError((err) => {
               console.error('[SearchComponent] fetchAutocompleteEntities error', err);
@@ -583,6 +683,41 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscriptions.push(sub);
   }
 
+  private async attemptProjectExpansion(
+    firstToken: string,
+    selectedId: string | undefined,
+    queryId: number,
+    searchTerm: string
+  ): Promise<void> {
+    try {
+      const candidates: any = await this.autocompleteIndex.getMatches(firstToken, 1, ['firstName']);
+      try { console.debug('[SearchComponent] local-autocomplete candidates for', firstToken, candidates); } catch {}
+      for (const c of candidates || []) {
+        if (selectedId && c?.id && c?.prop) {
+          const srsearch = `haswbstatement:${c.prop}=${c.id} haswbstatement:P131=${selectedId}`;
+          try { console.debug('[SearchComponent] project expansion srsearch ->', srsearch); } catch {}
+          const res: any = await firstValueFrom(this.request.getQidsList(srsearch, 50));
+          const titles = res?.titles ?? [];
+          try { console.debug('[SearchComponent] getQidsList results ->', titles); } catch {}
+          const ids = (titles || []).map((t: string) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
+          try { console.debug('[SearchComponent] extracted ids ->', ids); } catch {}
+          if (ids.length === 0) continue;
+          const idsToFetch = ids.slice(0, this.EXPANSION_DETAIL_LIMIT);
+          const expItems: any = await firstValueFrom(this.fetchEntities(idsToFetch).pipe(take(1)));
+          try { console.debug('[SearchComponent] fetched entities for expansion ->', expItems); } catch {}
+          const nowNorm = normalizeString(this.searchInput.value || '');
+          if (queryId !== this.currentQueryId || nowNorm !== searchTerm) return;
+          const mergedExp = this.mergeResultsPreservingPriorMatches(searchTerm, expItems as WikibaseEntity[]);
+          const hasRelevantExp = mergedExp.some((it) => this.matchesAllTokens(it, searchTerm, this.showInDescription));
+          try { console.debug('[SearchComponent] expansion merged result count ->', mergedExp.length, 'hasRelevantExp ->', hasRelevantExp); } catch {}
+          if (hasRelevantExp) this.updateItemsList(mergedExp);
+        }
+      }
+    } catch (e) {
+      // swallow expansion errors
+    }
+  }
+
   private resetSearchState(): void {
     this.items = [];
     this.items$.next([]);
@@ -591,6 +726,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.broadCacheInput = '';
     this.broadCacheItems = [];
     this.broadCacheComplete = false;
+    // Note: delayed application is handled via RxJS delay+switchMap; stale
+    // responses will be ignored at apply time so no manual timer cleanup is
+    // necessary here.
   }
 
   private buildSearchFilters(selectedId: string, searchTerm: string): string[] {
@@ -684,7 +822,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         `&languages=${this.lang.selectedLang}` +
         `&origin=*`;
       return this.request.getItem(getEntitiesUrl).pipe(
-        map((res: any) => {
+        map((res: GetEntitiesResponse | undefined) => {
           if (!res.entities) return [];
           const adapted = this.adaptEntities(Object.values(res.entities), this.lang.selectedLang);
           // cache each entity individually
@@ -750,8 +888,18 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private updateItemsList(items: WikibaseEntity[]): void {
+    try {
+      console.debug(
+        '[SearchComponent] updateItemsList ->',
+        { count: items?.length ?? 0, first: (items || []).slice(0, 5).map((i) => i.label) }
+      );
+    } catch {}
     this.items = items;
     this.items$.next(items);
+    // update seenItems cache so we can consider them later when merging
+    try {
+      items.forEach((it) => this.seenItems.set(it.id, it));
+    } catch (e) {}
     this.changeDetector.markForCheck();
   }
 
@@ -780,7 +928,79 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     // On mobile: when overlay is open, prevent body scrolling so the modal-like
     // overlay doesn't let the background content scroll. This is safe because
     // we only toggle a small utility class and remove it on destroy.
+    // debug: supervise emissions from filteredItems$ & searchInputValue$
+    try {
+      combineLatest([this.filteredItems$, this.searchInputValue$])
+        .pipe(
+          // throttle reporting to avoid huge logs
+          debounceTime(60)
+        )
+        .subscribe(([items, input]) => {
+          try {
+            console.debug('[SearchComponent] filteredItems$/searchInputValue$ ->', { cnt: items?.length ?? 0, input });
+          } catch {}
+        });
+    } catch {}
+
     const overlayScrollSub = this.overlayOpen$.subscribe((open) => {
+      // debug: explicitly log overlay open state + DOM element info so we
+      // can diagnose visibility / placement issues in dev consoles.
+      try {
+        console.info('[SearchComponent] overlayOpen ->', open);
+        if (open && typeof document !== 'undefined') {
+          const panes = Array.from(document.querySelectorAll('.cdk-overlay-pane')) as HTMLElement[];
+          // log all current overlay panes and their classes/rect so we can see if
+          // the search panel exists under another pane or with different classes
+          try {
+            console.info('[SearchComponent] overlay panes count ->', panes.length);
+            panes.forEach((p, ix) => {
+              const cls = p.className;
+              let rect: DOMRect | null = null;
+              try { rect = p.getBoundingClientRect(); } catch {}
+              console.info(`[SearchComponent] pane[${ix}] classes ->`, cls, 'rect ->', rect);
+            });
+          } catch (err) {}
+
+          // also check specifically for the expected pane class
+          const pane = document.querySelector('.cdk-overlay-pane.search-items_panel') as HTMLElement | null;
+          if (pane) {
+            const rect = pane.getBoundingClientRect();
+            const style = window.getComputedStyle(pane);
+            console.info('[SearchComponent] overlay DOM present (expected class), rect ->', rect, 'computedStyle ->', {
+              display: style.display,
+              visibility: style.visibility,
+              opacity: style.opacity,
+              zIndex: style.zIndex,
+            });
+            // mark that the overlay pane exists so template fallback can hide
+            try { this.overlayAttached = true; } catch {}
+          } else {
+            console.info('[SearchComponent] overlay DOM not found (no pane with .search-items_panel)');
+            try { this.overlayAttached = false; } catch {}
+          }
+
+          // Inspect whether the global overlay container exists and how many children it has
+          try {
+            const oc = document.querySelector('.cdk-overlay-container') as HTMLElement | null;
+            if (oc) {
+              console.info('[SearchComponent] overlayContainer present, childCount ->', oc.childElementCount);
+            } else {
+              console.info('[SearchComponent] overlayContainer NOT found');
+            }
+          } catch {}
+
+          // verify the anchor / input exists on the page
+          try {
+            const anchor = document.querySelector('.new-search-input') as HTMLElement | null;
+            if (anchor) console.info('[SearchComponent] anchor/input exists (new-search-input)');
+            else console.info('[SearchComponent] anchor/input NOT found (new-search-input)');
+          } catch {}
+          // ensure change detection updates template usage of overlayAttached
+          try { this.changeDetector.markForCheck(); } catch {}
+        }
+      } catch (err) {
+        /* ignore DOM errors in test env */
+      }
       // overlayOpen$ debug removed — keep behaviour but do not log to console in production
       try {
         if (typeof window !== 'undefined') {
@@ -809,6 +1029,34 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.subscriptions.push(overlayScrollSub);
+  }
+
+  seeMore(): void {
+    // User clicked the "Voir plus" button — load more results up to SEE_MORE_LIMIT and show more details
+    const searchTerm = normalizeString(this.searchInput.value || '');
+    if (!searchTerm) return;
+    const selected = this.selectedResearchField.getSelectedResearchField();
+    const selectedId = selected?.id;
+    const lang = this.lang.selectedLang;
+
+    if (selectedId && this.lastProjectSrsearch) {
+      // project mode: run a larger Cirrus request
+      this.fetchAutocompleteEntities(searchTerm, lang, this.SEE_MORE_LIMIT, selectedId)
+        .pipe(take(1))
+        .subscribe((res) => {
+          const merged = this.mergeResultsPreservingPriorMatches(searchTerm, res.items as WikibaseEntity[]);
+          this.updateItemsList(merged);
+          try { this.currentTotalCount = Number(res.total ?? 0); } catch {}
+        });
+    } else {
+      // non-project: request more wbsearch results
+      this.fetchAutocompleteEntities(searchTerm, lang, this.SEE_MORE_LIMIT)
+        .pipe(take(1))
+        .subscribe((res) => {
+          this.updateItemsList(res.items);
+          try { this.currentTotalCount = Number(res.total ?? 0); } catch {}
+        });
+    }
   }
 
   // hintValue/pages removed for compact-only mode
@@ -866,14 +1114,19 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     const byId = new Map<string, WikibaseEntity>();
     newItems.forEach((it) => byId.set(it.id, it));
 
-    // collect previously displayed items that still match the search term
+    // collect previously displayed or seen items that still match the search term
     const preserved: WikibaseEntity[] = [];
+    // include currently-displayed items
     (this.items || []).forEach((it) => {
       if (byId.has(it.id)) return; // already included
-      // keep only if it still matches our search criteria
-      if (this.matchesAllTokens(it, searchTerm, this.showInDescription)) {
-        preserved.push(it);
-      }
+      if (this.matchesAllTokens(it, searchTerm, this.showInDescription)) preserved.push(it);
+    });
+    // also consider historical seen items (previously displayed/cached)
+    Array.from(this.seenItems.values()).forEach((it) => {
+      if (byId.has(it.id)) return; // included in newItems
+      // avoid re-adding items already added from this.items
+      if (preserved.some((p) => p.id === it.id)) return;
+      if (this.matchesAllTokens(it, searchTerm, this.showInDescription)) preserved.push(it);
     });
 
     const merged = [...newItems, ...preserved];
@@ -1025,6 +1278,8 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filterInput.setValue('', { emitEvent: false });
     this.items = [];
     this.items$.next([]);
+    // pending delayed applies are handled by RXJS switchMap; we do not need
+    // to manipulate timers from here.
     // pagination counters removed for compact-only mode
     this.changeDetector.markForCheck();
   }
@@ -1061,7 +1316,6 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   onSearchFieldInput(event: Event) {
     const input = event.target as HTMLInputElement;
     const value = input?.value ?? '';
-    console.log('[SearchComponent] onSearchFieldInput value =', value);
     // Ensure FormControl has the latest value and trigger valueChanges
     this.searchInput.setValue(value, { emitEvent: true });
   }

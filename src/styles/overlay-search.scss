@@ -103,6 +103,15 @@
   padding: 0 !important;
 }
 
+/* Visual: exact matches should appear on white background; other suggestions
+   should use a slightly grey background to visually de-emphasize them. */
+.search-items_panel .compact-suggestion-item {
+  background: rgba(31, 45, 64, 0.03) !important; /* light grey */
+}
+.search-items_panel .compact-suggestion-item.exact-match {
+  background: #ffffff !important; /* exact = white */
+}
+
 /* Pane variant for compact-overlay-panel class (often applied together) */
 .search-items_panel.compact-overlay-panel {
   width: min(720px, 92vw) !important;

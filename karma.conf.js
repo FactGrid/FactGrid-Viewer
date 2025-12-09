@@ -40,6 +40,11 @@ module.exports = function (config) {
     // Use Chrome headless when running in CI to avoid hanging on interactive browsers.
     browsers: process.env.CI ? ['ChromeHeadlessNoSandbox'] : ['Chrome'],
     singleRun: !!process.env.CI,
+    // Increase timeouts to avoid Chrome headless disconnects on slower CI or
+    // long-running tests which can otherwise drop the connection after 30s.
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 120000,
+    captureTimeout: 120000,
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',

@@ -1,8 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { map, switchMap, startWith, of, forkJoin } from 'rxjs';
+import { of, forkJoin } from 'rxjs';
+import { map, switchMap, startWith } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { RequestService } from './request.service';
 import { SelectedLangService } from '../selected-lang.service';
+import {
+  SparqlBinding,
+  SparqlResults,
+  BatchAskResult,
+  SparqlTuple,
+} from './sparql-types';
+
+// Minimal SPARQL response types (pragmatic; cover the shapes we use)
 
 @Injectable({
   providedIn: 'root',
@@ -26,11 +35,11 @@ export class ItemSparqlService {
   superclassTest: Observable<boolean>;
   superclass1Test: Observable<boolean>;
 
-  sparql0$: Observable<any>;
-  sparql1$: Observable<any>;
-  sparql2$: Observable<any>;
-  sparql3$: Observable<any>;
-  sparql4$: Observable<any[]>;
+  sparql0$: Observable<SparqlTuple>;
+  sparql1$: Observable<SparqlTuple>;
+  sparql2$: Observable<SparqlTuple>;
+  sparql3$: Observable<SparqlTuple>;
+  sparql4$: Observable<SparqlTuple>;
 
   // Focused console debug filter: set to an item id like 'Q38612' or '*' for verbose
   private readonly DEBUG_ITEM: string = 'Q38612';
@@ -40,8 +49,9 @@ export class ItemSparqlService {
     this.lang.selectedLang +
     '%22%2C%22en%22.%20%7D%0A%7D%0A';
 
+
   // Batching ASK queries for main boolean tests
-  batchAskQuery(itemId: string): Observable<any> {
+  batchAskQuery(itemId: string): Observable<BatchAskResult> {
     const sparql = `
     SELECT ?isLocality ?isOrganisation ?isCareer ?isFamilyName ?isAddress ?isFactGridClass ?isList ?isSet ?isSuperclass ?isSuperclass1 ?isGOV WHERE {
       BIND(EXISTS { wd:${itemId} wdt:P2/wdt:P3* wd:Q8 } AS ?isLocality)
@@ -61,7 +71,7 @@ export class ItemSparqlService {
       'https://database.factgrid.de/query/#' + encodeURIComponent(sparql)
     );
     return this.request.getList(url).pipe(
-      map((res) => {
+      map((res: SparqlResults) => {
         const b = res.results?.bindings?.[0];
         return {
           Q8Test: b?.isLocality?.value === 'true',
@@ -105,7 +115,7 @@ export class ItemSparqlService {
 
         this.sparql0$ = forkJoin([this.superclassTest, this.superclass1Test]).pipe(
           switchMap(([test1, test2]) => this.selectSparql0(test1, test2, item)),
-          startWith([undefined, undefined])
+          startWith<SparqlTuple>([undefined, []])
         );
 
         this.sparql1$ = forkJoin([
@@ -116,15 +126,13 @@ export class ItemSparqlService {
           this.Q16200Test,
           this.Q77457Test,
         ]).pipe(
-          switchMap(([test1, test2, test3, test4, test5, test6]) =>
-            this.selectSparql1(test1, test2, test3, test4, test5, test6, item)
-          ),
-          startWith([undefined, undefined])
+          switchMap(([t1, t2, t3, t4, t5, t6]) => this.selectSparql1(t1, t2, t3, t4, t5, t6, item)),
+          startWith<SparqlTuple>([undefined, []])
         );
 
         this.sparql2$ = forkJoin([this.Q140759Test, this.Q16200Test]).pipe(
           switchMap(([test1, test2]) => this.selectSparql2(test1, test2, item)),
-          startWith([undefined, undefined])
+          startWith<SparqlTuple>([undefined, []])
         );
 
         this.sparql3$ = forkJoin([
@@ -136,12 +144,12 @@ export class ItemSparqlService {
           switchMap(([test1, test2, test3, test4]) =>
             this.selectSparql3(test1, test2, test3, test4, item)
           ),
-          startWith([undefined, undefined])
+          startWith<SparqlTuple>([undefined, []])
         );
 
         this.sparql4$ = forkJoin([this.Q8Test, this.GOVTest]).pipe(
           switchMap(([test1, test2]) => this.selectSparql4(test1, test2, item)),
-          startWith([undefined, undefined])
+          startWith<SparqlTuple>([undefined, []])
         );
 
         // attach the batch-level test results to the item so other services
@@ -210,11 +218,11 @@ export class ItemSparqlService {
     );
   }
 
-  selectSparql0(test1, test2, item) {
+  selectSparql0(test1: boolean, test2: boolean, item): Observable<SparqlTuple> {
     if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
       console.debug('[ItemSparql] selectSparql0', { itemId: item?.id, test1, test2 });
     }
-    let result: Observable<any[]>;
+    let result: Observable<SparqlTuple>;
     if (test1 === true) {
       result = this.superclassSparql(test1, item);
     } else {
@@ -225,7 +233,15 @@ export class ItemSparqlService {
     return result;
   }
 
-  selectSparql1(test1, test2, test3, test4, test5, test6, item) {
+  selectSparql1(
+    test1: boolean,
+    test2: boolean,
+    test3: boolean,
+    test4: boolean,
+    test5: boolean,
+    test6: boolean,
+    item
+  ): Observable<SparqlTuple> {
     if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
       console.debug('[ItemSparql] selectSparql1', {
         itemId: item?.id,
@@ -237,7 +253,7 @@ export class ItemSparqlService {
         test6,
       });
     }
-    let result: Observable<any[]>;
+    let result: Observable<SparqlTuple>;
     if (test5 === true) {
       result = this.Q16200Sparql(item);
     } else if (test1 === true) {
@@ -256,11 +272,11 @@ export class ItemSparqlService {
     return result;
   }
 
-  selectSparql2(test1, test2, item) {
+  selectSparql2(test1: boolean, test2: boolean, item): Observable<SparqlTuple> {
     if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
       console.debug('[ItemSparql] selectSparql2', { itemId: item?.id, test1, test2 });
     }
-    let result: Observable<any[]>;
+    let result: Observable<SparqlTuple>;
     if (test1 === true) {
       result = this.Q140759Sparql(test1, item);
     } else {
@@ -271,11 +287,11 @@ export class ItemSparqlService {
     return result;
   }
 
-  selectSparql3(test1, test2, test3, test4, item) {
+  selectSparql3(test1: boolean, test2: boolean, test3: boolean, test4: boolean, item): Observable<SparqlTuple> {
     if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
       console.debug('[ItemSparql] selectSparql3', { itemId: item?.id, test1, test2, test3, test4 });
     }
-    let result: Observable<any[]>;
+    let result: Observable<SparqlTuple>;
     if (test1 === true) {
       result = this.masterSparql(test1, item);
     } else {
@@ -286,6 +302,7 @@ export class ItemSparqlService {
           result = this.setSparql(test3, item);
         } else {
           if (test4 === true) {
+            // currentAddress was converted to return a SparqlTuple directly
             result = this.currentAddress(item);
           } else result = this.noResult();
         }
@@ -294,11 +311,11 @@ export class ItemSparqlService {
     return result;
   }
 
-  selectSparql4(test1, test2, item) {
+  selectSparql4(test1: boolean, test2: boolean, item): Observable<SparqlTuple> {
     if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
       console.debug('[ItemSparql] selectSparql4', { itemId: item?.id, test1, test2 });
     }
-    let result: Observable<any[]>;
+    let result: Observable<SparqlTuple>;
     if (test1 === true) {
       result = this.Q8Sparql(item);
     } else {
@@ -398,7 +415,7 @@ export class ItemSparqlService {
     return of(test);
   }
 
-  Q12Sparql(test, res) {
+  Q12Sparql(test, res): Observable<SparqlTuple> {
     // Organisation
     if (test === true) {
       let prefix1 =
@@ -421,12 +438,13 @@ export class ItemSparqlService {
         this.langService +
         'ORDER%20BY%20%3FfLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q12', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q12', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  Q37073Sparql(test, res) {
+  Q37073Sparql(test, res): Observable<SparqlTuple> {
     // Career statement
     if (test === true) {
       let prefix1 =
@@ -443,12 +461,13 @@ export class ItemSparqlService {
         this.langService +
         'ORDER%20by%20%3FfamilyNameLabel%20%0ALIMIT%2010000';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q37073', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q37073', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  Q456376Sparql(test, res) {
+  Q456376Sparql(test, res): Observable<SparqlTuple> {
     // Creator subclass
     if (test === true) {
       let prefix1 =
@@ -457,79 +476,86 @@ export class ItemSparqlService {
         '%20.%0A%20%20OPTIONAL%20%7B%3Fitem%20wdt%3AP222%20%3Fdate%20.%20BIND%28YEAR%28%3Fdate%29%20AS%20%3Fyear%29%20.%7D%0A%20';
       let u = prefix1 + res.id + prefix2 + this.langService + 'ORDER%20BY%20%3Fyear';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q456376', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q456376', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  Q140759Sparql(test, res) {
+  Q140759Sparql(test, res): Observable<SparqlTuple> {
     // Health care practitioner
     if (test === true) {
       let prefix =
         'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3FfamilyNameLabel%20WHERE%20%7B%20%3Fitem%20wdt%3AP247%20%3FfamilyName%3B%20wdt%3AP512%20wd%3A';
       let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FfamilyNameLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q140759', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q140759', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  masterSparql(test, res) {
+  masterSparql(test, res): Observable<SparqlTuple> {
     if (test === true) {
       let prefix =
         'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%3FfamilyNameLabel%20WHERE%20%7B%20%3Fitem%20wdt%3AP247%20%3FfamilyName%3B%20wdt%3AP161%20wd%3A';
       let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FfamilyNameLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['master', this.listFromSparql(res).results.bindings])
+        map((res) => ['master', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  listSparql(test, res) {
+  listSparql(test, res): Observable<SparqlTuple> {
     if (test === true) {
       let prefix =
         'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fitem%20wdt%3AP2%2Fwdt%3AP3%2a%20%7C%20wdt%3AP626%2Fwdt%3AP3%2a%20%7C%20wdt%3AP1007%2Fwdt%3AP3%2a%20wd%3A';
       let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FitemLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q172192', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q172192', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  setSparql(test, res) {
+  setSparql(test, res): Observable<SparqlTuple> {
     if (test === true) {
       let prefix =
         'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fitem%20wdt%3AP8%20%7C%20wdt%3AP319%20%20wd%3A';
       let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FitemLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q945258', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q945258', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  superclassSparql(test, res) {
+  superclassSparql(test, res): Observable<SparqlTuple> {
     if (test === true) {
       let prefix =
         'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fitem%20wdt%3AP3%2B%20wd%3A';
       let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FitemLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q945280', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q945280', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  superclass1Sparql(test, res) {
+  superclass1Sparql(test, res): Observable<SparqlTuple> {
     if (test === true) {
       let prefix =
         'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fitem%20wdt%3AP3%20wd%3A';
       let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FitemLabel';
       return this.sparqlQuery(u).pipe(
-        map((res) => ['Q960698', this.listFromSparql(res).results.bindings])
+        map((res) => ['Q960698', this.listFromSparql(res).results.bindings] as SparqlTuple)
       );
     }
+    return this.noResult();
   }
 
-  Q24499Sparql(res) {
+  Q24499Sparql(res): Observable<SparqlTuple> {
     //family name
     let u = '';
     let suffix = 'ORDER%20by%20%3FitemLabel';
@@ -539,12 +565,12 @@ export class ItemSparqlService {
 
     return this.sparqlQuery(u).pipe(
       map((r) => {
-        return ['Q24499', this.listFromSparql(r).results.bindings];
+        return (['Q24499', this.listFromSparql(r).results.bindings] as unknown) as SparqlTuple;
       })
     );
   }
 
-  Q8Sparql(res) {
+  Q8Sparql(res): Observable<SparqlTuple> {
     //Lieu
     let u = '';
     let prefix =
@@ -552,44 +578,44 @@ export class ItemSparqlService {
     let suffix = 'ORDER%20by%20%3FitemLabel';
     u = prefix + res.id + this.langService + suffix;
     return this.sparqlQuery(u).pipe(
-      map((res) => ['Q8', this.listFromSparql(res).results.bindings])
+      map((res) => ['Q8', this.listFromSparql(res).results.bindings] as SparqlTuple)
     );
   }
 
-  GOVSparql(res) {
+  GOVSparql(res): Observable<SparqlTuple> {
     let u = '';
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%20WHERE%20%7B%3Fitem%20wdt%3AP1075%20wd%3A';
     let suffix = 'ORDER%20by%20%3FitemLabel';
     u = prefix + res.id + this.langService + suffix;
     return this.sparqlQuery(u).pipe(
-      map((res) => ['GOV', this.listFromSparql(res).results.bindings])
+      map((res) => ['GOV', this.listFromSparql(res).results.bindings] as SparqlTuple)
     );
   }
 
-  Q16200Sparql(res) {
+  Q16200Sparql(res): Observable<SparqlTuple> {
     // Address
     let u = '';
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%0AWHERE%20%0A%7B%0A%20%20%3Fitem%20wdt%3AP208%20wd%3A';
     u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FfitemLabel';
     return this.sparqlQuery(u).pipe(
-      map((res) => ['Q16200', this.listFromSparql(res).results.bindings])
+      map((res) => ['Q16200', this.listFromSparql(res).results.bindings] as SparqlTuple)
     );
   }
 
-  Q77457Sparql(res) {
+  Q77457Sparql(res): Observable<SparqlTuple> {
     // Class of FactGrid properties
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fitem%20wdt%3AP8%20wd%3A';
     let u = prefix + res.id + this.langService + 'ORDER%20BY%20%3FitemLabel';
     let v = this.sparqlQuery(u).pipe(
-      map((res) => ['Q77457', this.listFromSparql(res).results.bindings])
+      map((res) => ['Q77457', this.listFromSparql(res).results.bindings] as SparqlTuple)
     );
     return v;
   }
 
-  sparqlQuery(sparql) {
+  sparqlQuery(sparql: string): Observable<SparqlResults> {
     sparql = this.newSparqlAdress(sparql);
     // log the actual sparql query URL (truncate long queries for readability)
     try {
@@ -601,7 +627,7 @@ export class ItemSparqlService {
       if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*')
         console.debug('[ItemSparql] sparqlQuery -> (unable to format url)');
     }
-    return this.request.getList(sparql).pipe(map((res) => this.listFromSparql(res)));
+    return this.request.getList(sparql).pipe(map((res: SparqlResults) => this.listFromSparql(res)));
   }
 
   sparqlAsk(sparql) {
@@ -609,18 +635,26 @@ export class ItemSparqlService {
     return this.request.getAsk(selectedSparql).pipe(map((res) => res.boolean));
   }
 
-  currentAddress(item) {
-    let lat;
-    let lon;
-    let sparqlResult: Observable<any> | undefined;
-    if (item.claims.P48) {
-      lat = item.claims.P48[0].mainsnak.datavalue.value.latitude;
-      lon = item.claims.P48[0].mainsnak.datavalue.value.longitude;
-      let u =
-        'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json';
-      sparqlResult = this.request.getItem(u);
-      return sparqlResult;
+  // Return a SparqlTuple describing the current address for an item.
+  // Always returns Observable<SparqlTuple> — when no address exists we return this.noResult().
+  currentAddress(item): Observable<SparqlTuple> {
+    if (item?.claims?.P48 && Array.isArray(item.claims.P48) && item.claims.P48.length > 0) {
+      const lat = item.claims.P48[0].mainsnak.datavalue.value.latitude;
+      const lon = item.claims.P48[0].mainsnak.datavalue.value.longitude;
+      const u = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json';
+      return this.request.getItem(u).pipe(
+        map((g: any) => {
+          const label = 'Q16200';
+          const binding: any = {
+            item: { value: `address:${item?.id ?? 'unknown'}`, id: `address:${item?.id ?? 'unknown'}` },
+            itemLabel: { value: g?.display_name ?? 'Address' },
+            itemDescription: { value: JSON.stringify(g || {}) },
+          } as SparqlBinding;
+          return [label, [binding]] as SparqlTuple;
+        })
+      );
     }
+    return this.noResult();
   }
 
   activitiesTest(item) {
@@ -686,7 +720,7 @@ export class ItemSparqlService {
     return address;
   }
 
-  listFromSparql(res) {
+  listFromSparql(res?: SparqlResults | any): SparqlResults {
     // Track incoming SPARQL result shape & length to detect where lists vanish
     try {
       const len = res?.results?.bindings?.length ?? 'undefined';
@@ -737,8 +771,8 @@ export class ItemSparqlService {
     return res;
   }
 
-  noResult() {
-    let u = '';
-    return this.sparqlQuery(u);
+  noResult(): Observable<SparqlTuple> {
+    // return an empty pair compatible with other sparql returns ([label, bindings[]])
+    return of([undefined, []] as SparqlTuple);
   }
 }

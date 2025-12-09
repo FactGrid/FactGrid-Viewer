@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { SparqlTuple, SparqlBinding } from '../../services/sparql-types';
 import { map } from 'rxjs/operators';
 
 export type SparqlDisplayType = 'sparql0' | 'sparql1' | 'sparql2' | 'sparql3' | string;
 
 export interface SparqlCardState {
   subject: string;
-  list: any[];
+  list: SparqlBinding[];
   title: string;
 }
 
@@ -83,50 +84,7 @@ export class SparqlDisplayService {
     }
   }
 
-  /**
-   * Transforme les données pour l'affichage (ex: ajout de itemText)
-   */
-  transformData(type: SparqlDisplayType, data: any[]): any[] {
-    if (!data) return [];
-    const result = data.map((el) => {
-      if (el.itemDescription === undefined) {
-        el.itemText = el.itemLabel?.value || '';
-      } else {
-        el.itemText = (el.itemLabel?.value || '') + (el.itemDescription?.value || '');
-      }
-      return el;
-    });
-    return result;
-  }
-
-  /**
-   * Supprime les doublons selon itemText
-   */
-  removeDuplicates(data: any[]): any[] {
-    if (!data) return [];
-    // preserve last occurrence for duplicates (reverse behaviour) and calculate how many were removed
-    const reversed = data.reverse();
-    const mapEntries: [string, any][] = reversed.map(
-      (v) => [JSON.stringify([v.itemText]), v] as [string, any]
-    );
-    const unique = [...new Map<string, any>(mapEntries).values()].reverse();
-    return unique;
-  }
-
-  /**
-   * Prépare les données pour l'export CSV selon le type
-   */
-  prepareCsv(type: SparqlDisplayType, data: any[]): any[][] {
-    const header = ['item.id', 'item.label', 'item.description'];
-    const rows = data.map((el) => {
-      if (type === 'sparql2' || type === 'sparql3') {
-        return [el.item?.value, el.itemLabel?.value, el.itemDescription?.value];
-      } else {
-        return [el.item?.id, el.itemLabel?.value, el.itemDescription?.value];
-      }
-    });
-    return [header, ...rows];
-  }
+  
 
   /**
    * À partir du flux brut `sparql$` (structure [[subject, rows], ...])
@@ -134,18 +92,18 @@ export class SparqlDisplayService {
    * (sans doublons) et titres associés.
    */
   buildAllCardsState(
-    sparql$: Observable<any[][]>,
+    sparql$: Observable<SparqlTuple[]>,
     langService: any
   ): Observable<SparqlAllCardsState> {
     return sparql$.pipe(
-      map((data: any[][]) => {
+      map((data: SparqlTuple[]) => {
         const buildCard = (index: number, type: SparqlDisplayType): SparqlCardState => {
           const raw = data && data[index];
           if (!raw || !raw[1] || !raw[1].length) {
             return { subject: '', list: [], title: '' };
           }
           const subject = raw[0];
-          const rawList = raw[1];
+          const rawList: SparqlBinding[] = raw[1];
           const transformed = this.transformData(type, rawList);
           const list = this.removeDuplicates(transformed);
           const title = this.getTitle(type, subject, langService, list);
@@ -161,5 +119,50 @@ export class SparqlDisplayService {
         };
       })
     );
+  }
+
+  /**
+   * Transforme les données pour l'affichage (ex: ajout de itemText)
+   */
+  transformData(type: SparqlDisplayType, data: SparqlBinding[]): SparqlBinding[] {
+    if (!data) return [];
+    const result = data.map((el) => {
+      if (el.itemDescription === undefined) {
+        (el as any).itemText = el.itemLabel?.value || '';
+      } else {
+        (el as any).itemText = (el.itemLabel?.value || '') + (el.itemDescription?.value || '');
+      }
+      return el;
+    });
+    return result;
+  }
+
+  /**
+   * Supprime les doublons selon itemText
+   */
+  removeDuplicates(data: SparqlBinding[]): SparqlBinding[] {
+    if (!data) return [];
+    // preserve last occurrence for duplicates (reverse behaviour) and calculate how many were removed
+    const reversed = data.reverse();
+    const mapEntries: [string, any][] = reversed.map(
+      (v) => [JSON.stringify([(v as any).itemText]), v] as [string, any]
+    );
+    const unique = [...new Map<string, any>(mapEntries).values()].reverse();
+    return unique;
+  }
+
+  /**
+   * Prépare les données pour l'export CSV selon le type
+   */
+  prepareCsv(type: SparqlDisplayType, data: SparqlBinding[]): any[][] {
+    const header = ['item.id', 'item.label', 'item.description'];
+    const rows = data.map((el) => {
+      if (type === 'sparql2' || type === 'sparql3') {
+        return [el.item?.value, el.itemLabel?.value, el.itemDescription?.value];
+      } else {
+        return [el.item?.id, el.itemLabel?.value, el.itemDescription?.value];
+      }
+    });
+    return [header, ...rows];
   }
 }
