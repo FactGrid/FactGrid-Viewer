@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormControl } from '@angular/forms';
 import { BehaviorSubject, Observable, map, startWith, combineLatest } from 'rxjs';
 import { SlideUpAnimation } from './slide-up-animation';
@@ -30,7 +30,6 @@ export interface Lang {
   animations: [SlideUpAnimation],
   standalone: true,
   imports: [
-    CommonModule,
     MatToolbarModule,
     MatButtonModule,
     MatMenuModule,
@@ -40,8 +39,8 @@ export interface Lang {
     MatTooltipModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
-    MatDividerModule,
-  ],
+    MatDividerModule
+],
 })
 export class AppComponent implements OnInit {
   private router = inject(Router);

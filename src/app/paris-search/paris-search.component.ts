@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, switchMap, tap, debounceTime, takeWhile, filter } from 'rxjs/operators';
 import { ParisDatabaseService } from './services/paris-database.service';
@@ -21,7 +21,6 @@ import { Router } from '@angular/router';
   selector: 'app-paris-search',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     ReactiveFormsModule,
     FormsModule,
@@ -30,8 +29,8 @@ import { Router } from '@angular/router';
     MatTableModule,
     MatIconModule,
     MatButtonModule,
-    MatCardModule,
-  ],
+    MatCardModule
+],
   templateUrl: './paris-search.component.html',
   styleUrls: ['./paris-search.component.scss'],
 })

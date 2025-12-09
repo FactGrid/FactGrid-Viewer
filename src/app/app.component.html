@@ -7,18 +7,22 @@
     <!-- Drawer toggling removed — we no longer have a global linked-pages drawer. -->
 
     <!-- Home button: retourne à la page d'accueil de l'app -->
-    <button *ngIf="!isHome"
-      mat-icon-button
-      class="toolbar-btn"
-      aria-label="Accueil"
-      matTooltip="Retour à la page d'accueil"
-      routerLink="/"
-    >
-      <mat-icon>home</mat-icon>
-    </button>
+    @if (!isHome) {
+      <button
+        mat-icon-button
+        class="toolbar-btn"
+        aria-label="Accueil"
+        matTooltip="Retour à la page d'accueil"
+        routerLink="/"
+        >
+        <mat-icon>home</mat-icon>
+      </button>
+    }
 
     <!-- Centered title (desktop & mobile) — hide on the root page -->
-    <div *ngIf="!isHome" class="toolbar-title" aria-hidden="true">FactGrid</div>
+    @if (!isHome) {
+      <div class="toolbar-title" aria-hidden="true">FactGrid</div>
+    }
 
     <span class="toolbar-spacer"></span>
 
@@ -29,7 +33,7 @@
       class="toolbar-btn tight"
       onClick="window.open('https://blog.factgrid.de/archives/2684')"
       aria-label="Informations"
-    >
+      >
       <mat-icon>info</mat-icon>
     </button>
 
@@ -38,7 +42,7 @@
       class="toolbar-btn tight"
       [matMenuTriggerFor]="menuLanguage"
       aria-label="Sélection de la langue"
-    >
+      >
       <mat-icon>language</mat-icon>
     </button>
     <mat-menu #menuLanguage="matMenu" class="language-menu">
@@ -47,26 +51,26 @@
           (click)="langSetting(lang)"
           mat-menu-item
           [class.selected-lang]="lang.code === this.selectedLang"
-        >
+          >
           @if (lang.flag) {
             <img
               [src]="lang.flag"
               width="24"
               height="16"
               style="margin-right: 8px; border-radius: 2px"
-            />
-          }
-          <span style="flex: 1; font-weight: 500">{{ lang.name }}</span>
-          @if (lang.code === this.selectedLang) {
-            <mat-icon color="primary">check_circle</mat-icon>
-          }
-        </button>
-      }
-    </mat-menu>
-  </mat-toolbar>
+              />
+            }
+            <span style="flex: 1; font-weight: 500">{{ lang.name }}</span>
+            @if (lang.code === this.selectedLang) {
+              <mat-icon color="primary">check_circle</mat-icon>
+            }
+          </button>
+        }
+      </mat-menu>
+    </mat-toolbar>
 
-  <main class="main-content">
-    <router-outlet></router-outlet>
-  </main>
-  <app-footer></app-footer>
-</div>
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+    <app-footer></app-footer>
+  </div>

@@ -13,8 +13,8 @@
     </div>
   } @else {
 
-  <!-- Conteneur principal (drawer removed) -->
-  <div class="display-container">
+    <!-- Conteneur principal (drawer removed) -->
+    <div class="display-container">
       <!-- Bande supérieure: bouton pages liées + sélection projet + recherche item -->
       <mat-toolbar class="top-toolbar" [class.home-state]="!item" [class.item-open]="item">
         <div class="home-header" [@homeHeader]="headerAnimState" (@homeHeader.start)="onHeaderAnimationStart($event)" (@homeHeader.done)="onHeaderAnimationDone($event)">
@@ -25,9 +25,9 @@
         </div>
 
         <!-- Show selected project title above search (mobile behaviour used on all viewports)
-             Simplified check: selectedResearchField initial value is `id: 'all'` when no project
-             is selected. We therefore only render the title when id !== 'all' and when the
-             name is not the placeholder '-' (legacy placeholder used in the project list). -->
+        Simplified check: selectedResearchField initial value is `id: 'all'` when no project
+        is selected. We therefore only render the title when id !== 'all' and when the
+        name is not the placeholder '-' (legacy placeholder used in the project list). -->
         @if (currentProject && currentProject.id !== 'all' && currentProject.name && currentProject.name.trim() !== '-') {
           <div class="mobile-project-title project-title selectedItemLink">
             <a
@@ -35,18 +35,18 @@
               [routerLink]="['/item', currentProject.id]"
               (click)="$event.stopPropagation()"
               [attr.aria-label]="currentProject.name + ' — ouvrir'"
-            >
+              >
               {{ currentProject.name }}
             </a>
             <!-- clear project control: use a closable mat-chip on all viewports
-                 (more consistent visual and behaviour across mobile & desktop) -->
+            (more consistent visual and behaviour across mobile & desktop) -->
             <mat-chip
               class="clear-project"
               removable
               (removed)="clearCurrentProject($event)"
               aria-label="Retirer le projet sélectionné"
               title="Annuler la sélection du projet"
-            >
+              >
               <mat-icon matChipRemove>close</mat-icon>
             </mat-chip>
           </div>
@@ -61,7 +61,7 @@
         <!-- header overlay removed — using subtler animation timing instead -->
       </mat-toolbar>
 
-   <!--    <hr class="toolbar-separator" />-->
+      <!--    <hr class="toolbar-separator" />-->
 
       <!-- Project sub-header removed for all viewports (project label shown above search instead) -->
 
@@ -74,18 +74,18 @@
               <app-thematic-card [collapsible]="false" class="info-themed-card" [resetKey]="id">
                 <div class="info-themed-content">
                   <div class="itemTitle-row">
-                        @if (id) {
-                          <!-- Render the ID once, always above the title. CSS aligns it to the right on larger viewports. -->
-                          <div class="title-card-id">
-                            <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
-                          </div>
-                        }
+                    @if (id) {
+                      <!-- Render the ID once, always above the title. CSS aligns it to the right on larger viewports. -->
+                      <div class="title-card-id">
+                        <a class="title-id typo-item-label" [href]="factGridUrl + id" target="_blank" rel="noopener noreferrer">{{ id }}</a>
+                      </div>
+                    }
 
-                        <div class="itemTitle">{{ label }}</div>
-                        <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
-                        <!-- item ID moved to the sub-header above — avoid duplicate here -->
-                  
-                </div>
+                    <div class="itemTitle">{{ label }}</div>
+                    <!-- Desktop-only FactGrid link aligned to the right (render only when not mobile) -->
+                    <!-- item ID moved to the sub-header above — avoid duplicate here -->
+
+                  </div>
                   @if (aliases?.length) {
                     <div class="aliases">{{ aliases | join: ', ' }}</div>
                   }
@@ -98,7 +98,7 @@
                     <app-generic-list-display [title]="''" [items]="headerDetail"></app-generic-list-display>
                   }
                 </div>
-  
+
               </app-thematic-card>
 
               <!-- Map child route: render only when coordinates are available -->
@@ -110,7 +110,7 @@
                 </app-thematic-card>
               }
 
-                     <!-- Nouvelle carte pour les images en mode mobile -->
+              <!-- Nouvelle carte pour les images en mode mobile -->
               @if (isMobile && isPicture) {
                 <app-thematic-card [collapsible]="false" [imageOnly]="true" [resetKey]="id">
                   <div class="img-mobile">
@@ -120,9 +120,13 @@
                         <div class="img-footer">
                           <button mat-icon-button class="caption-toggle" aria-label="légende" (click)="toggleCaption(picture)">
                             <mat-icon aria-hidden="false" aria-label="légende">comment</mat-icon>
-                            <mat-spinner *ngIf="picture.captionLoading" diameter="18"></mat-spinner>
+                            @if (picture.captionLoading) {
+                              <mat-spinner diameter="18"></mat-spinner>
+                            }
                           </button>
-                          <div *ngIf="picture.captionVisible" class="picture-caption" [innerHTML]="picture.captionHtml ? picture.captionHtml : 'Pas de légende disponible.'"></div>
+                          @if (picture.captionVisible) {
+                            <div class="picture-caption" [innerHTML]="picture.captionHtml ? picture.captionHtml : 'Pas de légende disponible.'"></div>
+                          }
                         </div>
                       </div>
                     }
@@ -167,11 +171,11 @@
                 </app-thematic-card>
               }
 
-            @if (isOther) {
-                    <app-thematic-card collapsible="true" [icon]="'more_horiz'" [startCollapsed]="true" [resetKey]="id">
-                    <div class="thematic-card-header-bar"></div>
-                    <app-generic-list-display [title]="''" [items]="otherClaims"></app-generic-list-display>
-                  </app-thematic-card>
+              @if (isOther) {
+                <app-thematic-card collapsible="true" [icon]="'more_horiz'" [startCollapsed]="true" [resetKey]="id">
+                  <div class="thematic-card-header-bar"></div>
+                  <app-generic-list-display [title]="''" [items]="otherClaims"></app-generic-list-display>
+                </app-thematic-card>
               }
 
               @if (isIframes) {
@@ -180,51 +184,46 @@
                 </app-thematic-card>
               }
 
-              <ng-container *ngIf="sparqlCards$ | async as cards">
+              @if (sparqlCards$ | async; as cards) {
                 @if (cards) {
-                @if (cards.sparql0.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql0.title" [showHeader]="true" [resetKey]="id">
-                    <div class="thematic-card-header-bar"></div>
-                    <ng-template #sparqlDisplay0></ng-template>
-                  </app-thematic-card>
+                  @if (cards.sparql0.list?.length) {
+                    <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql0.title" [showHeader]="true" [resetKey]="id">
+                      <div class="thematic-card-header-bar"></div>
+                      <ng-template #sparqlDisplay0></ng-template>
+                    </app-thematic-card>
+                  }
+                  @if (cards.sparql1.list?.length) {
+                    <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql1.title" [showHeader]="true" [resetKey]="id">
+                      <div class="thematic-card-header-bar"></div>
+                      <ng-template #sparqlDisplay1></ng-template>
+                    </app-thematic-card>
+                  }
+                  @if (cards.sparql2.list?.length) {
+                    <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql2.title" [showHeader]="true" [resetKey]="id">
+                      <div class="thematic-card-header-bar"></div>
+                      <ng-template #sparqlDisplay2></ng-template>
+                    </app-thematic-card>
+                  }
+                  @if (cards.sparql3.list?.length) {
+                    <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql3.title" [showHeader]="true" [resetKey]="id">
+                      <div class="thematic-card-header-bar"></div>
+                      <ng-template #sparqlDisplay3></ng-template>
+                    </app-thematic-card>
+                  }
+                  @if (cards.sparql4.list?.length) {
+                    <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql4.title" [showHeader]="true" [resetKey]="id">
+                      <div class="thematic-card-header-bar"></div>
+                      <ng-template #sparqlDisplay4></ng-template>
+                    </app-thematic-card>
+                  }
+                  <!-- (mobile card moved outside sparql container so it renders even when sparqlCards$ is empty) -->
                 }
-
-                @if (cards.sparql1.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql1.title" [showHeader]="true" [resetKey]="id">
-                    <div class="thematic-card-header-bar"></div>
-                    <ng-template #sparqlDisplay1></ng-template>
-                  </app-thematic-card>
-                }
-
-                @if (cards.sparql2.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql2.title" [showHeader]="true" [resetKey]="id">
-                    <div class="thematic-card-header-bar"></div>
-                    <ng-template #sparqlDisplay2></ng-template>
-                  </app-thematic-card>
-                }
-
-                @if (cards.sparql3.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql3.title" [showHeader]="true" [resetKey]="id">
-                    <div class="thematic-card-header-bar"></div>
-                    <ng-template #sparqlDisplay3></ng-template>
-                  </app-thematic-card>
-                }
-
-                @if (cards.sparql4.list?.length) {
-                  <app-thematic-card [collapsible]="true" [startCollapsed]="true" [title]="cards.sparql4.title" [showHeader]="true" [resetKey]="id">
-                    <div class="thematic-card-header-bar"></div>
-                    <ng-template #sparqlDisplay4></ng-template>
-                  </app-thematic-card>
-                }
-
-                <!-- (mobile card moved outside sparql container so it renders even when sparqlCards$ is empty) -->
               }
-            </ng-container>
 
-                  <!-- Render the 'linked pages' (backList) as a thematic card inside
-                    the stacked cards area whenever we have at least one linked item -->
-                  @if (linkedItems?.length) {
-                              <app-thematic-card class="mobile-linked-pages-card thematic-card--compact" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
+              <!-- Render the 'linked pages' (backList) as a thematic card inside
+              the stacked cards area whenever we have at least one linked item -->
+              @if (linkedItems?.length) {
+                <app-thematic-card class="mobile-linked-pages-card thematic-card--compact" [collapsible]="true" [startCollapsed]="true" [title]="linkedPagesTitle" [resetKey]="id">
                   <!-- Project a small header when rendering mobile-only linked pages so tests can query the title reliably -->
                   <div card-header>
                     <!-- use the same structure as the default thematic-card header so spacing aligns -->
@@ -256,56 +255,56 @@
               }
 
               <app-thematic-card [collapsible]="true" [startCollapsed]="true" icon="info" [resetKey]="id">
-                  <app-generic-list-display [items]="info"></app-generic-list-display>
-                  @if (itemInfoLoading) {
-                    <div class="item-info-loading">
-                      <mat-spinner diameter="28" mode="indeterminate"></mat-spinner>
-                    </div>
-                  }
-                  <ng-container #itemInfoHost></ng-container>
+                <app-generic-list-display [items]="info"></app-generic-list-display>
+                @if (itemInfoLoading) {
+                  <div class="item-info-loading">
+                    <mat-spinner diameter="28" mode="indeterminate"></mat-spinner>
+                  </div>
+                }
+                <ng-container #itemInfoHost></ng-container>
               </app-thematic-card>
 
 
             </div>
           }
-           @else {
-            <div class="thematic-cards-grid">
-   
-            </div>
-          }
-        </div>
-
-        <!-- ******************************* Info ****************************************  -->
-        <div class="matCardPadding" style="display: none">
-          <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
-            <div class="info-card-header">
-              <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
-                <mat-icon class="icon whiteButton">
-                  {{ isInfo ? 'expand_less' : 'expand_more' }}
-                </mat-icon>
-              </button>
-            </div>
-            <div
-              class="info-card-closed-spacer"
-              [ngClass]="isInfo ? 'hide-division' : 'show-division'"
-            ></div>
-            <mat-card-content
-              class="info-card-content"
-              [ngClass]="isInfo ? 'show-division' : 'hide-division'"
-            >
-              @if (itemInfoLoading) {
-                <div class="item-info-loading">
-                  <mat-spinner diameter="28" mode="indeterminate"></mat-spinner>
-                </div>
-              }
-              <ng-container #itemInfoHostHidden></ng-container>
-            </mat-card-content>
-          </mat-card>
-        </div>
-
-        <!-- ****************************************** Pictures ****************************************  -->
-        <div class="child2">
+          @else {
           <div class="thematic-cards-grid">
+
+          </div>
+        }
+      </div>
+
+      <!-- ******************************* Info ****************************************  -->
+      <div class="matCardPadding" style="display: none">
+        <mat-card appearance="outlined" class="mat-elevation-z12 info-card">
+          <div class="info-card-header">
+            <button mat-icon-button (click)="toggleInfo()" class="icon whiteText">
+              <mat-icon class="icon whiteButton">
+                {{ isInfo ? 'expand_less' : 'expand_more' }}
+              </mat-icon>
+            </button>
+          </div>
+          <div
+            class="info-card-closed-spacer"
+            [ngClass]="isInfo ? 'hide-division' : 'show-division'"
+          ></div>
+          <mat-card-content
+            class="info-card-content"
+            [ngClass]="isInfo ? 'show-division' : 'hide-division'"
+            >
+            @if (itemInfoLoading) {
+              <div class="item-info-loading">
+                <mat-spinner diameter="28" mode="indeterminate"></mat-spinner>
+              </div>
+            }
+            <ng-container #itemInfoHostHidden></ng-container>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- ****************************************** Pictures ****************************************  -->
+      <div class="child2">
+        <div class="thematic-cards-grid">
           @if (!isMobile && isPicture) {
             <app-thematic-card [collapsible]="false" [imageOnly]="true">
               <div class="img2">
@@ -315,9 +314,13 @@
                     <div class="img-footer">
                       <button mat-icon-button class="caption-toggle" aria-label="légende" (click)="toggleCaption(picture)">
                         <mat-icon aria-hidden="false" aria-label="légende">comment</mat-icon>
-                        <mat-spinner *ngIf="picture.captionLoading" diameter="18"></mat-spinner>
+                        @if (picture.captionLoading) {
+                          <mat-spinner diameter="18"></mat-spinner>
+                        }
                       </button>
-                      <div *ngIf="picture.captionVisible" class="picture-caption" [innerHTML]="picture.captionHtml ? picture.captionHtml : 'Pas de légende disponible.'"></div>
+                      @if (picture.captionVisible) {
+                        <div class="picture-caption" [innerHTML]="picture.captionHtml ? picture.captionHtml : 'Pas de légende disponible.'"></div>
+                      }
                     </div>
                   </div>
                 }
@@ -357,25 +360,25 @@
             </app-thematic-card>
           }
 
-     <!--    <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [compact]="true" icon="history">
-            <div card-header class="selectedListTitle">{{ formerVisitsTitle }}</div>
-            <mat-card-content class="info-card-content">
-              @if (selectedItemsList?.length === 0) {
-                <div class="itemDescription">Aucune visite précédente.</div>
+          <!--    <app-thematic-card [collapsible]="true"  [startCollapsed]="true" [compact]="true" icon="history">
+          <div card-header class="selectedListTitle">{{ formerVisitsTitle }}</div>
+          <mat-card-content class="info-card-content">
+            @if (selectedItemsList?.length === 0) {
+              <div class="itemDescription">Aucune visite précédente.</div>
+            }
+            @for (selectedItem of selectedItemsList; track trackById(selectedItem)) {
+              @if (selectedItem) {
+                <div class="selectedItemRow">
+                  <a class="selectedItemLink typo-item-label" [routerLink]="['/item', selectedItem?.value?.id]" (click)="$event.stopPropagation()">{{ selectedItem.label }}</a>
+                </div>
               }
-              @for (selectedItem of selectedItemsList; track trackById(selectedItem)) {
-                @if (selectedItem) {
-                  <div class="selectedItemRow">
-                    <a class="selectedItemLink typo-item-label" [routerLink]="['/item', selectedItem?.value?.id]" (click)="$event.stopPropagation()">{{ selectedItem.label }}</a>
-                  </div>
-                }
-              }
-            </mat-card-content>
-          </app-thematic-card>
-          ---> 
-          </div>
-        </div>
+            }
+          </mat-card-content>
+        </app-thematic-card>
+        --->
       </div>
-  </div> <!-- .display-container -->
-  }
+    </div>
+  </div>
+</div> <!-- .display-container -->
+}
 }

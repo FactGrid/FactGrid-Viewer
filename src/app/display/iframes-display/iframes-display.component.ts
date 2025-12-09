@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -13,7 +13,7 @@ export interface IframeGroup {
 @Component({
   selector: 'app-iframes-display',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatCardModule],
+  imports: [MatIconModule, MatCardModule],
   templateUrl: './iframes-display.component.html',
   styleUrl: './iframes-display.component.scss',
 })

@@ -1,10 +1,10 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-advanced-search-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './advanced-search-list.component.html',
   styleUrl: './advanced-search-list.component.scss',
 })
