@@ -2,6 +2,9 @@
 
 import { Injectable } from '@angular/core';
 import { SelectedLangService } from '../selected-lang.service';
+import type { Entity, Claim } from '../interfaces/claims';
+
+type ClaimEntry = Claim[] | Record<string, any>;
 
 @Injectable({
   providedIn: 'root',
@@ -11,34 +14,37 @@ export class FactgridSubtitlesService {
 
   //TODO: pass the lang selection to the SelectedLangService
 
-  setSubtitle1(re: any, propertyId: string, lang?: string): void {
+  setSubtitle1(re: Entity | any, propertyId: string, lang?: string): void {
     // to add a subtitle with a condition on the property
     if (!re?.claims || !re.claims[propertyId]) return;
     const lng = lang ?? this.lang.selectedLang;
 
     // set the P320 sparql/title via centralized translations
+    const entry: ClaimEntry = re.claims[propertyId] as ClaimEntry;
     if (propertyId === 'P320') {
-      re.claims[propertyId].sparql = this.lang.getTranslation('subtitle_members', lng);
+      // P320 is stored as a metadata object-like entry on claims[propertyId]
+      (entry as Record<string, any>).sparql = this.lang.getTranslation('subtitle_members', lng);
     }
 
     // 'other' label and 'sources' should also be localized
-    re.claims[propertyId].other = this.lang.getTranslation('subtitle_further', lng);
-    re.claims[propertyId].sources = this.lang.getTranslation('subtitle_sources', lng);
+    (entry as Record<string, any>).other = this.lang.getTranslation('subtitle_further', lng);
+    (entry as Record<string, any>).sources = this.lang.getTranslation('subtitle_sources', lng);
   }
 
-  setSubtitle2(re: any, propertyId: string, number: number, lang?: string): void {
+  setSubtitle2(re: Entity | any, propertyId: string, number: number, lang?: string): void {
     // to add a subtitle depending on the value of a claim (often P2)
     if (!re?.claims || !re.claims[propertyId]) return;
     const j = Number(number);
     const lng = lang ?? this.lang.selectedLang;
 
-    const entry = re.claims[propertyId][j];
+    const arr = re.claims[propertyId] as Claim[] | undefined;
+    const entry: Claim | undefined = arr?.[j];
     if (!entry?.mainsnak?.datavalue) return;
     const dv = entry.mainsnak.datavalue;
-    const valueId = dv?.value?.id ?? dv?.value;
+    const valueId = (dv?.value as any)?.id ?? dv?.value;
 
     // Use enriched P2 flags when present, otherwise fall back to the detected wikibase type
-    const p2 = re.claims.P2;
+    const p2: any = re.claims.P2;
     const isPerson = p2?.person === true || valueId == 'Q7';
     const isEvent = p2?.event === true || valueId == 'Q9';
 

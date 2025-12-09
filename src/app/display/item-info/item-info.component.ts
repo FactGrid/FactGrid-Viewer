@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { NgClass } from '@angular/common';
 import { SelectedLangService } from '../../selected-lang.service';
+import { DisplayItem, ItemDisplayTuple, EnrichedItem } from '../../services/item-types';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
@@ -27,7 +28,17 @@ export class ItemInfoComponent implements OnChanges {
   private lang = inject(SelectedLangService);
   private cdr = inject(ChangeDetectorRef);
 
-  @Input() infoList;
+  // infoList holds a set of named lists (subclassesList, instancesList, classesList,
+  // natureOfList, technicalities, infoProperties). Each list may contain legacy
+  // enriched tuples, enriched entities or the compact DisplayItem shape used by UI.
+  @Input() infoList: {
+    subclassesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+    instancesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+    classesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+    natureOfList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+    technicalities?: any[];
+    infoProperties?: any[];
+  } | any;
 
   selectedLang: string =
     localStorage['selectedLang'] === undefined ? 'en' : localStorage['selectedLang'];
@@ -63,7 +74,12 @@ export class ItemInfoComponent implements OnChanges {
   // Track function: returns a stable, unique key for an item.
   // Treat empty strings as missing values (avoid returning '')
   trackListKey = (index: number, L: any) => {
-    const id = L?.item?.id ?? L?.item?.value ?? L?.mainsnak?.datavalue?.value?.id;
+    // Support multiple shapes that can appear when the display is migrated to
+    // use compact DisplayItem objects or ItemDisplayTuple shapes.
+    // Accept multiple shapes: array-tuples, objects wrapping an `item` field, or
+    // compact DisplayItem objects directly in lists.
+    const maybeDisplayItem = Array.isArray(L) ? L[L.length - 1] : L?.item ?? L;
+    const id = maybeDisplayItem?.id ?? maybeDisplayItem?.value?.id ?? L?.mainsnak?.datavalue?.value?.id;
     if (id) return id;
     const label = (L?.itemLabel?.value ?? L?.itemLabel ?? '').toString().trim();
     if (label) return label;
@@ -86,7 +102,7 @@ export class ItemInfoComponent implements OnChanges {
 
   // Track function for technicalities outer list (tech)
   trackTechPropKey = (index: number, tech: any) => {
-    const id = tech?.propertyId ?? tech?.property ?? '';
+    const id = tech?.propertyId ?? tech?.property ?? tech?.property?.id ?? '';
     if (id && (typeof id !== 'string' || id.toString().trim() !== '')) return id;
     const label = (tech?.propertyLabel ?? tech?.label ?? '').toString().trim();
     if (label) return label;

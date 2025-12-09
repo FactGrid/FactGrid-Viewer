@@ -4,6 +4,7 @@ import { FactgridSubtitlesService } from './factgrid-subtitles.service';
 import { TypologyService } from './typology.service';
 import { ItemInfoService } from './item-info.service';
 import { LongestWordService } from './longest-word.service';
+import { Entity, ClaimArray } from '../interfaces/claims';
 
 @Injectable({
   providedIn: 'root',
@@ -19,31 +20,26 @@ export class ItemDetailsService {
 
   qualifiers2: any[];
 
-  addLongestWordLength(re) {
+  addLongestWordLength(re: Entity) {
     re.longestWordLength = this.longestLength.findLongestWord(re.label);
   }
 
-  addClaimItemDetails(items, re, itemProperties, lang) {
+  addClaimItemDetails(items: Entity[], re: Entity, itemProperties: string[], lang: string) {
     for (let i = 0; i < itemProperties.length; i++) {
       let timeOrder = 23000000;
       // Vérifie que la propriété existe et est un tableau non vide
-      if (
-        !re.claims[itemProperties[i]] ||
-        !Array.isArray(re.claims[itemProperties[i]]) ||
-        re.claims[itemProperties[i]].length === 0
-      ) {
+      const claimsForProp = re.claims[itemProperties[i]] as ClaimArray | undefined;
+      if (!claimsForProp || !Array.isArray(claimsForProp) || claimsForProp.length === 0) {
         continue;
       }
-      re.claims[itemProperties[i]].datatype = re.claims[itemProperties[i]][0].mainsnak.datatype;
-      for (let j = 0; j < re.claims[itemProperties[i]].length; j++) {
-        re.claims[itemProperties[i]][j].mainsnak.timeOrder = timeOrder;
-        if (re.claims[itemProperties[i]][j].mainsnak.datatype === 'time') {
-          let value = re.claims[itemProperties[i]][j].mainsnak.datavalue.value.time;
+      claimsForProp.datatype = claimsForProp[0].mainsnak.datatype;
+      for (let j = 0; j < claimsForProp.length; j++) {
+        const statement = claimsForProp[j];
+        statement.mainsnak.timeOrder = timeOrder;
+        if (statement.mainsnak.datatype === 'time') {
+          let value = (statement.mainsnak.datavalue.value as any).time;
           value = value.substring(0, value.length - 10);
-          re.claims[itemProperties[i]][j].mainsnak.datavalue.value.date = this.setDate.setDate(
-            value,
-            lang
-          );
+          (statement.mainsnak.datavalue.value as any).date = this.setDate.setDate(value, lang);
         }
         if (
           itemProperties[i] === 'P189' ||
@@ -51,18 +47,16 @@ export class ItemDetailsService {
           itemProperties[i] === 'P181' ||
           itemProperties[i] === 'P1267'
         ) {
-          re.claims[itemProperties[i]][j].picture =
-            this.baseWikimediaURL + re.claims[itemProperties[i]][j].mainsnak.datavalue.value;
+          statement.picture = this.baseWikimediaURL + (statement.mainsnak.datavalue.value as any);
         }
         if (itemProperties[i] === 'P188') {
-          let u = re.claims[itemProperties[i]][j].mainsnak.datavalue.value.substring(0, 5);
+          let u = (statement.mainsnak.datavalue.value as any).substring(0, 5);
           if (u !== 'http:') {
-            re.claims[itemProperties[i]][j].picture =
-              re.claims[itemProperties[i]][j].mainsnak.datavalue.value;
+            statement.picture = (statement.mainsnak.datavalue.value as any);
           }
         }
         if (itemProperties[i] === 'P320') {
-          re.claims[itemProperties[i]][j].mainsnak.datatype = 'sparql';
+          statement.mainsnak.datatype = 'sparql';
           //   if(re.claims[itemProperties[i]][j].mainsnak.datavalue.value.includes("item")==false){ re.claims[itemProperties[i]][j].mainsnak.datavalue.value="undefined"};
         }
 
@@ -75,22 +69,18 @@ export class ItemDetailsService {
           let number: number = j;
           this.factgrid.setSubtitle2(re, itemProperties[i], number, lang);
           for (let k = 0; k < items.length; k++) {
-            if (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.id === items[k].id) {
+            const dv = statement.mainsnak.datavalue?.value as any;
+            if (dv && dv.id === items[k].id) {
               // Enrichir l'objet value
-              re.claims[itemProperties[i]][j].mainsnak.datavalue.value.label = items[k].label;
-              if (items[k].description !== undefined)
-                re.claims[itemProperties[i]][j].mainsnak.datavalue.value.description =
-                  items[k].description;
-              items[k].description
-                ? (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.separator = ', ')
-                : (re.claims[itemProperties[i]][j].mainsnak.datavalue.value.separator = '');
-              if (items[k].aliases !== undefined)
-                re.claims[itemProperties[i]][j].mainsnak.datavalue.value.aliases = items[k].aliases;
+              dv.label = items[k].label;
+              if (items[k].description !== undefined) dv.description = items[k].description;
+              dv.separator = items[k].description ? ', ' : '';
+              if (items[k].aliases !== undefined) dv.aliases = items[k].aliases;
             }
           }
 
-          const value = re.claims[itemProperties[i]][j].mainsnak.datavalue.value;
-          const mainsnak = re.claims[itemProperties[i]][j].mainsnak;
+          const value = statement.mainsnak.datavalue?.value as any;
+          const mainsnak = statement.mainsnak;
 
           // Fallback: si le label est toujours manquant sur la valeur, on utilise l'id.
           if (value && value.id && !value.label) {
@@ -116,10 +106,12 @@ export class ItemDetailsService {
    * Pour chaque qualifier, ajoute dans display un objet enrichi (id, label, description, aliases...).
    * Gère aussi le tri chronologique via timeOrder si un qualifier de type "time" existe.
    */
-  addQualifierItemDetails(items, re, itemProperties, lang) {
+  addQualifierItemDetails(items: Entity[], re: Entity, itemProperties: string[], lang: string) {
     for (const prop of itemProperties) {
       if (!re.claims[prop]) continue;
-      for (const statement of re.claims[prop]) {
+      const statements = re.claims[prop] as ClaimArray | undefined;
+      if (!statements || !Array.isArray(statements)) continue;
+      for (const statement of statements) {
         if (!statement.qualifiers || !statement.qualifiers2) continue;
 
         // Pour chaque propriété de qualifier
@@ -134,7 +126,7 @@ export class ItemDetailsService {
           for (const q of qualifierValues) {
             if (!q) continue;
             if (q.datatype === 'wikibase-item' && q.datavalue?.value) {
-              const val = q.datavalue.value;
+              const val = q.datavalue.value as any;
               const enriched = items.find((it) => it.id === val.id);
               // Substitution simple : label = label || id
               let label =
@@ -150,9 +142,9 @@ export class ItemDetailsService {
               });
             } else if (q.datatype === 'commonsMedia' && q.datavalue?.value) {
               display.push({
-                label: q.datavalue.value.label || q.datavalue.value,
-                description: q.datavalue.value.description || '',
-                aliases: q.datavalue.value.aliases || [],
+                label: (q.datavalue.value as any).label || q.datavalue.value,
+                description: (q.datavalue.value as any).description || '',
+                aliases: (q.datavalue.value as any).aliases || [],
                 datatype: 'commonsMedia',
               });
             } else if (q.datatype === 'external-id' && q.datavalue?.value) {
@@ -161,14 +153,12 @@ export class ItemDetailsService {
                 datatype: 'external-id',
               });
             } else if (q.datatype === 'time' && q.datavalue?.value) {
-              let value = q.datavalue.value.time;
+              let value = (q.datavalue.value as any).time;
               value = value.substring(0, value.length - 10);
               const date = this.setDate.setDate(value, lang);
               statement.mainsnak.timeOrder = value;
               let era = value.charAt(0);
-              statement.mainsnak.timeOrder = Number(
-                value.replace(/\-/g, '').replace(/\+/g, '').substring(0, 8)
-              );
+              statement.mainsnak.timeOrder = Number(value.replace(/\-/g, '').replace(/\+/g, '').substring(0, 8));
               if (era !== '+') {
                 statement.mainsnak.timeOrder = -Math.abs(statement.mainsnak.timeOrder);
               }
@@ -180,8 +170,8 @@ export class ItemDetailsService {
             } else if (q.datatype === 'quantity' && q.datavalue?.value) {
               // Gestion du type quantity
               display.push({
-                amount: q.datavalue.value.amount,
-                unit: q.datavalue.value.unit,
+                amount: (q.datavalue.value as any).amount,
+                unit: (q.datavalue.value as any).unit,
                 datatype: 'quantity',
               });
             } else if (q.datatype === 'string' && q.datavalue?.value) {
@@ -206,15 +196,16 @@ export class ItemDetailsService {
           qualifier2.display = display;
         }
 
-        // Si la propriété est "P2", on force timeOrder à "0"
+          // Si la propriété est "P2", on force timeOrder à "0"
         if (prop === 'P2') {
           statement.mainsnak.timeOrder = '0';
         }
       }
 
       // Tri chronologique des statements si un timeOrder a été trouvé
-      if (re.claims[prop].length > 1 && re.claims[prop][0].mainsnak.timeOrder !== undefined) {
-        re.claims[prop].sort((a, b) => {
+      const claims = re.claims[prop] as ClaimArray | undefined;
+      if (claims && claims.length > 1 && claims[0].mainsnak.timeOrder !== undefined) {
+        claims.sort((a, b) => {
           if (a.mainsnak.timeOrder < b.mainsnak.timeOrder) return -1;
           if (a.mainsnak.timeOrder > b.mainsnak.timeOrder) return 1;
           return 0;
@@ -224,82 +215,41 @@ export class ItemDetailsService {
     return re;
   }
 
-  addReferenceItemDetails(items, re, itemProperties, lang) {
+  addReferenceItemDetails(items: Entity[], re: Entity, itemProperties: string[], lang: string) {
     for (let i = 0; i < itemProperties.length; i++) {
       // Vérifie que la propriété existe et est un tableau non vide
-      if (
-        !re.claims[itemProperties[i]] ||
-        !Array.isArray(re.claims[itemProperties[i]]) ||
-        re.claims[itemProperties[i]].length === 0
-      ) {
+      const claimsForProp = re.claims[itemProperties[i]] as ClaimArray | undefined;
+      if (!claimsForProp || !Array.isArray(claimsForProp) || claimsForProp.length === 0) {
         continue;
       }
-      for (let j = 0; j < re.claims[itemProperties[i]].length; j++) {
-        if (re.claims[itemProperties[i]][j].references === undefined) {
+      for (let j = 0; j < claimsForProp.length; j++) {
+        const statement = claimsForProp[j];
+        if (statement.references === undefined) {
           continue;
         }
-        for (let k = 0; k < re.claims[itemProperties[i]][j].references.length; k++) {
-          let props = Object.keys(re.claims[itemProperties[i]][j].references[k].snaks);
+        for (let k = 0; k < statement.references.length; k++) {
+          let props = Object.keys(statement.references[k].snaks);
           for (let l = 0; l < items.length; l++) {
             for (let a = 0; a < props.length; a++) {
-              for (
-                let b = 0;
-                b < re.claims[itemProperties[i]][j].references[k].snaks[props[a]].length;
-                b++
-              ) {
-                if (
-                  re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b].datatype ===
-                  'time'
-                ) {
-                  let value =
-                    re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b].datavalue.value
-                      .time;
+              for (let b = 0; b < statement.references[k].snaks[props[a]].length; b++) {
+                const refSnak = statement.references[k].snaks[props[a]][b];
+                if (refSnak.datatype === 'time') {
+                  let value = (refSnak.datavalue.value as any).time;
                   value = value.substring(0, value.length - 10);
-                  re.claims[itemProperties[i]][j].references[k].snaks[props[a]][
-                    b
-                  ].datavalue.value.date = this.setDate.setDate(value, lang);
+                  (refSnak.datavalue.value as any).date = this.setDate.setDate(value, lang);
                 }
-                if (
-                  re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b].datatype ===
-                  'external-id'
-                ) {
-                  this.setUrl(
-                    re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b],
-                    props[a]
-                  );
+                if (refSnak.datatype === 'external-id') {
+                  this.setUrl(refSnak, props[a]);
                 }
-                if (
-                  re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b].datatype !==
-                  'wikibase-item'
-                ) {
+                if (refSnak.datatype !== 'wikibase-item') {
                   continue;
                 }
-                if (
-                  re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b].datavalue.value
-                    .id === items[l].id
-                ) {
-                  if (
-                    re.claims[itemProperties[i]][j].references[k].snaks[props[a]][b] !== undefined
-                  ) {
-                    re.claims[itemProperties[i]][j].references[k].snaks[props[a]][
-                      b
-                    ].datavalue.value.label = items[l].label;
-                    if (items[l].description !== undefined)
-                      re.claims[itemProperties[i]][j].references[k].snaks[props[a]][
-                        b
-                      ].datavalue.value.description = items[l].description;
-                    items[l].description
-                      ? (re.claims[itemProperties[i]][j].references[k].snaks[props[a]][
-                          b
-                        ].datavalue.value.separator = ', ')
-                      : (re.claims[itemProperties[i]][j].references[k].snaks[props[a]][
-                          b
-                        ].datavalue.value.separator = '');
-                    if (items[l].aliases !== undefined)
-                      re.claims[itemProperties[i]][j].references[k].snaks[props[a]][
-                        b
-                      ].datavalue.value.aliases = items[l].aliases;
-                  }
+                const dv = (refSnak.datavalue.value as any) || null;
+                if (dv && dv.id === items[l].id) {
+                  dv.label = items[l].label;
+                  if (items[l].description !== undefined) dv.description = items[l].description;
+                  dv.separator = items[l].description ? ', ' : '';
+                  if (items[l].aliases !== undefined) dv.aliases = items[l].aliases;
                 }
               }
             }
@@ -310,57 +260,42 @@ export class ItemDetailsService {
     return re;
   }
 
-  addReference2ItemDetails(items, re, itemProperties) {
+  addReference2ItemDetails(items: Entity[], re: Entity, itemProperties: string[]) {
     //add the items of the qualifiers to the array qualifiers
 
     for (let i = 0; i < itemProperties.length; i++) {
-      for (let j = 0; j < re.claims[itemProperties[i]].length; j++) {
+      const claimsForProp = re.claims[itemProperties[i]] as ClaimArray | undefined;
+      if (!claimsForProp) continue;
+      for (let j = 0; j < claimsForProp.length; j++) {
         if (re.claims[itemProperties[i]][j].references2 === undefined) {
           continue;
         }
-        for (let k = 0; k < re.claims[itemProperties[i]][j].references2.length; k++) {
-          for (let l = 0; l < re.claims[itemProperties[i]][j].references.length; l++) {
-            let props = Object.keys(re.claims[itemProperties[i]][j].references[l].snaks);
-            let referencesArray = Object.values(
-              re.claims[itemProperties[i]][j].references[l].snaks
-            );
+        for (let k = 0; k < claimsForProp[j].references2.length; k++) {
+          for (let l = 0; l < claimsForProp[j].references.length; l++) {
+            let props = Object.keys(claimsForProp[j].references[l].snaks);
+            let referencesArray = Object.values(claimsForProp[j].references[l].snaks);
             for (let m = 0; m < props.length; m++) {
-              if (re.claims[itemProperties[i]][j].references2[k][m] === undefined) {
+              if (claimsForProp[j].references2[k][m] === undefined) {
                 continue;
               }
               let display = [];
               for (
                 let n = 0;
-                n < re.claims[itemProperties[i]][j].references[l].snaks[props[m]].length;
+                n < claimsForProp[j].references[l].snaks[props[m]].length;
                 n++
               ) {
-                if (re.claims[itemProperties[i]][j].references2[k][m].id === props[m]) {
-                  if (
-                    re.claims[itemProperties[i]][j].references[l].snaks[props[m]][n].datavalue.value
-                  ) {
-                    if (
-                      re.claims[itemProperties[i]][j].references[l].snaks[props[m]][n].datatype ===
-                      'external-id'
-                    ) {
-                      display.push(
-                        re.claims[itemProperties[i]][j].references[l].snaks[props[m]][n].datavalue
-                      );
-                    } else if (
-                      re.claims[itemProperties[i]][j].references[l].snaks[props[m]][n].datatype ===
-                      'time'
-                    ) {
-                      display.push(
-                        re.claims[itemProperties[i]][j].references[l].snaks[props[m]][n].datavalue
-                          .value.date
-                      );
+                if (claimsForProp[j].references2[k][m].id === props[m]) {
+                  const candidateSnak = claimsForProp[j].references[l].snaks[props[m]][n];
+                  if (candidateSnak && candidateSnak.datavalue && candidateSnak.datavalue.value) {
+                    if (candidateSnak.datatype === 'external-id') {
+                      display.push(candidateSnak.datavalue);
+                    } else if (candidateSnak.datatype === 'time') {
+                      display.push((candidateSnak.datavalue.value as any).date);
                     } else {
-                      display.push(
-                        re.claims[itemProperties[i]][j].references[l].snaks[props[m]][n].datavalue
-                          .value
-                      );
+                      display.push(candidateSnak.datavalue.value);
                     }
                   }
-                  re.claims[itemProperties[i]][j].references2[k][m].display = display;
+                  claimsForProp[j].references2[k][m].display = display;
                 }
               }
             }
@@ -372,7 +307,7 @@ export class ItemDetailsService {
     return re;
   }
 
-  addSitelinksDetails(re) {
+  addSitelinksDetails(re: Entity) {
     if (re.sitelinks.commonswiki !== undefined) {
       let url = re.sitelinks.commonswiki.title.replace(' ', '_');
       re.sitelinks.commonswiki.url = 'https://commons.wikimedia.org/wiki/' + url;
@@ -395,7 +330,7 @@ export class ItemDetailsService {
     }
   }
 
-  addItemInfo(re) {
+  addItemInfo(re: Entity) {
     // re.info = this.itemInfo.infoListBuilding(re)
   }
 

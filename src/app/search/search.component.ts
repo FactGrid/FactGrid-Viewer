@@ -45,15 +45,16 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { SetLanguageService } from '../services/set-language.service';
-import { RequestService, WBSearchResponse, GetEntitiesResponse } from '../services/request.service';
-import { AutocompleteIndexService } from '../services/autocomplete-index.service';
+import { RequestService, WBSearchResponse, GetEntitiesResponse, WBSearchEntry } from '../services/request.service';
+import { AutocompleteIndexService, AutocompleteEntry } from '../services/autocomplete-index.service';
+import { SparqlResults, SparqlBinding } from '../services/sparql-types';
 import { SelectedLangService } from '../selected-lang.service';
 import { SelectedResearchFieldService } from '../services/selected-research-field.service';
 import { WikibaseSearchService } from '../services/wikibase-search.service';
 import { SearchFilterService } from '../services/search-filter.service';
 import { SearchCacheService } from '../services/search-cache.service';
 
-import { WikibaseEntity } from '../models/wikibase-entity.model';
+import { WikibaseEntity, EnrichedWikibaseEntity } from '../models/wikibase-entity.model';
 import { ResearchField } from '../models/research-field.model';
 
 function normalizeString(s: string | undefined | null): string {
@@ -155,9 +156,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   researchFields: ResearchField[] = [];
   private researchFields$ = new BehaviorSubject<ResearchField[]>([]);
   filteredResearchFields$: Observable<ResearchField[]>;
-  items: WikibaseEntity[] = [];
-  private items$ = new BehaviorSubject<WikibaseEntity[]>([]);
-  filteredItems$: Observable<WikibaseEntity[]>;
+  items: EnrichedWikibaseEntity[] = [];
+  private items$ = new BehaviorSubject<EnrichedWikibaseEntity[]>([]);
+  filteredItems$: Observable<EnrichedWikibaseEntity[]>;
   // Observable indiquant si l'overlay doit être ouvert (utilisé pour debug/contrôle)
   overlayOpen$: Observable<boolean>;
   // runtime flag set when an overlay pane with expected class is present
@@ -165,7 +166,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   // history overlay behaviour (for visited items panel)
   historyOverlayOpen$ = new BehaviorSubject<boolean>(false);
   // pagination/pages removed for compact-only mode
-  selectedItemsList: any[] = [];
+  selectedItemsList: Array<EnrichedWikibaseEntity | { value?: { id?: string; label?: string } }> = [];
   selectedResearchField$ = this.selectedResearchField.selectedResearchField$;
 
   // ========== SUBSCRIPTIONS ==========
@@ -201,13 +202,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   filterPublication: 'publication' | null = null;
 
   // ========== CACHING MECHANISM ==========
-  private termCache: { [term: string]: WikibaseEntity[] } = {};
+  private termCache: { [term: string]: EnrichedWikibaseEntity[] } = {};
   private broadCacheInput: string = '';
-  private broadCacheItems: WikibaseEntity[] = [];
+  private broadCacheItems: EnrichedWikibaseEntity[] = [];
   private broadCacheComplete: boolean = false;
   // items the component has seen/displayed before — used to preserve
   // previously-displayed matches during input evolution and merging.
-  private seenItems: Map<string, WikibaseEntity> = new Map();
+  private seenItems: Map<string, EnrichedWikibaseEntity> = new Map();
   // timer for delayed application of result updates (ms)
   private resultApplyDelayMs: number = 300;
   // We use RxJS delay + switchMap to schedule apply; no manual timer
@@ -267,11 +268,18 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   // Required trackBy helper used from templates with @for ... track trackById(...)
-  trackById(index: number, item: any): any {
+  trackById(index: number, item: EnrichedWikibaseEntity | { value?: { id?: string; label?: string } } | null): string | number {
     if (!item) return index;
     // support objects wrapped in { value: { id, label } }
-    if (item.value && (item.value.id || item.value.label)) return item.value.id ?? item.value.label;
-    return item.id ?? item.label ?? index;
+    if (item && (item as any).value && ((item as any).value.id || (item as any).value.label)) return (item as any).value.id ?? (item as any).value.label;
+    // item may be a WikibaseEntity or a wrapped object { value: { id, label } }
+    try {
+      if (item && typeof item === 'object') {
+        if ('id' in item || 'label' in item) return (item as any).id ?? (item as any).label ?? index;
+        if ((item as any).value) return (item as any).value.id ?? (item as any).value.label ?? index;
+      }
+    } catch {}
+    return index;
   }
 
   onItemRowClick(itemId: string, event?: MouseEvent) {
@@ -366,7 +374,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private initSelectedItemsList() {
     const stored = localStorage.getItem('selectedItems');
-    this.selectedItemsList = stored ? JSON.parse(stored).filter((el: any) => el !== null) : [];
+    this.selectedItemsList = stored ? (JSON.parse(stored) as Array<EnrichedWikibaseEntity | { value?: { id?: string; label?: string } }>).filter((el: unknown) => el !== null) : [];
   }
 
   private initShowResearchFieldSync() {
@@ -398,7 +406,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         map((res) => this.listFromSparql(res)),
         map((res) => [
           { name: '-', id: '-', description: '' },
-          ...res.results.bindings.map((b: any) => ({
+          ...res.results.bindings.map((b: SparqlBinding) => ({
             name: b.itemLabel.value,
             id: b.item.id,
             description: b.itemDescription?.value ?? '',
@@ -406,7 +414,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         ])
       )
       .subscribe((projects) => {
-        projects.sort((a: any, b: any) => a.name.localeCompare(b.name));
+        projects.sort((a: ResearchField, b: ResearchField) => a.name.localeCompare(b.name));
         this.researchFields = projects;
         this.researchFields$.next(projects);
       });
@@ -428,7 +436,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     lang: string,
     maxResults: number = this.SR_LIMIT,
     selectedProjectId?: string
-  ): Observable<{ items: WikibaseEntity[]; total: number }> {
+  ): Observable<{ items: EnrichedWikibaseEntity[]; total: number }> {
     // If a project is selected, use Cirrus search (action=query list=search) with
     // property filters (haswbstatement:P131=...) to restrict results to items in that project.
     // Build cache keys used for accelerated lookup and to avoid duplicate API calls
@@ -459,7 +467,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       // getQidsList returns page titles (e.g. Q123). Use it to then fetch entities data.
       return this.request.getQidsList(srsearch, maxResults).pipe(
-        switchMap((result: any) => {
+        switchMap((result: { titles?: string[]; total?: number }) => {
           const titles: string[] = result?.titles ?? [];
           const total: number = Number(result?.total ?? (titles || []).length) || 0;
           // cache titles list for a short time (2 minutes) to avoid re-requesting repeated searches
@@ -501,11 +509,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                 });
 
                 // mark items with an exactPhraseMatch flag (used by template for styling)
-                items.forEach((it) => {
-                  (it as any).exactPhraseMatch = phraseMatches.includes(it);
+                const itemsEnriched = items as EnrichedWikibaseEntity[];
+                itemsEnriched.forEach((it) => {
+                  it.exactPhraseMatch = phraseMatches.includes(it);
                 });
 
-                const resultItems =
+                const resultItems: EnrichedWikibaseEntity[] =
                   phraseMatches.length > 0
                     ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))]
                     : filtered;
@@ -537,14 +546,14 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
       map((res: WBSearchResponse) => {
         const total = res.searchinfo?.totalhits ?? res.search?.length ?? 0;
-        const items = (res.search || []).map((e: any) => ({
+        const items = (res.search || []).map((e: WBSearchEntry) => ({
           id: e.id,
           label: e.label,
           aliases: (e.aliases || [])
             .filter((a: any) => a.language === lang)
             .map((a: any) => a.value),
           description: e.description || '',
-        }));
+          })) as EnrichedWikibaseEntity[];
         const out = { items, total };
         try {
           // cache fast search results for a short TTL to reduce duplicate requests when typing
@@ -553,7 +562,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           // OPTIMIZATION: Warm up the individual entity cache with these results.
           // If the user later switches to a project search that returns these same IDs,
           // we won't need to fetch their details again via wbgetentities.
-          items.forEach((item: WikibaseEntity) => {
+          items.forEach((item: EnrichedWikibaseEntity) => {
             this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60);
           });
         } catch (e) {}
@@ -582,10 +591,10 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           // The queryId + searchTerm guard below still protects against stale
           // results overwriting fresh ones when responses arrive out-of-order.
           const myQueryId = ++this.currentQueryId;
-          if (!searchTerm) {
+            if (!searchTerm) {
             this.searchCache.invalidateCache();
             this.resetSearchState();
-            return of([] as WikibaseEntity[]);
+            return of([] as EnrichedWikibaseEntity[]);
           }
           const selected = this.selectedResearchField.getSelectedResearchField();
           const selectedId = selected?.id;
@@ -597,14 +606,14 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           ).pipe(
             // attach the query id and explicit searchTerm so we can ignore stale responses
             map(({ items, total }) => ({ items, total, searchTerm, queryId: myQueryId })),
-            map(({ items, total, searchTerm, queryId }: any) => ({ items, total, searchTerm, queryId })),
+            map(({ items, total, searchTerm, queryId }: { items: EnrichedWikibaseEntity[]; total: number; searchTerm: string; queryId: number }) => ({ items, total, searchTerm, queryId })),
             // Apply updates immediately (no scheduled delay). To avoid
             // flashing unrelated / noisy payloads we still perform the
             // stale-guard and a relevance check against tokens. This keeps
             // behaviour simple and deterministic while refusing to show raw
             // fallback items that don't match the current search.
             // payload received — no debug log
-            tap(({ items, total, searchTerm, queryId }: any) => {
+            tap(({ items, total, searchTerm, queryId }: { items: EnrichedWikibaseEntity[]; total: number; searchTerm: string; queryId: number }) => {
               // record total for UI / See-more behaviour
               try { this.currentTotalCount = Number(total ?? 0); } catch {}
               const currentNormalized = normalizeString(this.searchInput.value || '');
@@ -614,7 +623,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                 return;
               }
 
-              const merged = this.mergeResultsPreservingPriorMatches(searchTerm, items as WikibaseEntity[]);
+              const merged = this.mergeResultsPreservingPriorMatches(searchTerm, items as EnrichedWikibaseEntity[]);
 
               // Skip applying if merged contains no relevant matches — this
               // avoids showing noisy unrelated items returned by the server
@@ -674,7 +683,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             catchError((err) => {
               console.error('[SearchComponent] fetchAutocompleteEntities error', err);
               this.resetSearchState();
-              return of([] as WikibaseEntity[]);
+              return of([] as EnrichedWikibaseEntity[]);
             })
           );
         })
@@ -690,24 +699,24 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     searchTerm: string
   ): Promise<void> {
     try {
-      const candidates: any = await this.autocompleteIndex.getMatches(firstToken, 1, ['firstName']);
+      const candidates: AutocompleteEntry[] = await this.autocompleteIndex.getMatches(firstToken, 1, ['firstName']);
       try { console.debug('[SearchComponent] local-autocomplete candidates for', firstToken, candidates); } catch {}
       for (const c of candidates || []) {
         if (selectedId && c?.id && c?.prop) {
           const srsearch = `haswbstatement:${c.prop}=${c.id} haswbstatement:P131=${selectedId}`;
           try { console.debug('[SearchComponent] project expansion srsearch ->', srsearch); } catch {}
-          const res: any = await firstValueFrom(this.request.getQidsList(srsearch, 50));
+          const res: { titles?: string[]; total?: number } = await firstValueFrom(this.request.getQidsList(srsearch, 50));
           const titles = res?.titles ?? [];
           try { console.debug('[SearchComponent] getQidsList results ->', titles); } catch {}
           const ids = (titles || []).map((t: string) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
           try { console.debug('[SearchComponent] extracted ids ->', ids); } catch {}
           if (ids.length === 0) continue;
           const idsToFetch = ids.slice(0, this.EXPANSION_DETAIL_LIMIT);
-          const expItems: any = await firstValueFrom(this.fetchEntities(idsToFetch).pipe(take(1)));
+          const expItems: EnrichedWikibaseEntity[] = await firstValueFrom(this.fetchEntities(idsToFetch).pipe(take(1)));
           try { console.debug('[SearchComponent] fetched entities for expansion ->', expItems); } catch {}
           const nowNorm = normalizeString(this.searchInput.value || '');
           if (queryId !== this.currentQueryId || nowNorm !== searchTerm) return;
-          const mergedExp = this.mergeResultsPreservingPriorMatches(searchTerm, expItems as WikibaseEntity[]);
+          const mergedExp = this.mergeResultsPreservingPriorMatches(searchTerm, expItems as EnrichedWikibaseEntity[]);
           const hasRelevantExp = mergedExp.some((it) => this.matchesAllTokens(it, searchTerm, this.showInDescription));
           try { console.debug('[SearchComponent] expansion merged result count ->', mergedExp.length, 'hasRelevantExp ->', hasRelevantExp); } catch {}
           if (hasRelevantExp) this.updateItemsList(mergedExp);
@@ -794,11 +803,11 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  private fetchEntities(ids: string[]): Observable<WikibaseEntity[]> {
+  private fetchEntities(ids: string[]): Observable<EnrichedWikibaseEntity[]> {
     if (ids.length === 0) return of([]);
     // Try to reuse per-entity cache entries before issuing any network requests
     const lang = this.lang.selectedLang;
-    const cached: WikibaseEntity[] = [];
+    const cached: EnrichedWikibaseEntity[] = [];
     const missingIds: string[] = [];
     ids.forEach((id) => {
       const key = `entity:${id}:${lang}`;
@@ -836,15 +845,15 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       );
     });
     // combine network results with cached entities for final response
-    const fetched$ = requests.length > 0 ? forkJoin(requests).pipe(map((results) => results.flat())) : of([] as WikibaseEntity[]);
+    const fetched$ = requests.length > 0 ? forkJoin(requests).pipe(map((results) => results.flat())) : of([] as EnrichedWikibaseEntity[]);
     return fetched$.pipe(map((fetched) => [...cached, ...fetched]));
   }
 
   private filterResultsLocally(
-    entities: WikibaseEntity[],
+    entities: EnrichedWikibaseEntity[],
     searchTerm: string,
     showInDescription: boolean
-  ): WikibaseEntity[] {
+  ): EnrichedWikibaseEntity[] {
     if (!this.broadCacheComplete && this.broadCacheItems.length > 0) {
       return this.broadCacheItems.filter((item) =>
         this.matchesSearchCriteria(item, searchTerm, showInDescription)
@@ -856,7 +865,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private matchesSearchCriteria(
-    item: WikibaseEntity,
+    item: EnrichedWikibaseEntity,
     searchTerm: string,
     showInDescription: boolean
   ): boolean {
@@ -887,7 +896,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  private updateItemsList(items: WikibaseEntity[]): void {
+  private updateItemsList(items: EnrichedWikibaseEntity[]): void {
     try {
       console.debug(
         '[SearchComponent] updateItemsList ->',
@@ -1044,7 +1053,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.fetchAutocompleteEntities(searchTerm, lang, this.SEE_MORE_LIMIT, selectedId)
         .pipe(take(1))
         .subscribe((res) => {
-          const merged = this.mergeResultsPreservingPriorMatches(searchTerm, res.items as WikibaseEntity[]);
+          const merged = this.mergeResultsPreservingPriorMatches(searchTerm, res.items as EnrichedWikibaseEntity[]);
           this.updateItemsList(merged);
           try { this.currentTotalCount = Number(res.total ?? 0); } catch {}
         });
@@ -1061,17 +1070,17 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // hintValue/pages removed for compact-only mode
 
-  isArray(val: any): boolean {
+  isArray(val: unknown): boolean {
     return Array.isArray(val);
   }
 
-  createList(re: any): string {
-    let arr = re.search ?? [];
-    let list = arr.map((item: any) => item.id).join('|');
+  createList(re: WBSearchResponse | { search?: { id?: string }[] } | undefined): string {
+    const arr = (re?.search ?? []) as Array<{ id?: string }>;
+    const list = arr.map((item) => item.id).filter(Boolean).join('|');
     return this.baseGetURL + list + this.getUrlSuffix;
   }
 
-  listFromSparql(res: any) {
+  listFromSparql(res: SparqlResults | undefined) {
     if (res?.results) {
       for (let i = 0; i < res.results.bindings.length; i++) {
         const binding = res.results.bindings[i];
@@ -1095,7 +1104,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     return res;
   }
 
-  private adaptEntities(entities: any[], lang: string): WikibaseEntity[] {
+  private adaptEntities(entities: Array<Record<string, any>>, lang: string): EnrichedWikibaseEntity[] {
     return entities.map((e) => ({
       id: e.id,
       label: e.labels?.[lang]?.value || '',
@@ -1109,13 +1118,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
    * still match the current search term. This prevents brief disappearance of
    * a previously-selected item when transient server results omit it.
    */
-  private mergeResultsPreservingPriorMatches(searchTerm: string, newItems: WikibaseEntity[]): WikibaseEntity[] {
+  private mergeResultsPreservingPriorMatches(searchTerm: string, newItems: EnrichedWikibaseEntity[]): EnrichedWikibaseEntity[] {
     // preserve identity by id
-    const byId = new Map<string, WikibaseEntity>();
+    const byId = new Map<string, EnrichedWikibaseEntity>();
     newItems.forEach((it) => byId.set(it.id, it));
 
     // collect previously displayed or seen items that still match the search term
-    const preserved: WikibaseEntity[] = [];
+    const preserved: EnrichedWikibaseEntity[] = [];
     // include currently-displayed items
     (this.items || []).forEach((it) => {
       if (byId.has(it.id)) return; // already included
@@ -1129,7 +1138,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       if (this.matchesAllTokens(it, searchTerm, this.showInDescription)) preserved.push(it);
     });
 
-    const merged = [...newItems, ...preserved];
+    const merged: EnrichedWikibaseEntity[] = [...newItems, ...preserved];
 
     // recompute phrase-priority on the merged set so exact phrase matches
     // remain first (consistent with existing behaviour)
@@ -1140,7 +1149,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       const desc = normalizeString(it.description);
       return (lbl && lbl.includes(normalized)) || aliases.some((a) => a.includes(normalized)) || (this.showInDescription && desc.includes(normalized));
     });
-    merged.forEach((it) => ((it as any).exactPhraseMatch = phraseMatches.includes(it)));
+    merged.forEach((it) => (it.exactPhraseMatch = phraseMatches.includes(it)));
     return phraseMatches.length ? [...phraseMatches, ...merged.filter((m) => !phraseMatches.includes(m))] : merged;
   }
 
@@ -1148,7 +1157,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
    * Ensure that an entity matches ALL tokens from the search term.
    * Each token must be contained in the item's label or aliases (or description if enabled).
    */
-  private matchesAllTokens(item: WikibaseEntity, searchTerm: string, showInDescription: boolean): boolean {
+  private matchesAllTokens(item: EnrichedWikibaseEntity, searchTerm: string, showInDescription: boolean): boolean {
     const normalizedLabel = normalizeString(item.label);
     const normalizedAliases = (item.aliases || []).map(normalizeString);
     const normalizedDesc = normalizeString(item.description);
@@ -1235,7 +1244,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     return true;
   }
 
-  researchFieldSelect(researchField: any) {
+  researchFieldSelect(researchField: ResearchField | null) {
     if (!researchField) {
       this.selectedResearchField.setSelectedResearchField({
         id: 'all',
@@ -1255,7 +1264,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.changeDetector.markForCheck();
   }
 
-  public displayResearchField(researchField: any): string {
+  public displayResearchField(researchField: ResearchField | string | null): string {
     if (typeof researchField === 'string') {
       return researchField;
     }

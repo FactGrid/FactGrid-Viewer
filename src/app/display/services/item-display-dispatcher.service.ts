@@ -1,5 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { BlockDisplayService } from './block-display.service';
+import type { ItemDisplayTuple } from '../../services/item-types';
+import type { EnrichedItemTuple } from './display-item.utils';
+import { getEntity, getRemainingProps, removeRemainingProp } from './display-item.utils';
+import type { Entity, ClaimArray, ClaimsObject } from '../../interfaces/claims';
 import { TechnicalitiesDisplayService } from './technicalities-display.service';
 import { ClaimsEnricherService } from './claims-enricher.service';
 import { MainTitleSelectorService } from './main-title-selector.service';
@@ -37,10 +41,10 @@ export class ItemDisplayDispatcherService {
     private mainTitleSelector: MainTitleSelectorService
   ) {}
 
-  dispatch(item: any, target: any): DisplayFlags {
+  dispatch(item: ItemDisplayTuple | EnrichedItemTuple, target: any): DisplayFlags {
     // Enrich P2-derived flags so dispatcher can rely on normalized presence markers
     this.claimsEnricher.enrich(item);
-    const claims = item[0].claims;
+    const claims = (getEntity(item) as Entity | undefined)?.claims as ClaimsObject | undefined;
 
     //Excluded properties
     target.excludedProperties = [];
@@ -65,10 +69,10 @@ export class ItemDisplayDispatcherService {
     // be permissive: P2 can have various shapes, so string-search the value as a fallback
     // prefer explicit enrichment flags; fallback to scanning raw payload if needed
     const p2IsQ7 =
-      claims.P2?.person === true ||
-      (Array.isArray(claims.P2) &&
-        claims.P2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === 'Q7')) ||
-      (claims.P2 && JSON.stringify(claims.P2).includes('"Q7"'));
+      claims?.P2?.person === true ||
+      (Array.isArray(claims?.P2) &&
+      (claims!.P2 as ClaimArray).some((p) => (p?.mainsnak?.datavalue?.value as any)?.id === 'Q7')) ||
+      (claims?.P2 && JSON.stringify(claims.P2).includes('"Q7"'));
 
     if (claims.P2?.person !== undefined || p2IsQ7) {
       const personFlags = this.processPerson(item, target, claims);
@@ -226,25 +230,25 @@ export class ItemDisplayDispatcherService {
   }
 
   // --- Small helpers to break dispatch up for readability & testability ---
-  private processExcludedProperties(item: any, target: any): void {
+  private processExcludedProperties(item: ItemDisplayTuple | EnrichedItemTuple, target: any): void {
     this.blockDisplay.setExcludedProperties(item, target.excludedProperties);
   }
 
-  private processInfo(item: any, target: any): boolean {
+  private processInfo(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
     target.info = [];
     this.blockDisplay.setInfoDisplay(item, target.info);
     // no debug logging in helpers
     return target.info.length > 0;
   }
 
-  private processHeader(item: any, target: any): boolean {
+  private processHeader(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
     target.headerDetail = [];
     this.blockDisplay.setHeaderDisplay(item, target.headerDetail);
     return target.headerDetail.length > 0;
   }
 
-  private processPlace(item: any, target: any): boolean {
-    const claims = item[0].claims;
+  private processPlace(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
+    const claims = getEntity(item)?.claims;
     target.locationAndSituation = [];
     if (claims.P2?.place !== undefined) {
       this.blockDisplay.setPlaceDisplay(item, target.locationAndSituation);
@@ -252,25 +256,20 @@ export class ItemDisplayDispatcherService {
       // to directly include those claims to avoid losing coordinates in edge cases
       if (target.locationAndSituation.length === 0 && claims.P48 !== undefined) {
         target.locationAndSituation.push(claims.P48);
-        if (Array.isArray(item[1])) {
-          const idx = item[1].indexOf('P48');
-          if (idx >= 0) item[1].splice(idx, 1);
-        }
+        // remove from remaining props via helper
+        if (Array.isArray(getRemainingProps(item))) removeRemainingProp(item, 'P48');
       }
       // If P48 wasn't present or didn't populate anything, also try P625
       if (target.locationAndSituation.length === 0 && claims.P625 !== undefined) {
         target.locationAndSituation.push(claims.P625);
-        if (Array.isArray(item[1])) {
-          const idx = item[1].indexOf('P625');
-          if (idx >= 0) item[1].splice(idx, 1);
-        }
+        if (Array.isArray(getRemainingProps(item))) removeRemainingProp(item, 'P625');
       }
     }
     return target.locationAndSituation.length > 0;
   }
 
   private processPerson(
-    item: any,
+    item: ItemDisplayTuple | EnrichedItemTuple,
     target: any,
     claims: any
   ): { isPerson: boolean; isCareer: boolean; isSociability: boolean; isTraining: boolean } {
@@ -307,8 +306,8 @@ export class ItemDisplayDispatcherService {
     return result;
   }
 
-  private processOrg(item: any, target: any): boolean {
-    const claims = item[0].claims;
+  private processOrg(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
+    const claims = getEntity(item)?.claims;
     target.locationAndContext = [];
     if (claims.P2?.org !== undefined) {
       this.blockDisplay.setOrgDisplay(item, target.locationAndContext);
@@ -316,8 +315,8 @@ export class ItemDisplayDispatcherService {
     return target.locationAndContext.length > 0;
   }
 
-  private processActivity(item: any, target: any): boolean {
-    const claims = item[0].claims;
+  private processActivity(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
+    const claims = getEntity(item)?.claims;
     target.activityDetail = [];
     if (claims.P2?.activity !== undefined) {
       this.blockDisplay.setActivityDisplay(item, target.activityDetail);
@@ -325,8 +324,8 @@ export class ItemDisplayDispatcherService {
     return target.activityDetail.length > 0;
   }
 
-  private processDocument(item: any, target: any): boolean {
-    const claims = item[0].claims;
+  private processDocument(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
+    const claims = getEntity(item)?.claims;
     target.documentDetail = [];
     if (claims.P2?.document !== undefined) {
       this.blockDisplay.setDocumentDisplay(item, target.documentDetail);
@@ -334,26 +333,27 @@ export class ItemDisplayDispatcherService {
     return target.documentDetail.length > 0;
   }
 
-  private processSources(item: any, target: any): boolean {
-    const claims = item[0].claims;
+  private processSources(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
+    const claims = getEntity(item)?.claims;
     target.sourcesList = [];
     this.blockDisplay.setSourcesDisplay(item, target.sourcesList);
     target.sources = claims.P2?.sources;
     return target.sourcesList.length > 0;
   }
 
-  private processExternalLinks(item: any, target: any): boolean {
+  private processExternalLinks(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
     target.externalLinks = [];
     this.blockDisplay.setExternalLinksDisplay(item, target.externalLinks);
     return target.externalLinks.length > 0;
   }
 
-  private processOthers(item: any, target: any): boolean {
-    const claims = item[0].claims;
+  private processOthers(item: ItemDisplayTuple | EnrichedItemTuple, target: any): boolean {
+    const claims = getEntity(item)?.claims;
     target.otherClaims = [];
     if (item[1] && Array.isArray(item[1])) {
-      for (let i = 0; i < item[1].length; i++) {
-        const P: string = item[1][i];
+      const remaining = getRemainingProps(item) ?? [];
+      for (let i = 0; i < remaining.length; i++) {
+        const P: string = remaining[i];
         if (claims[P] !== undefined) {
           target.otherClaims.push(claims[P]);
         }
@@ -366,8 +366,8 @@ export class ItemDisplayDispatcherService {
     return false;
   }
 
-  private buildMainList(item: any, target: any, isPerson: boolean): void {
-    const claims = item[0].claims;
+  private buildMainList(item: ItemDisplayTuple | EnrichedItemTuple, target: any, isPerson: boolean): void {
+    const claims = getEntity(item)?.claims;
     if (claims.P2 === undefined) {
       if (claims.P3 !== undefined) target.mainList.push(claims.P3);
       return;

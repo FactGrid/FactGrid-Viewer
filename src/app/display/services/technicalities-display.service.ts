@@ -1,4 +1,8 @@
 import { Injectable } from '@angular/core';
+import type { ItemDisplayTuple } from '../../services/item-types';
+import type { EnrichedItemTuple } from './display-item.utils';
+import { getEntity, getRemainingProps, removeRemainingProp } from './display-item.utils';
+import type { Entity, ClaimArray } from '../../interfaces/claims';
 
 @Injectable({
   providedIn: 'root',
@@ -6,19 +10,19 @@ import { Injectable } from '@angular/core';
 export class TechnicalitiesDisplayService {
   constructor() {}
 
-  setTechnicalitiesDisplay(item, technicalities) {
+  setTechnicalitiesDisplay(item: ItemDisplayTuple | EnrichedItemTuple, technicalities: any[]) {
     // technicalities
-
-    if (item[0].claims.P994 !== undefined) {
-      //vocabulary PhiloBiblon-terms
-      item[1].splice(item[1].indexOf('P994'), 1);
-      technicalities.push(item[0].claims.P994);
+    const entity = getEntity(item) as Entity | undefined;
+    // P994: vocabulary PhiloBiblon-terms
+    if ((entity?.claims as any)?.P994 !== undefined) {
+      if (Array.isArray(getRemainingProps(item))) removeRemainingProp(item, 'P994');
+      technicalities.push((entity.claims as any).P994 as ClaimArray);
     }
 
-    if (item[0].claims.P1132 !== undefined) {
-      //FactGrid keyword
-      item[1].splice(item[1].indexOf('P1132'), 1);
-      technicalities.push(item[0].claims.P1132);
+    // P1132: FactGrid keyword
+    if ((entity?.claims as any)?.P1132 !== undefined) {
+      if (Array.isArray(getRemainingProps(item))) removeRemainingProp(item, 'P1132');
+      technicalities.push((entity.claims as any).P1132 as ClaimArray);
     }
   }
 }

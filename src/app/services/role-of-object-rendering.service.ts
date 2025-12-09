@@ -1,6 +1,7 @@
 // service to change the rendering of some statements with a qualifier "role of object"
 
 import { Injectable } from '@angular/core';
+import { Entity, ClaimArray, Claim } from '../interfaces/claims';
 
 @Injectable({
   providedIn: 'root',
@@ -8,6 +9,7 @@ import { Injectable } from '@angular/core';
 export class RoleOfObjectRenderingService {
   constructor() {}
 
+  // kept fields for backward compatibility (not actively used here)
   label: string;
   id: string;
   datatype: string;
@@ -18,114 +20,115 @@ export class RoleOfObjectRenderingService {
   R3: any[];
   R4: any[];
 
-  transformProperties(re) {
+  transformProperties(re: Entity) {
     this.roleOfObject(re);
-    //   this.transformP248(re);
+    // this.transformP248(re);
   }
 
-  roleOfObject(re) {
-    // List of supported roles
+  /**
+   * Move values from P247/P208 into role properties when a P820 qualifier is present.
+   * This matches legacy behaviour but uses the shared Claim/Entity types and applies
+   * small safe-casts when accessing datavalue.value shapes.
+   */
+  roleOfObject(re: Entity) {
     const roleConfig = [
       { id: 'Q468366' }, // Married name
       { id: 'Q266694' }, // Birth name
       { id: 'Q28006' }, // Name variant
       { id: 'Q10387' }, // Replacement name
-      // Add more roles here if needed
     ];
 
-    // Initialize arrays for each role
+    // Make sure role properties exist and are ClaimArray typed
     for (const { id } of roleConfig) {
-      if (!Array.isArray(re.claims[id])) {
-        re.claims[id] = [];
-      }
+      if (!Array.isArray(re.claims[id])) re.claims[id] = [] as ClaimArray;
     }
 
-    // Process claims for target properties
     for (const prop of ['P247', 'P208']) {
-      const claimsArray = re.claims[prop];
+      const claimsArray = re.claims[prop] as ClaimArray | undefined;
       if (!Array.isArray(claimsArray)) continue;
 
       for (let i = 0; i < claimsArray.length; i++) {
-        const snak = claimsArray[i];
+        const snak = claimsArray[i] as Claim;
         let processed = false;
 
-        if (snak.qualifiers2) {
-          for (const qualif2 of snak.qualifiers2) {
-            if (qualif2.id === 'P820' && Array.isArray(qualif2.display)) {
-              for (const role of qualif2.display) {
-                // Only process supported roles
-                if (roleConfig.some((r) => r.id === role.id)) {
-                  // Set property metadata (label/description) if not already set
-                  if (!re.claims[role.id].id) re.claims[role.id].id = role.id;
-                  if (!re.claims[role.id].label) re.claims[role.id].label = role.label;
-                  if (!re.claims[role.id].description)
-                    re.claims[role.id].description = role.description;
+        if (!snak.qualifiers2) continue;
 
-                  // Add value to the role property
-                  re.claims[role.id].push({
-                    mainsnak: {
-                      property: role.id,
-                      datatype: snak.mainsnak.datatype,
-                      label: snak.mainsnak.label,
-                      description: snak.mainsnak.description,
-                      datavalue: {
-                        value: {
-                          id: snak.mainsnak.datavalue?.value?.id,
-                          label: snak.mainsnak.label,
-                          description: snak.mainsnak.description,
-                        },
-                      },
-                    },
-                    id: role.id,
-                    label: role.label,
-                    description: role.description,
-                  });
-                  processed = true;
-                }
-              }
-              // All P820 qualifiers processed
-              qualif2.display = [];
-            }
+        for (const qualif2 of snak.qualifiers2) {
+          if (qualif2.id !== 'P820' || !Array.isArray(qualif2.display)) continue;
+
+          for (const role of qualif2.display) {
+            if (!roleConfig.some((r) => r.id === role.id)) continue;
+
+            const roleClaims = re.claims[role.id] as ClaimArray;
+            const roleMeta = roleClaims as any;
+            if (!roleMeta.id) roleMeta.id = role.id;
+            if (!roleMeta.label) roleMeta.label = role.label;
+            if (!roleMeta.description) roleMeta.description = role.description;
+
+            roleClaims.push({
+              mainsnak: {
+                property: role.id,
+                datatype: snak.mainsnak.datatype,
+                label: snak.mainsnak.label,
+                description: snak.mainsnak.description,
+                datavalue: {
+                  value: {
+                    id: (snak.mainsnak.datavalue?.value as any)?.id,
+                    label: snak.mainsnak.label,
+                    description: snak.mainsnak.description,
+                  } as any,
+                },
+              },
+              id: role.id,
+              label: role.label,
+              description: role.description,
+            } as any);
+
+            processed = true;
           }
-          // Remove P820 qualifier from qualifiers2 and qualifiers
-          snak.qualifiers2 = snak.qualifiers2.filter((q) => q.id !== 'P820');
-          if (snak.qualifiers && snak.qualifiers['P820']) {
-            delete snak.qualifiers['P820'];
-          }
-          // Remove statement if no more qualifiers
-          const hasQualifiers =
-            (snak.qualifiers && Object.keys(snak.qualifiers).length > 0) ||
-            (snak.qualifiers2 && snak.qualifiers2.length > 0);
-          if (!hasQualifiers && processed) {
-            claimsArray.splice(i, 1);
-            i--;
-          }
+
+          // empty out display for processed qualifiers
+          qualif2.display = [];
+        }
+
+        // remove P820 qualifier from qualifiers2 and qualifiers map
+        snak.qualifiers2 = Array.isArray(snak.qualifiers2)
+          ? snak.qualifiers2.filter((q) => q.id !== 'P820')
+          : snak.qualifiers2;
+
+        if (snak.qualifiers && snak.qualifiers['P820']) delete snak.qualifiers['P820'];
+
+        const hasQualifiers =
+          (snak.qualifiers && Object.keys(snak.qualifiers).length > 0) ||
+          (snak.qualifiers2 && snak.qualifiers2.length > 0);
+
+        if (!hasQualifiers && processed) {
+          claimsArray.splice(i, 1);
+          i--;
         }
       }
     }
   }
 
-  private transformP248(re) {
-    const statements = re.claims['P248'];
-    if (!Array.isArray(statements) || statements.length === 0) {
-      return;
-    }
+  private transformP248(re: Entity) {
+    const statements = re.claims['P248'] as ClaimArray | undefined;
+    if (!Array.isArray(statements) || statements.length === 0) return;
 
     const values: { label: string; id: string; order: number; extra: string }[] = [];
 
-    for (const statement of statements) {
-      const mainsnak = statement.mainsnak || {};
-      const datavalue = mainsnak.datavalue || {};
-      const value = datavalue.value || {};
+    for (const statement of statements as ClaimArray) {
+      const mainsnak: any = statement.mainsnak || {};
+      const datavalue: any = mainsnak.datavalue || {};
+      const value: any = datavalue.value || {};
 
-      const label = mainsnak.label || value.label || '';
-      const id = value.id;
+      const label = mainsnak.label || (value as any).label || '';
+      const id = (value as any).id;
       let order = Number.MAX_SAFE_INTEGER;
       let extra = '';
 
       // P499 = ordre
       if (statement.qualifiers?.['P499']?.[0]?.datavalue?.value) {
-        order = parseInt(statement.qualifiers['P499'][0].datavalue.value.amount, 10);
+        order = parseInt((statement.qualifiers['P499'][0].datavalue.value as any).amount, 10);
       }
 
       // autres qualifiers -> extra
@@ -133,9 +136,7 @@ export class RoleOfObjectRenderingService {
         for (const qid in statement.qualifiers) {
           if (qid === 'P499') continue;
           const q = statement.qualifiers[qid][0];
-          if (q?.datavalue?.value) {
-            extra += ` (${q.datavalue.value})`;
-          }
+          if (q?.datavalue?.value) extra += ` (${(q.datavalue.value as any)})`;
         }
       }
 
@@ -146,10 +147,7 @@ export class RoleOfObjectRenderingService {
     values.sort((a, b) => a.order - b.order);
 
     // label combiné, ex : "Jacques, Louis"
-    const combinedLabel = values
-      .map((v) => v.label)
-      .filter(Boolean)
-      .join(', ');
+    const combinedLabel = values.map((v) => v.label).filter(Boolean).join(', ');
 
     const first = statements[0];
 
@@ -158,9 +156,7 @@ export class RoleOfObjectRenderingService {
       mainsnak: {
         ...first.mainsnak,
         label: combinedLabel,
-        datavalue: {
-          value: values,
-        },
+        datavalue: { value: values },
       },
       label: combinedLabel,
     };

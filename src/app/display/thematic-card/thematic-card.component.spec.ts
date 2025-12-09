@@ -130,4 +130,30 @@ describe('ThematicCardComponent', () => {
     expect(textSpan).toBeTruthy();
     expect(textSpan?.textContent?.trim()).toBe('Afficher');
   });
+
+  it('should derive title from a compact DisplayItem passed to item input', () => {
+    const displayItem = { id: 'Q1', label: 'Affiche-moi' } as any;
+    component.item = displayItem;
+    component.ngOnChanges({ item: new SimpleChange(null, displayItem, true) });
+    fixture.detectChanges();
+
+    expect(component.title).toBe('Affiche-moi');
+    const el: HTMLElement = fixture.nativeElement;
+    const textEl = el.querySelector('.title-text');
+    expect(textEl?.textContent?.trim()).toBe('Affiche-moi');
+  });
+
+  it('should derive title from ItemDisplayTuple when tuple contains compact DisplayItem', () => {
+    const entity = { id: 'Q2', label: 'Entité' } as any;
+    const displayItem = { id: 'Q2', label: 'Label compact' } as any;
+    const tuple = [entity, [], [], [], displayItem];
+    component.item = tuple as any;
+    component.ngOnChanges({ item: new SimpleChange(null, tuple, true) });
+    fixture.detectChanges();
+
+    expect(component.title).toBe('Label compact');
+    const el: HTMLElement = fixture.nativeElement;
+    const textEl = el.querySelector('.title-text');
+    expect(textEl?.textContent?.trim()).toBe('Label compact');
+  });
 });

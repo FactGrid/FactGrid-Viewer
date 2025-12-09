@@ -4,32 +4,7 @@ import { SetLanguageService } from './set-language.service';
 import { map } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 
-/** Interfaces pour un typage fort */
-interface Snak {
-  property: string;
-  datatype?: string;
-  datavalue?: { value: { id: string } };
-}
-
-interface Reference {
-  'snaks-order': string[];
-  snaks: { [key: string]: Snak[] };
-}
-
-interface Claim {
-  mainsnak: Snak;
-  qualifiers?: { [key: string]: Snak[] };
-  'qualifiers-order'?: string[];
-  references?: Reference[];
-}
-
-interface ClaimsObject {
-  [property: string]: Claim[];
-}
-
-interface Entity {
-  claims: ClaimsObject;
-}
+import type { Entity, Claim, ClaimsObject, ClaimArray } from '../interfaces/claims';
 
 @Injectable({
   providedIn: 'root',
@@ -89,12 +64,12 @@ export class DetailsService {
    * Retourne un Observable des items enrichis.
    */
   setItemsList(u: Entity): Observable<any[]> {
-    const claimsArray = Object.values(u.claims);
+    const claimsArray = Object.values(u.claims) as ClaimArray[];
 
     let items = claimsArray.flatMap((val) =>
       val
-        .filter((claim) => claim.mainsnak.datavalue?.value?.id !== undefined)
-        .map((claim) => claim.mainsnak.datavalue.value.id)
+        .filter((claim) => (claim.mainsnak.datavalue?.value as any)?.id !== undefined)
+        .map((claim) => (claim.mainsnak.datavalue!.value as any).id)
     );
 
     let qualifierProperties = claimsArray.flatMap((val) =>
@@ -158,8 +133,8 @@ export class DetailsService {
         for (const prop of arr) {
           if (claim.qualifiers?.[prop]) {
             for (const snak of claim.qualifiers[prop]) {
-              if (snak?.datavalue?.value?.id) {
-                result.push(snak.datavalue.value.id);
+              if ((snak?.datavalue?.value as any)?.id) {
+                result.push((snak.datavalue.value as any).id);
               }
             }
           }
@@ -183,8 +158,8 @@ export class DetailsService {
             const snaks = ref.snaks[prop];
             if (snaks && snaks[0]?.datatype === 'wikibase-item') {
               for (const snak of snaks) {
-                if (snak?.datavalue?.value?.id) {
-                  result.push(snak.datavalue.value.id);
+                if ((snak?.datavalue?.value as any)?.id) {
+                  result.push((snak.datavalue.value as any).id);
                 }
               }
             }

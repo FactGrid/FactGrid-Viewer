@@ -1,5 +1,6 @@
 //list of selected Items on black ground
 import { Injectable, inject } from '@angular/core';
+import type { Entity, ClaimArray } from '../interfaces/claims';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 
@@ -9,8 +10,8 @@ import { Observable, forkJoin } from 'rxjs';
 export class SelectedItemListService {
   constructor(private http?: HttpClient) {}
 
-  setPropertiesAndValues(u) {
-    let values: any[] = Object.values(u.claims);
+  setPropertiesAndValues(u: Entity | any) {
+    let values: ClaimArray[] = Object.values((u?.claims ?? {}) as Record<string, ClaimArray>);
     let items = [];
     let properties = [];
     let qualifiers = [];
@@ -33,7 +34,7 @@ export class SelectedItemListService {
     }
     for (const val of mainsnaks) {
       //array of objects {P:Q}
-      if (val.datavalue.value.id === undefined) continue;
+      if ((val.datavalue.value as any).id === undefined) continue;
       mainsnaks2.push('{' + val.property + ':' + val.datavalue.value.id + '}');
     }
 
@@ -45,8 +46,8 @@ export class SelectedItemListService {
     for (const val of values) {
       //items Q in the mainsnaks
       {
-        if (val[0].mainsnak.datavalue.value.id === undefined) continue;
-        items.push(val[0].mainsnak.datavalue.value.id);
+        if ((val[0].mainsnak.datavalue.value as any).id === undefined) continue;
+        items.push((val[0].mainsnak.datavalue.value as any).id);
       }
     }
 
@@ -76,7 +77,8 @@ export class SelectedItemListService {
       //get items in the qualifiers, remove the undefined
       return element !== undefined;
     });
-    let referenceItems = this.setItems(qualifiers).filter(function (element) {
+    // fix: references should be taken from the `references` array
+    let referenceItems = this.setItems(references).filter(function (element) {
       //get items in the references, remove the undefined
       return element !== undefined;
     });
@@ -110,14 +112,14 @@ export class SelectedItemListService {
     return forkJoin([response1, response2]);
   }
 
-  setProperties = function setProperties(arr) {
+  setProperties = function setProperties(arr: any[]): string[] {
     // create an array of the properties in the qualifiers and references
     let result = [];
     arr.forEach((x) => result.push(Object.values(x)[0][0].property));
     return result;
   };
 
-  setItems(arr) {
+  setItems(arr: any[]): string[] {
     // create an array of the items in the qualifiers and references
     let result = [];
     arr.forEach((x) => result.push(Object.values(x)[0][0].datavalue.value.id));

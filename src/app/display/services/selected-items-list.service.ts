@@ -9,8 +9,10 @@ import { Observable, forkJoin } from 'rxjs';
 export class SelectedItemListService {
   constructor(private http?: HttpClient) {}
 
-  setPropertiesAndValues(u) {
-    let values: any[] = Object.values(u.claims);
+  // Accept a loose shape (legacy enriched entities) but prefer an object that
+  // exposes a `claims` map (Record<string, any[]>).
+  setPropertiesAndValues(u: { claims?: Record<string, any[]> } | any) {
+    let values: any[] = Object.values(u?.claims ?? {});
     let items = [];
     let properties = [];
     let qualifiers = [];
@@ -76,7 +78,9 @@ export class SelectedItemListService {
       //get items in the qualifiers, remove the undefined
       return element !== undefined;
     });
-    let referenceItems = this.setItems(qualifiers).filter(function (element) {
+    // references are in the references array, not qualifiers — use the
+    // references array here.
+    let referenceItems = this.setItems(references).filter(function (element) {
       //get items in the references, remove the undefined
       return element !== undefined;
     });
@@ -110,14 +114,14 @@ export class SelectedItemListService {
     return forkJoin([response1, response2]);
   }
 
-  setProperties = function setProperties(arr) {
+  setProperties = function setProperties(arr: any[]): string[] {
     // create an array of the properties in the qualifiers and references
     let result = [];
     arr.forEach((x) => result.push(Object.values(x)[0][0].property));
     return result;
   };
 
-  setItems(arr) {
+  setItems(arr: any[]): string[] {
     // create an array of the items in the qualifiers and references
     let result = [];
     arr.forEach((x) => result.push(Object.values(x)[0][0].datavalue.value.id));

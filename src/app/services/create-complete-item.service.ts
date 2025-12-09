@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { CreateItemToDisplayService } from './create-item-to-display.service';
+import { ItemDisplayTuple } from './item-types';
 import { ItemInfoService } from './item-info.service';
 import { SetLanguageService } from './set-language.service';
 import { SelectedLangService } from '../selected-lang.service';
@@ -17,7 +18,7 @@ export class CreateCompleteItemService {
   private setLanguage = inject(SetLanguageService);
   private lang = inject(SelectedLangService);
 
-  completeItem(res) {
+  completeItem(res: any[]): Observable<ItemDisplayTuple> {
     const itemArray = this.setLanguage.item(res, this.lang.selectedLang);
     const firstItem = itemArray[0];
 

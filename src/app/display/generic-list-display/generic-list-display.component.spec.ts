@@ -123,4 +123,11 @@ describe('GenericListDisplayComponent', () => {
     const anchor = compiled.querySelector('a.factgrid-link');
     expect(anchor?.querySelector('span.typo-item-desc')).toBeTruthy();
   });
+
+  it('supports a compact DisplayItem in items and renders its label', () => {
+    component.items = { id: 'Q1', label: 'Compact label' } as any;
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Compact label');
+  });
 });

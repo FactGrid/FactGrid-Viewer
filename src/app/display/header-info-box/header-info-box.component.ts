@@ -12,6 +12,7 @@ import { GenericListDisplayComponent } from '../generic-list-display/generic-lis
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderInfoBoxComponent {
-  @Input() items: any[] = [];
+  // Keep permissive while migrating display internals to typed shapes
+  @Input() items: Array<import('../../services/item-types').DisplayItem | import('../../services/item-types').ItemDisplayTuple | any> = [];
   @Input() title: string = '';
 }

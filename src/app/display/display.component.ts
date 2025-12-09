@@ -56,6 +56,7 @@ import {
 } from '../services/selected-research-field.service';
 import { SearchCacheService } from '../services/search-cache.service';
 import { RequestService, CommonsImageMetadata } from '../services/request.service';
+import type { DisplayItem, ItemDisplayTuple } from '../services/item-types';
 
 @Component({
   selector: 'app-display',
@@ -145,7 +146,11 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
 
   // Données principales
-  item: any;
+  // raw array or typed tuple returned by CreateItemToDisplayService
+  // keep both shapes to remain backward-compatible while we migrate
+  item: any[] | ItemDisplayTuple | null = null;
+  // UI-focused, typed representation of the current item (mapped from the rich entity)
+  displayItem: DisplayItem | null = null;
   claims: any;
   itemId: string;
   id: string;
@@ -604,6 +609,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
       this.item = item;
+          // optional typed DisplayItem appended as the 5th element by CreateItemToDisplayService
+          // read it type-safely from the ItemDisplayTuple
+          this.displayItem = Array.isArray(item) && item.length >= 5 ? (item[4] as DisplayItem) : null;
       // Item present -> header should be closed and search pinned
       this.headerAnimState = 'closed';
       this.searchAnimState = 'pinned';

@@ -6,5 +6,7 @@
   {"label":"Frédéric","id":"Q152601","norm":"frederic","categories":["firstName"],"prop":"P248","weight":9400},
   {"label":"Jeanne","id":"Q152681","norm":"jeanne","categories":["firstName"],"prop":"P248","weight":8500},
   {"label":"Marcel","id":"Q230813","norm":"marcel","categories":["firstName"],"prop":"P248","weight":8200},
-  {"label":"Duval","id":"Q267894","norm":"duval","categories":["familyName"],"prop":"P247","weight":8000}
+  {"label":"Duval","id":"Q267894","norm":"duval","categories":["familyName"],"prop":"P247","weight":8000},
+  {"label":"Jacques","id":"Q31853","norm":"jacques","categories":["firstName"],"prop":"P248","weight":8500},
+  {"label":"Louis","id":"Q31997","norm":"louis","categories":["firstName"],"prop":"P248","weight":9500}
 ]

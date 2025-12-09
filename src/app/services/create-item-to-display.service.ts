@@ -5,6 +5,8 @@ import { PropertyDetailsService } from './property-details.service';
 import { ItemDetailsService } from './item-details.service';
 import { RoleOfObjectRenderingService } from './role-of-object-rendering.service';
 import { forkJoin } from 'rxjs';
+import { mapEntityToDisplayItem } from './item-mapper';
+import type { DisplayItem, ItemDisplayTuple } from './item-types';
 import { map } from 'rxjs/operators';
 
 @Injectable({
@@ -17,7 +19,7 @@ export class CreateItemToDisplayService {
   private addItemDetails = inject(ItemDetailsService);
   private roleOfObjectRendering = inject(RoleOfObjectRenderingService);
 
-  createItemToDisplay(re, selectedLang) {
+  createItemToDisplay(re, selectedLang): import('rxjs').Observable<ItemDisplayTuple> {
     const itemProperties = Object.keys(re.claims);
 
     return forkJoin({
@@ -54,7 +56,14 @@ export class CreateItemToDisplayService {
           updatedItemProperties
         );
 
-        return [item, updatedItemProperties, qualifierProperties, referenceProperties];
+        // Create a compact UI-friendly DisplayItem alongside the enriched entity.
+        // Keep the original return tuple for backward compatibility and append
+        // the DisplayItem as the last element.
+        const displayItem: DisplayItem = mapEntityToDisplayItem(item);
+
+        // Return typed tuple: keep backward-compatible array tuple and provide compact DisplayItem
+        const tuple: ItemDisplayTuple = [item, updatedItemProperties, qualifierProperties, referenceProperties, displayItem];
+        return tuple;
       })
     );
   }
@@ -75,7 +84,7 @@ export class CreateItemToDisplayService {
   }
 
   /** Appends the P820 label (lowercase) in parentheses to the statement label and removes the qualifier */
-  private transformClaimsWithP820(item: any) {
+  private transformClaimsWithP820(item: import('./item-types').EnrichedItem) {
     let claims = item.claims;
     if (!claims) return;
 

@@ -59,6 +59,11 @@ export class ThematicCardComponent implements AfterContentInit, OnChanges {
   @Input() showHeader: boolean = false;
   @Input() loading: boolean = false;
 
+  // New: accept a compact UI shape (DisplayItem) or the older tuple/enriched shapes
+  // so the component can derive a title or show image-related behaviour when an
+  // item is provided by parent components.
+  @Input() item?: import('../../services/item-types').DisplayItem | import('../../services/item-types').ItemDisplayTuple | import('../../services/item-types').EnrichedItem;
+
   isCollapsed: boolean = false;
   hasProjectedHeader: boolean = false;
   @Input() compact: boolean = false;
@@ -86,6 +91,27 @@ export class ThematicCardComponent implements AfterContentInit, OnChanges {
     if (changes['title']) {
       try {
         this.hasProjectedHeader = !!this.el.nativeElement.querySelector('[card-header]');
+      } catch {}
+    }
+
+    // If an item input is provided and no explicit title prop set by host, try to
+    // derive a sensible header title from the item (prefer compact DisplayItem.label
+    // else fallback to enriched entity labels/ids).
+    if (changes['item'] && !this.title) {
+      try {
+        // support both tuple and compact shapes
+        const itm = changes['item'].currentValue as any;
+        let displayCandidate: any = undefined;
+        if (Array.isArray(itm)) {
+          // ItemDisplayTuple: last optional entry may be a compact DisplayItem
+          if (itm.length >= 5 && itm[4]) displayCandidate = itm[4];
+          else displayCandidate = itm[0];
+        } else {
+          displayCandidate = itm;
+        }
+
+        // prefer label properties used by the UI
+        this.title = displayCandidate?.label || displayCandidate?.title || displayCandidate?.id || this.title;
       } catch {}
     }
   }

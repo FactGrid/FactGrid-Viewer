@@ -20,13 +20,16 @@ export class SetDataService {
   private lang = inject(SelectedLangService);
 
   sparqlResult = new Subject(); // In  case of BehaviorSubject I have to give an initial value
+  
+  // Use shared entity/claim types for intermediate operations
+  // (keeps the runtime flexibility while improving compile-time safety)
 
   selectedLang: string =
     localStorage['selectedLang'] === undefined ? 'en' : localStorage['selectedLang']; //initialization of the storage of the selected language (english)
   baseGetURL = 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=';
   getUrlSuffix = '&format=json&origin=*';
 
-  itemToDisplay(id) {
+  itemToDisplay(id: string) {
     if (!id) {
       return new Observable<any[]>((observer) => {
         observer.next([]);
@@ -36,7 +39,7 @@ export class SetDataService {
     let labelLength: number = 0;
     let url = this.baseGetURL + id + this.getUrlSuffix;
     let completeItem = this.request.getItem(url).pipe(
-      map((res) => (res && res.entities ? Object.values(res.entities) : [])),
+      map((res: any) => (res && res.entities ? (Object.values(res.entities) as any[]) : [])),
       map((res) => {
         // Réordonne qualifiers-order pour chaque claim de chaque propriété
         res.forEach((entity: any) => {
@@ -44,9 +47,7 @@ export class SetDataService {
             Object.values(entity.claims).forEach((claimArray: any[]) => {
               claimArray.forEach((claim: any) => {
                 if (claim['qualifiers-order']) {
-                  claim['qualifiers-order'] = this.reorderQualifiersOrder(
-                    claim['qualifiers-order']
-                  );
+                  claim['qualifiers-order'] = this.reorderQualifiersOrder(claim['qualifiers-order']);
                 }
               });
             });

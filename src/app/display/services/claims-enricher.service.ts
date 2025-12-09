@@ -1,4 +1,8 @@
 import { Injectable } from '@angular/core';
+import type { ItemDisplayTuple } from '../../services/item-types';
+import type { EnrichedItemTuple } from './display-item.utils';
+import { getEntity } from './display-item.utils';
+import type { Entity, ClaimsObject, ClaimArray } from '../../interfaces/claims';
 import {
   PERSON_DISPLAY_PROPERTIES,
   EVENT_DISPLAY_PROPERTIES,
@@ -19,17 +23,17 @@ import {
 export class ClaimsEnricherService {
   constructor() {}
 
-  enrich(item: any): any {
+  enrich(item: ItemDisplayTuple | EnrichedItemTuple): any {
     if (!item || !Array.isArray(item) || item.length === 0) return item;
-    const claims = item[0].claims || {};
+    const claims = ((getEntity(item) as Entity | undefined)?.claims as ClaimsObject) ?? {};
 
     // Ensure P2 exists (we still want to enrich based on top-level properties)
-    const p2 = claims.P2 || {};
+    const p2: ClaimArray | Record<string, any> = (claims.P2 as ClaimArray) || {};
 
     // Helper: detect Q id anywhere in P2 payload
     const p2HasId = (id: string): boolean => {
       if (Array.isArray(p2)) {
-        return p2.some((p: any) => p?.mainsnak?.datavalue?.value?.id === id);
+        return (p2 as ClaimArray).some((p) => (p?.mainsnak?.datavalue?.value as any)?.id === id);
       }
       try {
         return JSON.stringify(p2).includes(`"${id}"`);
@@ -45,7 +49,7 @@ export class ClaimsEnricherService {
     // `P2.main` for the actual value coming from the data (string) or for
     // explicit cases where the backend provides it.
     if (p2 && Object.keys(p2).length > 0) {
-      claims.P2 = claims.P2 || {};
+      claims.P2 = claims.P2 || ({} as any);
       // no automatic assignment of claims.P2.main — leave it undefined unless
       // the payload contains an explicit value.
     }
@@ -56,12 +60,12 @@ export class ClaimsEnricherService {
 
     if (p2HasId('Q7') || hasPersonProps) {
       // keep presence marker so other modules can test for existence
-      claims.P2 = claims.P2 || {};
-      claims.P2.person = claims.P2.person ?? true;
+      claims.P2 = claims.P2 || ({} as any);
+      (claims.P2 as any).person = (claims.P2 as any).person ?? true;
       // ensure presence markers for subcategories used by dispatcher
-      if (claims.P2.career === undefined) claims.P2.career = true;
-      if (claims.P2.training === undefined) claims.P2.training = true;
-      if (claims.P2.sociability === undefined) claims.P2.sociability = true;
+      if ((claims.P2 as any).career === undefined) (claims.P2 as any).career = true;
+      if ((claims.P2 as any).training === undefined) (claims.P2 as any).training = true;
+      if ((claims.P2 as any).sociability === undefined) (claims.P2 as any).sociability = true;
     }
 
     // Organization (various IDs) — also consult sparql batch flags when
@@ -69,13 +73,9 @@ export class ClaimsEnricherService {
     // P3 ancestry) implies an organisation class; that signal is exposed
     // as item.sparqlFlags.Q12Test by ItemSparqlService.
     const orgIds = ['Q12', 'Q220833', 'Q140806', 'Q11214'];
-    const sparqlIndicatesOrg = !!(
-      item[0] &&
-      (item[0] as any).sparqlFlags &&
-      (item[0] as any).sparqlFlags.Q12Test === true
-    );
+    const sparqlIndicatesOrg = !!(getEntity(item) && (getEntity(item) as any).sparqlFlags && (getEntity(item) as any).sparqlFlags.Q12Test === true);
     if (orgIds.some((id) => p2HasId(id)) || sparqlIndicatesOrg) {
-      claims.P2.org = claims.P2.org ?? true;
+      (claims.P2 as any).org = (claims.P2 as any).org ?? true;
     }
 
     // Event (Q9) OR top-level event properties
@@ -87,18 +87,18 @@ export class ClaimsEnricherService {
     const eventSignalProps = ['P106', 'P119', 'P242', 'P133'];
     const hasTopLevelEvent = eventSignalProps.some((pr) => claims[pr] !== undefined);
     if (p2HasId('Q9') || hasTopLevelEvent) {
-      claims.P2 = claims.P2 || {};
-      claims.P2.event = claims.P2.event ?? true;
+      claims.P2 = claims.P2 || ({} as any);
+      (claims.P2 as any).event = (claims.P2 as any).event ?? true;
     }
 
     // Document / publication
     if (p2HasId('Q20') || p2HasId('Q257227')) {
-      claims.P2.document = claims.P2.document ?? true;
+      (claims.P2 as any).document = (claims.P2 as any).document ?? true;
     }
 
     // Activity-like types
     const activityIds = ['Q146602', 'Q21909', 'Q37073'];
-    if (activityIds.some((id) => p2HasId(id))) claims.P2.activity = claims.P2.activity ?? true;
+    if (activityIds.some((id) => p2HasId(id))) (claims.P2 as any).activity = (claims.P2 as any).activity ?? true;
 
     // Place detection: treat P2 as place when either the P2 value is a known place id
     // or when top-level place-related properties are present on the item.
@@ -121,11 +121,7 @@ export class ClaimsEnricherService {
     const hasPlaceProps = placePropNames.some((pr) => claims[pr] !== undefined);
     // SPARQL may detect place ancestry via Q8Test — check it as an additional
     // signal when deciding whether the item should be considered a place.
-    const sparqlIndicatesPlace = !!(
-      item[0] &&
-      (item[0] as any).sparqlFlags &&
-      (item[0] as any).sparqlFlags.Q8Test === true
-    );
+    const sparqlIndicatesPlace = !!(getEntity(item) && (getEntity(item) as any).sparqlFlags && (getEntity(item) as any).sparqlFlags.Q8Test === true);
     // Prefer explicit P2-derived signals (e.g. P2.org) over top-level place
     // props. Items like organisations may legitimately carry coordinates — in
     // such cases we prefer the P2 classification (organisation) unless P2
@@ -138,27 +134,27 @@ export class ClaimsEnricherService {
       placeIds.some((id) => p2HasId(id)) ||
       ((hasPlaceProps || sparqlIndicatesPlace) && !p2IndicatesOrg)
     ) {
-      claims.P2 = claims.P2 || {};
-      claims.P2.place = claims.P2.place ?? true;
+      claims.P2 = claims.P2 || ({} as any);
+      (claims.P2 as any).place = (claims.P2 as any).place ?? true;
     }
 
     // Career, Education, Sociability detection from top-level properties
     const careerProps = CAREER_DISPLAY_PROPERTIES.map((p) => p.property);
     if (careerProps.some((pr) => claims[pr] !== undefined)) {
-      claims.P2 = claims.P2 || {};
-      claims.P2.career = claims.P2.career ?? true;
+      claims.P2 = claims.P2 || ({} as any);
+      (claims.P2 as any).career = (claims.P2 as any).career ?? true;
     }
 
     const educationProps = EDUCATION_DISPLAY_PROPERTIES.map((p) => p.property);
     if (educationProps.some((pr) => claims[pr] !== undefined)) {
-      claims.P2 = claims.P2 || {};
-      claims.P2.training = claims.P2.training ?? true;
+      claims.P2 = claims.P2 || ({} as any);
+      (claims.P2 as any).training = (claims.P2 as any).training ?? true;
     }
 
     const sociabilityProps = SOCIABILITY_DISPLAY_PROPERTIES.map((p) => p.property);
     if (sociabilityProps.some((pr) => claims[pr] !== undefined)) {
-      claims.P2 = claims.P2 || {};
-      claims.P2.sociability = claims.P2.sociability ?? true;
+      claims.P2 = claims.P2 || ({} as any);
+      (claims.P2 as any).sociability = (claims.P2 as any).sociability ?? true;
     }
 
     return item;

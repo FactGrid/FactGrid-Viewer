@@ -43,6 +43,16 @@ describe('ItemInfoComponent', () => {
       expect(component.trackListKey(5, L)).toBe(5);
     });
 
+    it('trackListKey accepts compact DisplayItem objects and returns id', () => {
+      const disp = { id: 'Q500', label: 'Compact' } as any;
+      expect(component.trackListKey(0, disp)).toBe('Q500');
+    });
+
+    it('trackListKey accepts tuple shape and picks DisplayItem from last element', () => {
+      const tuple = [{}, [], [], [], { id: 'Q600', label: 'TupleItem' }] as any;
+      expect(component.trackListKey(0, tuple)).toBe('Q600');
+    });
+
     it('trackTechKey prefers id then label then index', () => {
       const val1 = { mainsnak: { datavalue: { value: { id: 'Q1' } } } } as any;
       expect(component.trackTechKey(0, val1)).toBe('Q1');

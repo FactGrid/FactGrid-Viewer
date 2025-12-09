@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import type { Entity, ClaimArray } from '../interfaces/claims';
 import { DetailsService } from './details.service';
 
 @Injectable({
@@ -7,8 +8,8 @@ import { DetailsService } from './details.service';
 export class SetItemToDisplayService {
   private details = inject(DetailsService);
 
-  setItemToDisplay(u) {
-    let values: any[] = Object.values(u.claims);
+  setItemToDisplay(u: Entity | any) {
+    let values: ClaimArray[] = Object.values((u.claims ?? {}) as Record<string, ClaimArray>);
     let mainsnaks = [];
     let mainsnaks2 = [];
 
@@ -21,8 +22,8 @@ export class SetItemToDisplayService {
     }
     for (const val of mainsnaks) {
       // array of objects {P:Q}
-      if (val.datavalue.value.id === undefined) continue;
-      mainsnaks2.push('{' + val.property + ':' + val.datavalue.value.id + '}');
+      if ((val.datavalue.value as any).id === undefined) continue;
+      mainsnaks2.push('{' + val.property + ':' + (val.datavalue.value as any).id + '}');
     }
 
     return mainsnaks2;

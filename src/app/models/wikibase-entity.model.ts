@@ -7,3 +7,13 @@ export interface WikibaseEntity {
   aliases?: string[];
   description?: string;
 }
+
+/**
+ * Runtime-enriched display entity used by the search UI.
+ * Contains optional helper fields that are added at runtime (eg. exactPhraseMatch).
+ */
+export interface EnrichedWikibaseEntity extends WikibaseEntity {
+  exactPhraseMatch?: boolean;
+  // allow future optional helper flags here
+  [k: string]: any;
+}
