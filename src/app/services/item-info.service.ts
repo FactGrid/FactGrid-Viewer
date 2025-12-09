@@ -18,12 +18,14 @@ export class ItemInfoService {
     this.lang.selectedLang +
     '%22%2C%22en%22.%20%7D%0A%7D%0A';
 
-  infoListBuilding(item: { id: string }): Observable<any[]> {
+  infoListBuilding(item: { id: string }): Observable<import('./sparql-types').SparqlBinding[][]> {
     const id = item?.id;
-    const instancesListQuery: Observable<any> = this.instancesListBuilding(id);
-    const subclassesListQuery: Observable<any> = this.subclassesListBuilding(id);
-    const classesListQuery: Observable<any> = this.classesListBuilding(id);
-    const natureOfListQuery: Observable<any> = this.natureOfListBuilding(id);
+    const instancesListQuery: Observable<import('./sparql-types').SparqlBinding[]> =
+      this.instancesListBuilding(id);
+    const subclassesListQuery: Observable<import('./sparql-types').SparqlBinding[]> =
+      this.subclassesListBuilding(id);
+    const classesListQuery: Observable<import('./sparql-types').SparqlBinding[]> = this.classesListBuilding(id);
+    const natureOfListQuery: Observable<import('./sparql-types').SparqlBinding[]> = this.natureOfListBuilding(id);
 
     return forkJoin([
       instancesListQuery,
@@ -39,7 +41,7 @@ export class ItemInfoService {
     );
   }
 
-  instancesListBuilding(id) {
+  instancesListBuilding(id): Observable<import('./sparql-types').SparqlBinding[]> {
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%0AWHERE%20%7B%20%3Fitem%20wdt%3AP2%20wd%3A';
     let suffix = 'ORDER%20by%20%3FitemLabel';
@@ -50,7 +52,7 @@ export class ItemInfoService {
     return this.request.getList(u).pipe(map((res) => this.listFromSparql(res)));
   }
 
-  subclassesListBuilding(id) {
+  subclassesListBuilding(id): Observable<import('./sparql-types').SparqlBinding[]> {
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20%0AWHERE%20%7B%20%3Fitem%20wdt%3AP3%2B%20wd%3A';
     let suffix = 'ORDER%20by%20%3FitemLabel';
@@ -60,7 +62,7 @@ export class ItemInfoService {
     return this.request.getList(u).pipe(map((res) => this.listFromSparql(res)));
   }
 
-  classesListBuilding(id) {
+  classesListBuilding(id): Observable<import('./sparql-types').SparqlBinding[]> {
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%0A%3Fitem%20%5E%28wdt%3AP3%2Fwdt%3AP3%2a%29%20wd%3A';
     let suffix = 'ORDER%20by%20%3FitemLabel';
@@ -70,7 +72,7 @@ export class ItemInfoService {
     return this.request.getList(u).pipe(map((res) => this.listFromSparql(res)));
   }
 
-  natureOfListBuilding(id) {
+  natureOfListBuilding(id): Observable<import('./sparql-types').SparqlBinding[]> {
     let prefix =
       'https://database.factgrid.de/query/#SELECT%20DISTINCT%20%3Fitem%20%3FitemLabel%20%3FitemDescription%20WHERE%20%7B%20%3Fobject%20wdt%3AP3%2a%20%3Fitem%3B%20%5Ewdt%3AP2%20wd%3A';
     let u = this.newSparqlAddress(prefix + id + this.langService);
@@ -79,7 +81,7 @@ export class ItemInfoService {
     return this.request.getList(u).pipe(map((res) => this.listFromSparql(res)));
   }
 
-  listFromSparql(res) {
+  listFromSparql(res: import('./sparql-types').SparqlResults | undefined): import('./sparql-types').SparqlBinding[] {
     if (res !== undefined) {
       if (res.results !== undefined) {
         for (let i = 0; i < res.results.bindings.length; i++) {
@@ -90,7 +92,7 @@ export class ItemInfoService {
         }
       }
     }
-    return res.results.bindings;
+    return res?.results?.bindings || [];
   }
 
   newSparqlAddress(address: string): string {
