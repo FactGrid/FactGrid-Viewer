@@ -4,6 +4,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { expand, map, reduce, catchError, tap, shareReplay, switchMap } from 'rxjs/operators';
 import { SparqlResults } from './sparql-types';
+import { WikibaseEntity } from '../models/wikibase-entity.model';
 
 // ---- typed response shapes (small, pragmatic set) ----
 // Commons image metadata adapter
@@ -22,7 +23,8 @@ export interface WBSearchEntry {
   title?: string;
   label?: string;
   description?: string;
-  aliases?: any[];
+  // aliases are strings (labels/alt labels) — avoid using any[] here
+  aliases?: string[];
 }
 
 export interface WBSearchResponse {
@@ -32,7 +34,10 @@ export interface WBSearchResponse {
 
 // Minimal shape for wbgetentities responses
 export interface GetEntitiesResponse {
-  entities?: Record<string, any>;
+  // The entities structure returned by wbgetentities can contain many nested
+  // properties (labels, claims, etc). Keep it intentionally generic but avoid
+  // a blanket `any` — use `unknown` to force callers to narrow when needed.
+  entities?: Record<string, WikibaseEntity | unknown>;
 }
 
 @Injectable({
@@ -42,7 +47,8 @@ export class RequestService {
   constructor(private http?: HttpClient) {}
 
   // simple in-memory cache for commons metadata to avoid repeated requests
-  private commonsMetadataCache = new Map<string, any>();
+  // cache stores resolved CommonsImageMetadata (or null when none available)
+  private commonsMetadataCache = new Map<string, CommonsImageMetadata | null>();
 
   // simple in-memory cache for commons metadata to avoid repeated requests
 
@@ -113,14 +119,14 @@ export class RequestService {
   /**
    * Récupère les propriétés via un tableau de listes (max 8).
    */
-  requestProperties(propertiesLists: string[]): Observable<any[]> {
+  requestProperties(propertiesLists: string[]): Observable<(GetEntitiesResponse | undefined)[]> {
     const lists = [...propertiesLists];
     while (lists.length < 8) lists.push(undefined);
 
     const requests = lists.map((list) =>
       list
         ? this.http
-            .get(this.baseGetURL + list + this.getUrlSuffix)
+            .get<GetEntitiesResponse>(this.baseGetURL + list + this.getUrlSuffix)
             .pipe(catchError(() => of(undefined)))
         : of(undefined)
     );
@@ -131,14 +137,14 @@ export class RequestService {
   /**
    * Récupère les items via un tableau de listes (max 8).
    */
-  requestItems(itemsLists: string[]): Observable<any[]> {
+  requestItems(itemsLists: string[]): Observable<(GetEntitiesResponse | undefined)[]> {
     const lists = [...itemsLists];
     while (lists.length < 8) lists.push(undefined);
 
     const requests = lists.map((list) =>
       list
         ? this.http
-            .get(this.baseGetURL + list + this.getUrlSuffix)
+            .get<GetEntitiesResponse>(this.baseGetURL + list + this.getUrlSuffix)
             .pipe(catchError(() => of(undefined)))
         : of(undefined)
     );
