@@ -60,16 +60,10 @@ export class SetDataService {
     return completeItem;
   }
 
-  sparqlAsk(sparql) {
-    let u = '';
-    let sparqlResult: Observable<any> | undefined;
-    let selectedSparql = this.newSparqlAdress(sparql);
-    sparqlResult = this.request.getAsk(selectedSparql);
-    sparqlResult.subscribe((re) => {
-      u = re.boolean;
-      return u;
-    });
-    return sparqlResult;
+  sparqlAsk(sparql): Observable<boolean> {
+    const selectedSparql = this.newSparqlAdress(sparql);
+    // RequestService.getAsk returns Observable<boolean>
+    return this.request.getAsk(selectedSparql);
   }
 
   sparqlToDisplay(sparql) {

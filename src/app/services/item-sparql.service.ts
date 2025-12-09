@@ -632,7 +632,8 @@ export class ItemSparqlService {
 
   sparqlAsk(sparql) {
     let selectedSparql = this.newSparqlAdress(sparql);
-    return this.request.getAsk(selectedSparql).pipe(map((res) => res.boolean));
+    // RequestService.getAsk already returns Observable<boolean>
+    return this.request.getAsk(selectedSparql);
   }
 
   // Return a SparqlTuple describing the current address for an item.

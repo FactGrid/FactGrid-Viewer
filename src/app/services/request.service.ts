@@ -171,8 +171,13 @@ export class RequestService {
     return this.http.get('https://database.factgrid.de//w/api.php', { params });
   }
 
-  getAsk(re: string): Observable<any> {
-    return this.http.get(re).pipe(catchError(() => of(false)));
+  getAsk(re: string): Observable<boolean> {
+    // SPARQL ASK endpoint returns an object like { boolean: true }
+    // Normalize to boolean and return false on any error.
+    return this.http.get<{ boolean?: boolean }>(re).pipe(
+      map((res) => !!res?.boolean),
+      catchError(() => of(false))
+    );
   }
 
   getItem(re: string): Observable<GetEntitiesResponse | undefined> {
