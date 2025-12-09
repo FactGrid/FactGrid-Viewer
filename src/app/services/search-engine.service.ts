@@ -14,9 +14,9 @@ export class SearchEngineService {
   private baseGetURL = 'https://database.factgrid.de//w/api.php?action=wbgetentities&ids=';
   private getUrlSuffix = '&format=json&origin=*';
 
-  input(de: Observable<any>) {
+  input(de: Observable<string>): Observable<GetEntitiesResponse> {
     //search engine
-    de.pipe(
+    return de.pipe(
       debounceTime(400),
       switchMap((label) => this.request.searchItem(label, this.lang.selectedLang)),
       map((res: WBSearchResponse) => this.createList(res)),
@@ -30,7 +30,7 @@ export class SearchEngineService {
       switchMap((url) => this.request.getItem(url)),
       // tap(res => console.log(res)),
       //  takeWhile (res => res !== undefined),
-      filter((res) => res !== undefined)
+      filter((res): res is GetEntitiesResponse => res !== undefined)
     );
   }
 
