@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { expand, map, reduce, catchError, tap, shareReplay, switchMap } from 'rxjs/operators';
+import { SparqlResults } from './sparql-types';
 
 // ---- typed response shapes (small, pragmatic set) ----
 // Commons image metadata adapter
@@ -184,12 +185,14 @@ export class RequestService {
     return this.http.get<GetEntitiesResponse>(re).pipe(catchError(() => of(undefined)));
   }
 
-  getList(sparql: string): Observable<any> {
+  getList(sparql: string): Observable<SparqlResults> {
     if (sparql !== undefined) {
       const params = new HttpParams().set('format', 'json');
-      return this.http.get(sparql, { params }).pipe(catchError(() => of([])));
+      return this.http.get<SparqlResults>(sparql, { params }).pipe(
+        catchError(() => of({ results: { bindings: [] }, head: { vars: [] } } as SparqlResults))
+      );
     }
-    return of([]);
+    return of({ results: { bindings: [] }, head: { vars: [] } } as SparqlResults);
   }
 
   downLoadList(sparql: string) {
