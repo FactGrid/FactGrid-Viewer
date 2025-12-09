@@ -11,6 +11,8 @@ import {
   SparqlTuple,
 } from './sparql-types';
 
+export type SparqlEnabledItem = { id?: string; sparql?: Observable<SparqlTuple[]>; sparqlFlags?: BatchAskResult; [k: string]: any };
+
 // Minimal SPARQL response types (pragmatic; cover the shapes we use)
 
 @Injectable({
@@ -90,7 +92,9 @@ export class ItemSparqlService {
     );
   }
 
-  itemSparql(item): Observable<any> {
+  // item -> expects at least { id: string }; returns the same item enriched
+  // with `sparql: Observable<SparqlTuple[]>` and `sparqlFlags: BatchAskResult`.
+  itemSparql(item: { id: string; [k: string]: any }): Observable<SparqlEnabledItem> {
     if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
       console.debug('[ItemSparql] itemSparql() start for', item?.id);
     }
