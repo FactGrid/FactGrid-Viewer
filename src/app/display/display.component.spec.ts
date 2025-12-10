@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -28,7 +28,7 @@ describe('DisplayComponent', () => {
         NoopAnimationsModule,
       ],
       providers: [
-        // Prevent tests depending on actual viewport size — always emit a non-mobile default.
+        // Prevent tests depending on actual viewport size â€” always emit a non-mobile default.
         { provide: BreakpointObserver, useValue: { observe: () => of({ matches: false }) } },
       ],
     }).compileComponents();
@@ -97,7 +97,7 @@ describe('DisplayComponent', () => {
   });
 
   it('addInFactGrid should open FactGrid in a new tab with the correct id', () => {
-    const spy = vi.vi.spyOn(window, 'open').mockImplementation(() => null as any);
+    const spy = vi.vi.vi.spyOn(window, 'open').mockImplementation(() => null as any);
     component.itemId = 'Q22370';
     component.addInFactGrid();
     expect(spy).toHaveBeenCalled();
@@ -135,14 +135,14 @@ describe('DisplayComponent', () => {
   it('should show linkedPagesTitle on the linked pages card when linkedItems are present', async () => {
     component.item = { id: 'Q7' } as any;
     component.id = 'Q7';
-    component.linkedPagesTitle = 'pages liées test';
+    component.linkedPagesTitle = 'pages liÃ©es test';
     component.linkedItems = [{ id: 'Q1', label: 'L1' } as any];
     fixture.detectChanges();
     await fixture.whenStable();
 
     const title = fixture.nativeElement.querySelector('.typo-thematic-card-title');
     expect(title).toBeTruthy();
-    expect(title.textContent).toContain('pages liées test');
+    expect(title.textContent).toContain('pages liÃ©es test');
   });
 
   // drawer no longer used: we render linked pages as thematic card inside the grid
@@ -159,7 +159,7 @@ describe('DisplayComponent', () => {
     expect(btn).toBeNull();
   });
 
-  it('drawer UI removed — app-drawer should not be present', async () => {
+  it('drawer UI removed â€” app-drawer should not be present', async () => {
     component.item = { id: 'Q1' } as any;
     fixture.detectChanges();
     await fixture.whenStable();
@@ -173,7 +173,7 @@ describe('DisplayComponent', () => {
     const backListDetails = TestBed.inject(BackListDetailsService);
 
     // Prepare the service to return two responses (user lang result, en result)
-    vi.vi.spyOn(backList, 'backList').mockReturnValue(
+    vi.vi.vi.spyOn(backList, 'backList').mockReturnValue(
       of([
         { query: { pages: [{ title: 'Item:Q1', entityterms: { label: [''] } }] } },
         { query: { pages: [{ title: 'Item:Q1', entityterms: { label: ['English name'] } }] } },
@@ -181,7 +181,7 @@ describe('DisplayComponent', () => {
     );
 
     // Ensure setBackList converts pages into simple {id, label} entries
-    vi.vi.spyOn(backListDetails, 'setBackList')
+    vi.vi.vi.spyOn(backListDetails, 'setBackList')
       .mockReturnValueOnce([{ id: 'Q1', label: '' }])
       .mockReturnValueOnce([{ id: 'Q1', label: 'English name' }]);
 
@@ -231,14 +231,14 @@ describe('DisplayComponent', () => {
     const backList = TestBed.inject(BackListService);
     const backListDetails = TestBed.inject(BackListDetailsService);
 
-    vi.vi.spyOn(backList, 'backList').mockReturnValue(
+    vi.vi.vi.spyOn(backList, 'backList').mockReturnValue(
       of([
         { query: { pages: [{ title: 'Item:Q2', entityterms: { label: [''] } }] } },
         { query: { pages: [{ title: 'Item:Q2', entityterms: { label: [''] } }] } },
       ])
     );
 
-    vi.vi.spyOn(backListDetails, 'setBackList')
+    vi.vi.vi.spyOn(backListDetails, 'setBackList')
       .mockReturnValueOnce([{ id: 'Q2', label: '' }])
       .mockReturnValueOnce([{ id: 'Q2', label: '' }]);
 
@@ -252,8 +252,8 @@ describe('DisplayComponent', () => {
     const transcriptDisplay = TestBed.inject<any>(TranscriptDisplayService);
     const changeTranscriptSvc = TestBed.inject<any>(TranscriptionService);
     // return a predictable transcription
-    vi.vi.spyOn(transcriptDisplay, 'transcript').mockReturnValue(of({ parse: { text: 'TRANS' } }));
-    vi.vi.spyOn(changeTranscriptSvc, 'cleaning').mockImplementation((t: string) => t);
+    vi.vi.vi.spyOn(transcriptDisplay, 'transcript').mockReturnValue(of({ parse: { text: 'TRANS' } }));
+    vi.vi.vi.spyOn(changeTranscriptSvc, 'cleaning').mockImplementation((t: string) => t);
 
     // create item with P251 claim data used by the transcription
     const item = [
@@ -290,7 +290,7 @@ describe('DisplayComponent', () => {
   });
 
   it('onSearchItemSelected should animate then navigate when called from homepage', async () => {
-    const navigateSpy = vi.vi.spyOn((component as any).router, 'navigate');
+    const navigateSpy = vi.vi.vi.spyOn((component as any).router, 'navigate');
 
     component.item = null; // homepage state
     fixture.detectChanges();
@@ -383,7 +383,7 @@ describe('DisplayComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Simulate removed event emitted by MatChip — this is not a DOM event
+    // Simulate removed event emitted by MatChip â€” this is not a DOM event
     // and does not have stopPropagation. Ensure the handler still clears.
     component.clearCurrentProject({} as any);
     fixture.detectChanges();
@@ -475,14 +475,14 @@ describe('DisplayComponent', () => {
     component.id = 'Q1';
     component.isMobile = true;
     component.linkedItems = [{ id: 'QX', label: 'Linked Item A' } as any];
-    component.linkedPagesTitle = 'Pages liées mobile';
+    component.linkedPagesTitle = 'Pages liÃ©es mobile';
     fixture.detectChanges();
     await fixture.whenStable();
     const cardTitle: HTMLElement | null = fixture.nativeElement.querySelector(
       '.typo-thematic-card-title'
     );
     expect(cardTitle).toBeTruthy();
-    expect(cardTitle!.textContent).toContain('Pages liées mobile');
+    expect(cardTitle!.textContent).toContain('Pages liÃ©es mobile');
 
     // Ensure the linked item label is present inside the card content
     expect(fixture.nativeElement.textContent).toContain('Linked Item A');
@@ -532,7 +532,7 @@ describe('DisplayComponent', () => {
   });
 
   it('mobile: should render the FactGrid id above the title in the item header', async () => {
-    component.item = { id: 'Q1', label: 'Un titre très long pour tester le wrapping' } as any;
+    component.item = { id: 'Q1', label: 'Un titre trÃ¨s long pour tester le wrapping' } as any;
     component.id = 'Q1';
     component.isMobile = true;
     fixture.detectChanges();
@@ -551,7 +551,7 @@ describe('DisplayComponent', () => {
   });
 
   it('desktop: should render the FactGrid id above the title in the item header', async () => {
-    component.item = { id: 'Q1', label: 'Un titre assez long pour vérifier le wrapping' } as any;
+    component.item = { id: 'Q1', label: 'Un titre assez long pour vÃ©rifier le wrapping' } as any;
     component.id = 'Q1';
     component.isMobile = false; // desktop-mode
     fixture.detectChanges();
@@ -569,3 +569,4 @@ describe('DisplayComponent', () => {
     expect(idxId).toBeLessThan(idxTitle);
   });
 });
+

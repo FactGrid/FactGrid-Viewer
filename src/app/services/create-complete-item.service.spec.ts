@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+﻿import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
@@ -21,13 +21,13 @@ describe('CreateCompleteItemService', () => {
     const createItemService = TestBed.inject<any>(CreateCompleteItemService as any)['createItem'];
     const itemSparqlService = TestBed.inject<any>(CreateCompleteItemService as any)['itemSparql'];
     // spy on createItemToDisplay to return immediately
-    vi.spyOn(createItemService, 'createItemToDisplay').mockReturnValue(of(['display']));
+    vi.vi.spyOn(createItemService, 'createItemToDisplay').mockReturnValue(of(['display']));
     const firstItem = { id: 'QTEST' };
     // setLanguage.item should return an array where first equals firstItem
     const setLanguage = TestBed.inject<any>(CreateCompleteItemService as any)['setLanguage'];
-    vi.spyOn(setLanguage, 'item').mockReturnValue([firstItem]);
+    vi.vi.spyOn(setLanguage, 'item').mockReturnValue([firstItem]);
     // itemSparql will return after a short delay
-    vi.spyOn(itemSparqlService, 'itemSparql').mockReturnValue(of(firstItem).pipe(delay(50)));
+    vi.vi.spyOn(itemSparqlService, 'itemSparql').mockReturnValue(of(firstItem).pipe(delay(50)));
 
     let received = false;
     service.completeItem([{}]).subscribe((res) => {
@@ -40,3 +40,4 @@ describe('CreateCompleteItemService', () => {
     expect(createItemService.createItemToDisplay).toHaveBeenCalled();
   }));
 });
+

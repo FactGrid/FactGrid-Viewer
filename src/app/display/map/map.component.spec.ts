@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+﻿import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
@@ -37,7 +37,7 @@ describe('MapComponent', () => {
     }
 
     // spy mergeOptions so we can assert it was called with our asset paths
-    vi.vi.spyOn(Leaflet.Icon.Default, 'mergeOptions');
+    vi.vi.vi.spyOn(Leaflet.Icon.Default, 'mergeOptions');
     fixture = TestBed.createComponent(MapComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -57,3 +57,4 @@ describe('MapComponent', () => {
   // behaviour is validated manually and by integration tests. Keep the
   // unit test minimal (component creation) to avoid flaky CI failures.
 });
+

@@ -1,10 +1,10 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { SparqlQueryBuilderService } from './sparql-query-builder.service';
 import { SelectedLangService } from '../../selected-lang.service';
 
 describe('SparqlQueryBuilderService', () => {
   let service: SparqlQueryBuilderService;
-  let mockLangService: any /* jasmine.SpyObj<SelectedLangService>;
+  let mockLangService: any /* any /* jasmine.SpyObj<SelectedLangService>;
 
   beforeEach(() => {
     mockLangService = jasmine.createSpyObj('SelectedLangService', [], {
@@ -208,3 +208,4 @@ describe('SparqlQueryBuilderService', () => {
     });
   });
 });
+

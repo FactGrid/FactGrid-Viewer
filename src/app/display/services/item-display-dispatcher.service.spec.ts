@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { ItemDisplayDispatcherService } from './item-display-dispatcher.service';
@@ -18,7 +18,7 @@ describe('ItemDisplayDispatcherService', () => {
 
   it('dispatch should call ClaimsEnricherService.enrich', () => {
     const claimsEnricher = TestBed.inject(ClaimsEnricherService);
-    vi.vi.spyOn(claimsEnricher, 'enrich');
+    vi.vi.vi.spyOn(claimsEnricher, 'enrich');
 
     const item: any = [
       { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q7' } } } }] } },
@@ -366,3 +366,4 @@ describe('ItemDisplayDispatcherService', () => {
     expect(target.mainTitle).toBe('PlaceTypeX');
   });
 });
+

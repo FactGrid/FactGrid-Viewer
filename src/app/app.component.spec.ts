@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router } from '@angular/router';
@@ -37,7 +37,7 @@ describe('AppComponent', () => {
     // Use the Router to simulate a non-root route so ngOnInit's logic doesn't
     // overwrite our expectation. Navigate before running change detection.
     const router = TestBed.inject(Router);
-    vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/not-root');
+    vi.vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/not-root');
     fixture.detectChanges();
     // wait for change detection & potential async tasks to settle
     await fixture.whenStable();
@@ -59,7 +59,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     // Simulate root route via Router navigation.
     const router = TestBed.inject(Router);
-    vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+    vi.vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -75,7 +75,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     // Simulate being on a non-root route so the centered title renders.
     const router = TestBed.inject(Router);
-    vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/not-home');
+    vi.vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/not-home');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -90,7 +90,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     // simulate home route via router url getter
     const router = TestBed.inject(Router);
-    vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+    vi.vi.vi.spyOn(router, 'url', 'get').mockReturnValue('/');
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -100,3 +100,4 @@ describe('AppComponent', () => {
     expect(title).toBeNull();
   });
 });
+
