@@ -37,7 +37,7 @@ describe('MapComponent', () => {
     }
 
     // spy mergeOptions so we can assert it was called with our asset paths
-    vi.spyOn(Leaflet.Icon.Default, 'mergeOptions');
+    vi.vi.spyOn(Leaflet.Icon.Default, 'mergeOptions');
     fixture = TestBed.createComponent(MapComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

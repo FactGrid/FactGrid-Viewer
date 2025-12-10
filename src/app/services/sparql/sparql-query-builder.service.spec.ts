@@ -4,7 +4,7 @@ import { SelectedLangService } from '../../selected-lang.service';
 
 describe('SparqlQueryBuilderService', () => {
   let service: SparqlQueryBuilderService;
-  let mockLangService: jasmine.SpyObj<SelectedLangService>;
+  let mockLangService: any /* jasmine.SpyObj<SelectedLangService>;
 
   beforeEach(() => {
     mockLangService = jasmine.createSpyObj('SelectedLangService', [], {
