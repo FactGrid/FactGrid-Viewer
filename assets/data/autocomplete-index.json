@@ -1,40 +1,266 @@
 [
-  {"label":"Pierre","id":"Q32206","norm":"pierre","categories":["firstName"],"prop":"P248","weight":10000},
-  {"label":"Paul","id":"Q32188","norm":"paul","categories":["firstName"],"prop":"P248","weight":9800},
-  {"label":"Jean","id":"Q31863","norm":"jean","categories":["firstName"],"prop":"P248","weight":9600},
-  {"label":"Marie","id":"Q32071","norm":"marie","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Frédéric","id":"Q152601","norm":"frederic","categories":["firstName"],"prop":"P248","weight":9400},
-  {"label":"Jeanne","id":"Q152681","norm":"jeanne","categories":["firstName"],"prop":"P248","weight":8500},
-  {"label":"Marcel","id":"Q230813","norm":"marcel","categories":["firstName"],"prop":"P248","weight":8200},
-  {"label":"Duval","id":"Q267894","norm":"duval","categories":["familyName"],"prop":"P247","weight":8000},
-  {"label":"Jacques","id":"Q31853","norm":"jacques","categories":["firstName"],"prop":"P248","weight":8500},
-  {"label":"Louis","id":"Q31997","norm":"louis","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Edwards","id":"Q31997","norm":"edwards","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"John","id":"Q77398","norm":"john","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Elisabeth","id":"Q12600","norm":"elisabeth","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Richard","id":"Q32247","norm":"richard","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"René","id":"Q32244","norm":"rene","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Johann","id":"Q31877","norm":"johann","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Georges","id":"Q12741","norm":"georges","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Henri","id":"Q33692","norm":"henri","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Heinrich","id":"Q12854","norm":"heinrich","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Karl","id":"Q31918","norm":"karl","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Lucien","id":"Q32004","norm":"lucien","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"François","id":"Q12687","norm":"françois","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Alexandre","id":"Q12299","norm":"alexandre","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Denis","id":"Q152521","norm":"denis","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Victor","id":"Q32432","norm":"victor","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Guillaume","id":"Q12808","norm":"guillaume","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Wilhelm","id":"Q32495","norm":"wilhelm","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"William","id":"Q32505","norm":"william","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Roger","id":"Q32261","norm":"roger","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Raymond","id":"Q152837","norm":"raymond","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Sophie","id":"Q32339","norm":"sophie","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Isabelle","id":"152664","norm":"isabelle","categories":["firstName"],"prop":"P248","weight":9500},
-  {"label":"Léon","id":"Q152711","norm":"leon","categories":["firstName"],"prop":"P248","weight":9500}
+  {
+    "label": "Pierre",
+    "id": "Q32206",
+    "norm": "pierre",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 10000
+  },
+  {
+    "label": "Paul",
+    "id": "Q32188",
+    "norm": "paul",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9800
+  },
+  {
+    "label": "Jean",
+    "id": "Q31863",
+    "norm": "jean",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9600
+  },
+  {
+    "label": "Marie",
+    "id": "Q32071",
+    "norm": "marie",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Frédéric",
+    "id": "Q152601",
+    "norm": "frederic",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9400
+  },
+  {
+    "label": "Jeanne",
+    "id": "Q152681",
+    "norm": "jeanne",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 8500
+  },
+  {
+    "label": "Marcel",
+    "id": "Q230813",
+    "norm": "marcel",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 8200
+  },
+  {
+    "label": "Duval",
+    "id": "Q267894",
+    "norm": "duval",
+    "categories": ["familyName"],
+    "prop": "P247",
+    "weight": 8000
+  },
+  {
+    "label": "Jacques",
+    "id": "Q31853",
+    "norm": "jacques",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 8500
+  },
+  {
+    "label": "Louis",
+    "id": "Q31997",
+    "norm": "louis",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Edwards",
+    "id": "Q31997",
+    "norm": "edwards",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "John",
+    "id": "Q77398",
+    "norm": "john",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Elisabeth",
+    "id": "Q12600",
+    "norm": "elisabeth",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Richard",
+    "id": "Q32247",
+    "norm": "richard",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "René",
+    "id": "Q32244",
+    "norm": "rene",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Johann",
+    "id": "Q31877",
+    "norm": "johann",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Georges",
+    "id": "Q12741",
+    "norm": "georges",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Henri",
+    "id": "Q33692",
+    "norm": "henri",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Heinrich",
+    "id": "Q12854",
+    "norm": "heinrich",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Karl",
+    "id": "Q31918",
+    "norm": "karl",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Lucien",
+    "id": "Q32004",
+    "norm": "lucien",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "François",
+    "id": "Q12687",
+    "norm": "françois",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Alexandre",
+    "id": "Q12299",
+    "norm": "alexandre",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Denis",
+    "id": "Q152521",
+    "norm": "denis",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Victor",
+    "id": "Q32432",
+    "norm": "victor",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Guillaume",
+    "id": "Q12808",
+    "norm": "guillaume",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Wilhelm",
+    "id": "Q32495",
+    "norm": "wilhelm",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "William",
+    "id": "Q32505",
+    "norm": "william",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Roger",
+    "id": "Q32261",
+    "norm": "roger",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Raymond",
+    "id": "Q152837",
+    "norm": "raymond",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Sophie",
+    "id": "Q32339",
+    "norm": "sophie",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Isabelle",
+    "id": "152664",
+    "norm": "isabelle",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  },
+  {
+    "label": "Léon",
+    "id": "Q152711",
+    "norm": "leon",
+    "categories": ["firstName"],
+    "prop": "P248",
+    "weight": 9500
+  }
 ]
-
-
-
-
- 
