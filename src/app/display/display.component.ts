@@ -129,7 +129,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   subtitle: string;
   private sparqlDisplayService = inject(SparqlDisplayService);
   constructor(private cdr: ChangeDetectorRef) {
-    console.log('[INIT DEBUG] DisplayComponent constructor called');
+    // debug: DisplayComponent constructor called log removed
     // Initialize reactive effects inside a valid injection context (constructor)
 
     // Route params -> convert to signal and reflect itemId
@@ -138,7 +138,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     effect(() => {
       this.itemId = routeParamSignalCtor().get('id');
-      console.log('[NAV DEBUG] Route params changed, itemId:', this.itemId);
+      // debug: Route params change log removed
       this.itemIdSignal.set(this.itemId);
       if (!this.itemId) {
         this.item = null;
@@ -202,10 +202,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     // SPARQL lists: subscribe to sparql observable driven by itemSignal
     effect((onCleanup) => {
       const currentItem = this.itemSignal();
-      console.log('[SPARQL DEBUG] SPARQL effect triggered, currentItem:', currentItem);
+      // debug: SPARQL effect triggered logging removed
       // Robust validation: ensure we have a valid item array with at least one element
       if (!currentItem || !Array.isArray(currentItem) || currentItem.length === 0 || !currentItem[0]) {
-        console.log('[SPARQL DEBUG] No valid currentItem, aborting');
+        // debug: no valid currentItem — logging removed
         this.sparql$ = null;
         this.sparqlCards$ = null;
         return;
@@ -217,9 +217,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.sparqlCards$ = null;
         return;
       }
-      console.log('[SPARQL DEBUG] currentItem[0].sparql exists?', !!currentItem[0].sparql);
+      // debug: currentItem[0].sparql exists? logging removed
       if (!currentItem[0].sparql) {
-        console.log('[SPARQL DEBUG] No sparql property on item');
+        // debug: no sparql property on item logging removed
         this.sparql$ = null;
         this.sparqlCards$ = null;
         return;
@@ -232,15 +232,13 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         );
         const sub = this.sparqlCards$.subscribe((cards) => {
           if (!cards) return;
-          console.log('[SPARQL DEBUG] Cards received:', cards);
-          console.log('[SPARQL DEBUG] sparql0:', cards.sparql0?.list?.length, 'items');
-          console.log('[SPARQL DEBUG] sparql1:', cards.sparql1?.list?.length, 'items');
+          // debug: Cards received and sparql counts logging removed
           try {
             this.cdr.markForCheck();
             this.cdr.detectChanges();
           } catch {}
           setTimeout(() => {
-            console.log('[SPARQL DEBUG] Loading components...');
+            // debug: Loading components log removed
             if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
             if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
             if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
@@ -697,10 +695,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadItem() {
     effect((onCleanup) => {
       const id = this.itemIdSignal() || this.itemId;
-      console.log('[LOAD DEBUG] loadItem effect triggered, id:', id);
+      // debug: loadItem effect triggered log removed
       if (!id) return;
       const sub = this.setData.itemToDisplay(id!).subscribe((item) => {
-        console.log('[LOAD DEBUG] Item received:', item);
+        // debug: Item received log removed
         // reset error flag for new load
         this.isError = false;
 
@@ -728,7 +726,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
         this.item = item;
-        console.log('[LOAD DEBUG] itemSignal set. Has sparql?', !!item[0]?.sparql);
+        // debug: itemSignal set log removed
         // ensure the signal mirrors the legacy item field for new reactive patterns
         // CRITICAL: Set signal AFTER item assignment to trigger dependent effects
         this.itemSignal.set(this.item);
@@ -743,7 +741,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         // are destroyed when switching items so new components can be created for
         // the newly selected item.
         this.clearSparqlComponents();
-        console.log('Item loaded:', this.item);
+        // debug: Item loaded log removed
         this.setList.addToSelectedItemsList(item[0]);
         this.claims = item[0].claims;
         if (!this.claims.P2) {
@@ -1051,10 +1049,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {}
 
   private async loadSparqlAt(index: number, card: any, attempt = 0): Promise<void> {
-    console.log(`[SPARQL DEBUG] loadSparqlAt(${index}) called, attempt ${attempt}`, card);
+    // debug: loadSparqlAt logging removed
     try {
       const host = this[`sparqlDisplay${index}Host`] as ViewContainerRef | undefined;
-      console.log(`[SPARQL DEBUG] Host for index ${index}:`, host);
+      // debug: Host for index logging removed
       // The host element may not be present yet when called from the subscription
       // (template is rendered after async data). Use exponential backoff for large lists.
       // For lists >1000 items, Angular needs more time to process the @if condition.
@@ -1401,7 +1399,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       const id = this.pendingNavigationItemId;
       this.pendingNavigationItemId = null;
       // perform navigation
-      console.log('[Display] navigating after animation to', id);
+      // debug: navigation after animation log removed
       this.router.navigate(['/item', id]);
     }
   }
@@ -1409,6 +1407,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   onHeaderAnimationStart(e: AnimationEvent) {
     // show overlay / visual cue — useful for debugging and user feedback
     this.headerAnimating = true;
-    console.log('[Display] header animation started', e.fromState, '->', e.toState);
+    // debug: header animation started log removed
   }
 }

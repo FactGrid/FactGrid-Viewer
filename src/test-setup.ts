@@ -28,7 +28,7 @@ if (!testBed.platform) {
 
 // Ensure global helpers used in tests exist in this environment. Some tests
 // use `window.open` which is not defined in happy-dom, so provide a stub
-// to allow vi.vi.vi.spyOn(window, 'open') in tests to work.
+// to allow vi.spyOn(window, 'open') in tests to work.
 if (typeof (globalThis as any).open === 'undefined') {
   // Use vi.fn if available, otherwise a simple no-op function
   try {
@@ -65,4 +65,6 @@ if (
   }
   (globalThis as any).MutationObserver = PolyfillMutationObserver;
 }
+
+
 

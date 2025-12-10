@@ -18,7 +18,7 @@ describe('ItemDisplayDispatcherService', () => {
 
   it('dispatch should call ClaimsEnricherService.enrich', () => {
     const claimsEnricher = TestBed.inject(ClaimsEnricherService);
-    vi.vi.vi.spyOn(claimsEnricher, 'enrich');
+    vi.spyOn(claimsEnricher, 'enrich');
 
     const item: any = [
       { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q7' } } } }] } },
@@ -366,4 +366,6 @@ describe('ItemDisplayDispatcherService', () => {
     expect(target.mainTitle).toBe('PlaceTypeX');
   });
 });
+
+
 

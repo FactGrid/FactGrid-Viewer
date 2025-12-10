@@ -80,6 +80,21 @@ function normalizeString(s: string | undefined | null): string {
     .trim();
 }
 
+/**
+ * Normalize string for search: removes accents, punctuation, and extra spaces.
+ * Used for search queries to ensure "Paris, rue" and "Paris rue" are treated identically.
+ */
+function normalizeForSearch(s: string | undefined | null): string {
+  if (!s) return '';
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[.,;:!?'"()\[\]{}]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   const results: T[][] = [];
   for (let i = 0; i < array.length; i += chunkSize) {
@@ -499,10 +514,14 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         })
       );
     }
+    // Normalize searchTerm by removing punctuation for consistent cache keys and queries.
+    // This ensures "Paris, rue" and "Paris rue" produce the same cache key and search query.
+    const normalizedSearchTerm = searchTerm.replace(/[.,;:!?'"()\[\]{}]/g, ' ').replace(/\s+/g, ' ').trim();
+    
     // If a project is selected, use Cirrus search (action=query list=search) with
     // property filters (haswbstatement:P131=...) to restrict results to items in that project.
     // Build cache keys used for accelerated lookup and to avoid duplicate API calls
-    const wbsearchKey = `wbsearch:${this.lang.selectedLang}:${searchTerm}:${maxResults}`;
+    const wbsearchKey = `wbsearch:${this.lang.selectedLang}:${normalizedSearchTerm}:${maxResults}`;
 
     if (
       selectedProjectId &&
@@ -510,7 +529,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       selectedProjectId !== '-' &&
       selectedProjectId !== 'Q0'
     ) {
-      const filters = this.buildSearchFilters(selectedProjectId, searchTerm);
+      const filters = this.buildSearchFilters(selectedProjectId, normalizedSearchTerm);
       const srsearch = filters.join(' ');
       const qidsKey = `qids:${selectedProjectId}:${srsearch}:${maxResults}`;
 
@@ -557,7 +576,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             const detailsIds = ids.slice(0, detailK);
             return this.fetchEntities(detailsIds).pipe(
               map((items) => {
-                const normalized = normalizeString(searchTerm);
+                const normalized = normalizeString(normalizedSearchTerm);
                 // token-based (non-consecutive) filtered results
                 const filtered = items.filter((it) =>
                   this.matchesAllTokens(it, normalized, this.showInDescription)
@@ -592,7 +611,6 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                 // transient display of unrelated results — instead return an
                 // empty result and let client-side merging / seenItems decide
                 // whether any previously-seen item should be preserved.
-                return { items: resultItems, total: resultItems.length };
                 return { items: resultItems, total };
               })
             );
@@ -604,37 +622,106 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       );
     }
 
-    // Default: use the faster wbsearchentities path when no project filter is active.
-    // Fast path: cached wbsearch response
+    // Default: use CirrusSearch for better multi-word / complex phrase matching.
+    // CirrusSearch handles punctuation and complex queries better than wbsearchentities.
+    // Fast path: cached search response
     const cachedSearch = this.searchCache.getItem(wbsearchKey);
     if (cachedSearch) {
       return of(cachedSearch);
     }
 
-    return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
-      map((res: WBSearchResponse) => {
-        const total = res.searchinfo?.totalhits ?? res.search?.length ?? 0;
-        const items = (res.search || []).map((e: WBSearchEntry) => ({
-          id: e.id,
-          label: e.label,
-          aliases: (e.aliases || [])
-            .filter((a: any) => a.language === lang)
-            .map((a: any) => a.value),
-          description: e.description || '',
-        })) as EnrichedWikibaseEntity[];
-        const out = { items, total };
-        try {
-          // cache fast search results for a short TTL to reduce duplicate requests when typing
-          this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+    // Build CirrusSearch query: tokenize and add wildcards for partial matching
+    const filters = this.buildSearchFilters('', normalizedSearchTerm);
+    const srsearch = filters.join(' ');
+    const cirrusKey = `cirrus:${lang}:${srsearch}:${maxResults}`;
 
-          // OPTIMIZATION: Warm up the individual entity cache with these results.
-          // If the user later switches to a project search that returns these same IDs,
-          // we won't need to fetch their details again via wbgetentities.
-          items.forEach((item: EnrichedWikibaseEntity) => {
-            this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60);
-          });
+    // Check cache for CirrusSearch titles result
+    const cachedTitles = this.searchCache.getItem(cirrusKey);
+    if (Array.isArray(cachedTitles) && cachedTitles.length > 0) {
+      const ids = cachedTitles
+        .map((t: string) => (t ? String(t).split(':').pop() : ''))
+        .filter(Boolean);
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+      const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
+      const detailsIds = ids.slice(0, detailK);
+      return this.fetchEntities(detailsIds).pipe(
+        map((items) => {
+          const out = { items, total: cachedTitles.length };
+          try {
+            this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+          } catch (e) {}
+          return out;
+        })
+      );
+    }
+
+    // Use CirrusSearch via getQidsList
+    return this.request.getQidsList(srsearch, maxResults).pipe(
+      switchMap((result: { titles?: string[]; total?: number }) => {
+        const titles: string[] = result?.titles ?? [];
+        const total: number = Number(result?.total ?? titles.length) || 0;
+
+        // Cache titles for short time
+        try {
+          this.searchCache.setItem(cirrusKey, titles, 1000 * 60 * 2);
         } catch (e) {}
-        return out;
+
+        if (Array.isArray(titles) && titles.length > 0) {
+          const ids = titles
+            .map((t) => (t ? String(t).split(':').pop() : ''))
+            .filter(Boolean);
+          const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+          const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
+          const detailsIds = ids.slice(0, detailK);
+
+          return this.fetchEntities(detailsIds).pipe(
+            map((items) => {
+              // Apply client-side filtering to ensure results match the search term
+              const normalized = normalizeString(normalizedSearchTerm);
+              const filtered = items.filter((it) =>
+                this.matchesAllTokens(it, normalized, this.showInDescription)
+              );
+
+              // Phrase priority: find items where the full normalized search term
+              // appears as a substring in the item label/aliases/description
+              const phraseMatches = items.filter((it) => {
+                const lbl = normalizeString(it.label);
+                const aliases = (it.aliases || []).map(normalizeString);
+                const desc = normalizeString(it.description);
+                return (
+                  (lbl && lbl.includes(normalized)) ||
+                  aliases.some((a) => a.includes(normalized)) ||
+                  (this.showInDescription && desc.includes(normalized))
+                );
+              });
+
+              // Mark items with an exactPhraseMatch flag
+              const itemsEnriched = items as EnrichedWikibaseEntity[];
+              itemsEnriched.forEach((it) => {
+                it.exactPhraseMatch = phraseMatches.includes(it);
+              });
+
+              const resultItems: EnrichedWikibaseEntity[] =
+                phraseMatches.length > 0
+                  ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))]
+                  : filtered;
+
+              const out = { items: resultItems, total };
+              try {
+                // Cache result under wbsearchKey for compatibility
+                this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+                // Warm up individual entity cache
+                resultItems.forEach((item: EnrichedWikibaseEntity) => {
+                  this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60);
+                });
+              } catch (e) {}
+              return out;
+            })
+          );
+        }
+
+        // No results from CirrusSearch
+        return of({ items: [], total: 0 });
       })
     );
   }
@@ -651,7 +738,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         debounceTime(250),
         distinctUntilChanged(),
         switchMap((label) => {
-          const searchTerm = normalizeString(label as string);
+          const searchTerm = normalizeForSearch(label as string);
           // Double-check raw label for explicit Q/P id before normalizing
           const rawLabel = (label as string) || '';
           const earlyId = this.extractQid(rawLabel);
@@ -729,7 +816,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                 try {
                   this.currentTotalCount = Number(total ?? 0);
                 } catch {}
-                const currentNormalized = normalizeString(this.searchInput.value || '');
+                const currentNormalized = normalizeForSearch(this.searchInput.value || '');
                 // stale-guard: ignore if query id or normalized input no longer matches
                 if (queryId !== this.currentQueryId || currentNormalized !== searchTerm) {
                   // stale response — ignore silently
@@ -777,17 +864,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                     return false;
                   })();
 
-                  // Debug: show why we choose to expand (or not)
-                  try {
-                    console.debug('[SearchComponent] expansion decision', {
-                      searchTerm,
-                      tokens,
-                      firstToken,
-                      tokenLen,
-                      selectedId,
-                      shouldTryExpansion,
-                    });
-                  } catch {}
+                  // Debug logging removed: expansion decision used internally without console output
 
                   if (shouldTryExpansion) {
                     // get local candidates (topN configurable; prototype default = 1)
@@ -825,40 +902,26 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         1,
         ['firstName']
       );
-      try {
-        console.debug(
-          '[SearchComponent] local-autocomplete candidates for',
-          firstToken,
-          candidates
-        );
-      } catch {}
+      // removed debug log: local-autocomplete candidates
       for (const c of candidates || []) {
         if (selectedId && c?.id && c?.prop) {
           const srsearch = `haswbstatement:${c.prop}=${c.id} haswbstatement:P131=${selectedId}`;
-          try {
-            console.debug('[SearchComponent] project expansion srsearch ->', srsearch);
-          } catch {}
+          // removed debug log: project expansion srsearch
           const res: { titles?: string[]; total?: number } = await firstValueFrom(
             this.request.getQidsList(srsearch, 50)
           );
           const titles = res?.titles ?? [];
-          try {
-            console.debug('[SearchComponent] getQidsList results ->', titles);
-          } catch {}
+          // removed debug log: getQidsList results
           const ids = (titles || [])
             .map((t: string) => (t ? String(t).split(':').pop() : ''))
             .filter(Boolean);
-          try {
-            console.debug('[SearchComponent] extracted ids ->', ids);
-          } catch {}
+          // removed debug log: extracted ids
           if (ids.length === 0) continue;
           const idsToFetch = ids.slice(0, this.EXPANSION_DETAIL_LIMIT);
           const expItems: EnrichedWikibaseEntity[] = await firstValueFrom(
             this.fetchEntities(idsToFetch).pipe(take(1))
           );
-          try {
-            console.debug('[SearchComponent] fetched entities for expansion ->', expItems);
-          } catch {}
+          // removed debug log: fetched entities for expansion
           const nowNorm = normalizeString(this.searchInput.value || '');
           if (queryId !== this.currentQueryId || nowNorm !== searchTerm) return;
           const mergedExp = this.mergeResultsPreservingPriorMatches(
@@ -868,14 +931,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           const hasRelevantExp = mergedExp.some((it) =>
             this.matchesAllTokens(it, searchTerm, this.showInDescription)
           );
-          try {
-            console.debug(
-              '[SearchComponent] expansion merged result count ->',
-              mergedExp.length,
-              'hasRelevantExp ->',
-              hasRelevantExp
-            );
-          } catch {}
+          // removed debug log: expansion merged result
           if (hasRelevantExp) this.updateItemsList(mergedExp);
         }
       }
@@ -914,6 +970,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     // (title, aliases, descriptions or claims). Example: `+jacques* +louis*`.
     // Treat short tokens (length < 3) as permissive (do not prepend '+') to
     // avoid overly strict queries for partial typing like "Jacques Louis D" or "Jacques Louis Da".
+    // Note: punctuation has already been removed by caller (fetchAutocompleteEntities)
     const tokens = searchTerm.split(' ').filter((t) => t.length > 0);
     if (tokens.length > 0) {
       // Treat the final token as the 'typing' token and keep it permissive
@@ -1121,13 +1178,8 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
           // throttle reporting to avoid huge logs
           debounceTime(60)
         )
-        .subscribe(([items, input]) => {
-          try {
-            console.debug('[SearchComponent] filteredItems$/searchInputValue$ ->', {
-              cnt: items?.length ?? 0,
-              input,
-            });
-          } catch {}
+          .subscribe(([items, input]) => {
+          // debug: filteredItems$/searchInputValue$ logging removed
         });
     } catch {}
 

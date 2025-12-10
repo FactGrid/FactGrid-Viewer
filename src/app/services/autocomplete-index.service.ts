@@ -53,18 +53,7 @@ export class AutocompleteIndexService {
   async getMatches(prefix: string, topN = 1, categories?: string[]): Promise<AutocompleteEntry[]> {
     const normalized = this.normalize(prefix);
     if (!normalized) return [];
-    try {
-      console.debug(
-        '[AutocompleteIndexService] getMatches prefix ->',
-        prefix,
-        'normalized ->',
-        normalized,
-        'categories ->',
-        categories,
-        'topN ->',
-        topN
-      );
-    } catch {}
+    // debug: getMatches logging removed
     const list = await this.ensureLoaded();
     // prefer exact prefix on norm; also consider alias norms if present
     const matches = list
@@ -81,14 +70,7 @@ export class AutocompleteIndexService {
       })
       .sort((a, b) => (b.weight || 0) - (a.weight || 0));
 
-    try {
-      console.debug(
-        '[AutocompleteIndexService] matches for',
-        normalized,
-        '->',
-        matches.slice(0, topN)
-      );
-    } catch {}
+    // debug: matches logging removed
     return matches.slice(0, topN);
   }
 }

@@ -4,12 +4,10 @@ import { SelectedLangService } from '../../selected-lang.service';
 
 describe('SparqlQueryBuilderService', () => {
   let service: SparqlQueryBuilderService;
-  let mockLangService: any /* any /* jasmine.SpyObj<SelectedLangService>;
+  let mockLangService: any;
 
   beforeEach(() => {
-    mockLangService = jasmine.createSpyObj('SelectedLangService', [], {
-      selectedLang: 'fr',
-    });
+    mockLangService = { selectedLang: 'fr' } as any;
 
     TestBed.configureTestingModule({
       providers: [
@@ -208,4 +206,5 @@ describe('SparqlQueryBuilderService', () => {
     });
   });
 });
+
 

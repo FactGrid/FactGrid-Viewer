@@ -21,13 +21,13 @@ describe('CreateCompleteItemService', () => {
     const createItemService = TestBed.inject<any>(CreateCompleteItemService as any)['createItem'];
     const itemSparqlService = TestBed.inject<any>(CreateCompleteItemService as any)['itemSparql'];
     // spy on createItemToDisplay to return immediately
-    vi.vi.spyOn(createItemService, 'createItemToDisplay').mockReturnValue(of(['display']));
+    vi.spyOn(createItemService, 'createItemToDisplay').mockReturnValue(of(['display']));
     const firstItem = { id: 'QTEST' };
     // setLanguage.item should return an array where first equals firstItem
     const setLanguage = TestBed.inject<any>(CreateCompleteItemService as any)['setLanguage'];
-    vi.vi.spyOn(setLanguage, 'item').mockReturnValue([firstItem]);
+    vi.spyOn(setLanguage, 'item').mockReturnValue([firstItem]);
     // itemSparql will return after a short delay
-    vi.vi.spyOn(itemSparqlService, 'itemSparql').mockReturnValue(of(firstItem).pipe(delay(50)));
+    vi.spyOn(itemSparqlService, 'itemSparql').mockReturnValue(of(firstItem).pipe(delay(50)));
 
     let received = false;
     service.completeItem([{}]).subscribe((res) => {
@@ -40,4 +40,6 @@ describe('CreateCompleteItemService', () => {
     expect(createItemService.createItemToDisplay).toHaveBeenCalled();
   }));
 });
+
+
 

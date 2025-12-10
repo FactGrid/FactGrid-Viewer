@@ -19,7 +19,6 @@ export class SparqlInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (request.url.includes('biblio') === true || request.url.includes('statistics') === true) {
-      console.log(request.url);
 
       const cachedResponse = this.cache.get(request.url);
 

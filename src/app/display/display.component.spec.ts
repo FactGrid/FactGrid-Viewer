@@ -97,7 +97,7 @@ describe('DisplayComponent', () => {
   });
 
   it('addInFactGrid should open FactGrid in a new tab with the correct id', () => {
-    const spy = vi.vi.vi.spyOn(window, 'open').mockImplementation(() => null as any);
+    const spy = vi.spyOn(window, 'open').mockImplementation(() => null as any);
     component.itemId = 'Q22370';
     component.addInFactGrid();
     expect(spy).toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe('DisplayComponent', () => {
     const backListDetails = TestBed.inject(BackListDetailsService);
 
     // Prepare the service to return two responses (user lang result, en result)
-    vi.vi.vi.spyOn(backList, 'backList').mockReturnValue(
+    vi.spyOn(backList, 'backList').mockReturnValue(
       of([
         { query: { pages: [{ title: 'Item:Q1', entityterms: { label: [''] } }] } },
         { query: { pages: [{ title: 'Item:Q1', entityterms: { label: ['English name'] } }] } },
@@ -181,7 +181,7 @@ describe('DisplayComponent', () => {
     );
 
     // Ensure setBackList converts pages into simple {id, label} entries
-    vi.vi.vi.spyOn(backListDetails, 'setBackList')
+    vi.spyOn(backListDetails, 'setBackList')
       .mockReturnValueOnce([{ id: 'Q1', label: '' }])
       .mockReturnValueOnce([{ id: 'Q1', label: 'English name' }]);
 
@@ -231,14 +231,14 @@ describe('DisplayComponent', () => {
     const backList = TestBed.inject(BackListService);
     const backListDetails = TestBed.inject(BackListDetailsService);
 
-    vi.vi.vi.spyOn(backList, 'backList').mockReturnValue(
+    vi.spyOn(backList, 'backList').mockReturnValue(
       of([
         { query: { pages: [{ title: 'Item:Q2', entityterms: { label: [''] } }] } },
         { query: { pages: [{ title: 'Item:Q2', entityterms: { label: [''] } }] } },
       ])
     );
 
-    vi.vi.vi.spyOn(backListDetails, 'setBackList')
+    vi.spyOn(backListDetails, 'setBackList')
       .mockReturnValueOnce([{ id: 'Q2', label: '' }])
       .mockReturnValueOnce([{ id: 'Q2', label: '' }]);
 
@@ -252,8 +252,8 @@ describe('DisplayComponent', () => {
     const transcriptDisplay = TestBed.inject<any>(TranscriptDisplayService);
     const changeTranscriptSvc = TestBed.inject<any>(TranscriptionService);
     // return a predictable transcription
-    vi.vi.vi.spyOn(transcriptDisplay, 'transcript').mockReturnValue(of({ parse: { text: 'TRANS' } }));
-    vi.vi.vi.spyOn(changeTranscriptSvc, 'cleaning').mockImplementation((t: string) => t);
+    vi.spyOn(transcriptDisplay, 'transcript').mockReturnValue(of({ parse: { text: 'TRANS' } }));
+    vi.spyOn(changeTranscriptSvc, 'cleaning').mockImplementation((t: string) => t);
 
     // create item with P251 claim data used by the transcription
     const item = [
@@ -290,7 +290,7 @@ describe('DisplayComponent', () => {
   });
 
   it('onSearchItemSelected should animate then navigate when called from homepage', async () => {
-    const navigateSpy = vi.vi.vi.spyOn((component as any).router, 'navigate');
+    const navigateSpy = vi.spyOn((component as any).router, 'navigate');
 
     component.item = null; // homepage state
     fixture.detectChanges();
@@ -569,4 +569,6 @@ describe('DisplayComponent', () => {
     expect(idxId).toBeLessThan(idxTitle);
   });
 });
+
+
 

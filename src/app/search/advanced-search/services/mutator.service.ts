@@ -15,7 +15,7 @@ export class MutatorService {
   private data = inject(DataService);
 
   mutator(itemType) {
-    console.log(itemType);
+    // debug log removed: itemType
     let mutator = [];
     this.data.mutator$.subscribe((res) => {
       mutator = res;
@@ -30,7 +30,7 @@ export class MutatorService {
     transposeMutator[selectedCol] = permutedArray; // permuted list of names for the selected itemType
     let newMutator = this.transpose(transposeMutator); // mutator after the selection of the itemType;
     // this.data.updateMutator(newMutator);
-    console.log(newMutator);
+    // debug log removed: newMutator
     return newMutator;
   }
 

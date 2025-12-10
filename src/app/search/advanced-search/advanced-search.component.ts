@@ -144,14 +144,14 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
   }
 
   selectedItemType(itemType) {
-    console.log(itemType);
+    // debug: selectedItemType logging removed
     let i = itemType[0];
 
     let u = ITEMTYPES.findIndex((item) => item.id === itemType[3]);
 
     let selection = { label: itemType[1], id: itemType[3] };
 
-    console.log(itemType[3]);
+    // debug: selectedItemType id logging removed
     //  this.formData[i].types.selections.push(selection);
     // this.formData[i].values.options.push(selection);
 
@@ -173,7 +173,7 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
       // create the list of properties; useless?
       //     this.propertiesList = [itemType[0], this.propertyList.changeList(res)];
       //   console.log(this.propertiesList);
-      console.log(res);
+      // debug: propertiesList response logging removed
       //     this.data.updatePropertiesList([itemType[0], this.propertyList.changeList(res)]);
     });
   }
@@ -195,12 +195,14 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
   }
 
   selectedProjects(projects) {
-    console.log(projects.value);
+    // debug: selectedProjects logging removed
   }
 
   selectedValue(value) {
-    console.log(value);
-    this.data.itemTypes1$.subscribe((res) => console.log(res));
+    // debug: selected value logging removed
+    this.data.itemTypes1$.subscribe((res) => {
+      // debug logging removed
+    });
     let i = value[0];
     let selection1: Selection = {
       variable: [value[0], this.updateValue(this.statementSelection[0].variable[2], value[2]), 1],
@@ -215,7 +217,9 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
     let currentItemTypes: any[];
     let newItemType = { label: value[1], col: value[2], id: value[3] };
     let $newItemType = of(newItemType);
-    $newItemType.subscribe((res) => console.log(res));
+    $newItemType.subscribe((res) => {
+      // debug: new item type logging removed
+    });
     combineLatest([$newItemType, this.data.itemTypes1$]).subscribe(([res1, res2]) => {
       res2.push(res1);
       currentItemTypes = res2;
@@ -230,10 +234,10 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
     /* this.data.itemTypes1$.subscribe(res => {  // get the current itemTypes from the data service
       currentItemTypes = res
     });It:
-    console.log(currentItemTypes);
+    // debug: currentItemTypes logging removed
     let newItemType: Variable = { label: value[1], col: value[2], id: value[3] };
     currentItemTypes.push(newItemType);
-    console.log(currentItemTypes);
+    // debug: currentItemTypes logging removed
     this.data.updateItemTypes2(currentItemTypes);
     this.data.itemTypes1$.subscribe(res => console.log(res))*/
   }
@@ -242,7 +246,7 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
     let i = itemType[0];
     let qualifierItemType = [itemType[1], itemType[2], itemType[3], ''];
     let newMutator = this.mutator.mutator(qualifierItemType);
-    console.log(newMutator);
+    // debug: newMutator logging removed
     let newItemType: Variable = { label: itemType[1], id: itemType[2], col: itemType[3] };
     let currentItem: any[];
     this.data.itemTypes$.subscribe((res) => {
@@ -254,7 +258,9 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
     });
     this.data.updateItemTypes(currentItem);
     this.data.updateMutator(newMutator);
-    this.data.mutator$.subscribe((res) => console.log(res));
+    this.data.mutator$.subscribe((res) => {
+      // debug: mutator observable logging removed
+    });
   }
 
   updateValue(value0, value1) {

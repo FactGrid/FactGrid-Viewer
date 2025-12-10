@@ -194,7 +194,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
   get lastStatementIndex(): number {
     const index = this.statements.length > 0 ? this.statements.length - 1 : 0;
-    console.log('lastStatementIndex:', index);
+    // debug: lastStatementIndex logging removed
     return index;
   }
 
@@ -284,7 +284,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
   addStatements() {
     this.statements.push(this.statement);
-    console.log('Added statement, new statements length:', this.statements.length);
+    // debug: added statement log removed
     this.isRemoveStatement = true;
     this.filteredItemTypesArray.push(new ReplaySubject<any[]>(1)); // Initialiser un nouveau ReplaySubject pour la nouvelle déclaration
     this.filteredItemValuesArray.push(new ReplaySubject<any[]>(1)); // Initialiser un nouveau ReplaySubject pour la nouvelle déclaration
@@ -304,7 +304,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
 
   removeStatements(i: number) {
     this.statements.removeAt(i);
-    console.log('Removed statement at index', i, 'new statements length:', this.statements.length);
+    // debug: removed statement log removed
     this.currentItemTypesArray.splice(i, 1); // Supprimer les currentItemTypes correspondants
     this.filteredItemTypesArray.splice(i, 1); // Supprimer le ReplaySubject correspondant
     this.setCurrentItemTypes(this.lastStatementIndex);
@@ -345,7 +345,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
       statement.get('value.literalString').disable();
     } else {
       if (u === 'String' || u === 'MonolingualText' || u === 'Time' || u === 'Quantity') {
-        console.log(u);
+        // debug: value logging removed
         itemValueControl.disable();
         statement.get('value.literalValue').enable();
         statement.get('value.literalString').enable();
@@ -376,11 +376,11 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   qualifierControllerDisplay(u, i, j) {
-    console.log(u);
+    // debug: qualifier type logging removed
     let qual = this.controls.qualifiers(this.statements, i);
     if (u === 'WikibaseItem') {
       let value = this.controls.qualifierValue(qual, j);
-      console.log(value);
+      // debug: qualifier value logging removed
       this.isWikibaseItemOnQualifier = true;
       this.isLiteralOnQualifier = false;
       this.controls.qualifierValue(qual, j).enable();
@@ -416,28 +416,28 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   onItemTypeSelect(event: MatSelectChange): void {
-    (console.log(event.value), console.log('Selected itemType:', event.value));
+    // debug: selected item type log removed
     let i = event.value[0]; // name of the statement "i" in the form array "statements"
     this.controls.propertyValues(this.statements, i).enable();
     const options$ = this.propertyList.propertiesListBuilding(event.value[3]); // create the list of properties; useless?
     this.filterPropertyMulti(i, options$); // Appeler filterPropertyMulti avec l'observable
     this.selectedItemType.emit(event.value); // output to advanced-search-component (see selectedItemType(itemType))
     this.statements.at(i).get('itemType').setValue(event.value, { emitEvent: false }); // Mettre à jour la valeur du contrôle
-    console.log('Updated itemType control value:', this.statements.at(i).get('itemType').value);
+    // debug: updated itemType control value log removed
     this.changeDetector.detectChanges(); // Forcer la détection des changements
   }
 
   onPropertySelect(event: MatSelectChange): void {
     let propertyValue = [];
-    console.log('Event value:', event.value);
+    // debug: property select event value log removed
     let i = event.value[0][0];
-    console.log(i);
+    // debug: property select index log removed
 
     // Itérer sur chaque élément de event.value
     for (let j = 0; j < event.value.length; j++) {
       if (event.value[j] !== undefined) {
         let propertyType = event.value[j][3];
-        console.log(propertyType);
+        // debug: property type log removed
         if (propertyType) {
           this.statementControllerDisplay(propertyType, i); // to display the right control
           this.controls.itemValue(this.statements, i).enable();
@@ -455,7 +455,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
     let i = event.value[0];
     let label = event.value[1];
     let dataType = event.value[2];
-    console.log(event.value);
+    // debug: value select event value log removed
 
     // Mettre à jour la valeur du contrôle itemValue
     const itemValueControl = this.statements.at(i).get('value.itemValue') as FormControl;
@@ -471,7 +471,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
     this.isAddStatement = true;
     // Appeler resetPreviousItemValues après la mise à jour du contrôle itemValue
     this.resetPreviousItemValues(i);
-    console.log(this.resetPreviousItemValues(i));
+    // debug: resetPreviousItemValues result log removed
   }
 
   onLiteralValueSelect(event: MatSelectChange): void {
@@ -480,7 +480,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
     this.placeholderForLiteralString = label;
     this.literalControllerDisplay(label, i); // to display and enable the right controls
     if (label.charAt(0) === '?') {
-      console.log(label);
+      // debug: literal label log removed
       //    this.selectedValue.emit(event.value); // output to advanced-search-component (see selectedValueType(itemType)). ?string is not an itemType
     }
     this.isAddStatement = true;
@@ -488,7 +488,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   onQualifierPropertySelect(event: MatSelectChange): void {
-    console.log(event.value);
+    // debug: qualifierPropertySelect event value logging removed
     let i = event.value[0];
     let j = event.value[1];
     let datatype = event.value[3];
@@ -497,7 +497,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   onQualifierValueSelect(event: MatSelectChange): void {
-    console.log(event.value);
+    // debug: qualifierValueSelect event value logging removed
     let i = event.value[0];
     let j = event.value[1];
     let dataType = event.value[2];
@@ -510,12 +510,12 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
     this.isRemoveQualifier = true;
     let qual = this.controls.qualifiers(this.statements, i);
     let value = this.controls.qualifierValue(qual, j);
-    console.log(value);
+    // debug: qualifier value logging removed
     this.controls.patchQualifierValue(value, qual, j);
   }
 
   onQualifierLiteralValueSelect(event: MatSelectChange): void {
-    console.log(event.value);
+    // debug: qualifierLiteralValueSelect event value logging removed
     let i = event.value[0];
     let label = event.value[2];
     // let dataType = event.value[2];
@@ -552,7 +552,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   protected _onDestroy = new Subject<void>();
 
   ngOnInit(): void {
-    console.log('Initial statements length:', this.statements.length);
+    // debug: initial statements length log removed
 
     this.propertyList.qualifierPropertiesListBuilding.subscribe(
       (res) => (this.qualifierPropertiesToSelect = res)
@@ -603,7 +603,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngAfterViewInit() {
-    console.log('Statements length after view init:', this.statements.length);
+    // debug: statements length after view init log removed
 
     //   this.setInitialItemTypeValue();
     //   this.setInitialPropertyValue();
@@ -617,7 +617,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   protected setInitialItemTypeValue() {
     this.data.itemTypes$.subscribe((res) => {
       this.filteredItemTypesArray.forEach((filteredItemTypes, index) => {
-        console.log(res);
+        // debug: response log removed
         filteredItemTypes.next(res);
         this.filterItemTypes(index);
       });
@@ -653,9 +653,9 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   protected filterItemTypes(index: number) {
-    console.log('Calling setCurrentItemTypes with index:', index);
+    // debug: calling setCurrentItemTypes with index log removed
     this.setCurrentItemTypes(index);
-    console.log('currentItemTypes after setCurrentItemTypes:', this.currentItemTypesArray[index]);
+    // debug: currentItemTypes after setCurrentItemTypes log removed
 
     let search = this.itemTypeFilterCtrl.value;
     if (!search) {
@@ -680,14 +680,14 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
    * @param index L'index de la déclaration pour laquelle les types d'éléments doivent être mis à jour.
    */
   protected setCurrentItemTypes(index: number): void {
-    console.log('setCurrentItemTypes called with index:', index);
+    // debug: setCurrentItemTypes called with index log removed
     if (index === 0) {
       if (!ITEMTYPES || ITEMTYPES.length === 0) {
         console.error('ITEMTYPES is undefined or empty');
         this.currentItemTypesArray[index] = [];
       } else {
         this.currentItemTypesArray[index] = ITEMTYPES;
-        console.log('Updated currentItemTypes:', this.currentItemTypesArray[index]);
+        // debug: updated currentItemTypes log removed
       }
     } else {
       let labels: any[] = [];
@@ -696,12 +696,12 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
         const itemTypeControl = this.statements.at(j).get('itemType') as FormControl;
         const itemValueControl = this.statements.at(j).get('value.itemValue') as FormControl;
 
-        console.log('itemTypeControl at index', j, ':', itemTypeControl);
-        console.log('itemValueControl at index', j, ':', itemValueControl);
+        // debug: itemTypeControl at index logging removed
+        // debug: itemValueControl at index logging removed
 
         if (itemTypeControl && itemTypeControl.value) {
           const itemTypeValue = itemTypeControl.value[1]; // Extraire l'objet unique
-          console.log(`itemTypeControl value at index ${j}:`, itemTypeValue);
+          // debug: itemTypeControl value at index logging removed
           labels.push({ label: itemTypeValue });
         }
 
@@ -722,7 +722,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
       this.currentItemTypesArray[index] = uniqueLabels.sort((a, b) =>
         a.label.localeCompare(b.label)
       );
-      console.log('Updated currentItemTypes:', this.currentItemTypesArray[index]);
+      // debug: Updated currentItemTypes logging removed
     }
   }
 
@@ -734,7 +734,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
             console.error('Les données ne sont pas correctement chargées dans options.');
             return of([]);
           }
-          console.log(options);
+          // debug: options logging removed
 
           let search = this.propertytMultiFilterCtrl.value;
           if (!search) {
@@ -787,7 +787,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
         })
       )
       .subscribe(augmentedItems => {
-        console.log(`Augmented Items for statement ${index}:`, augmentedItems);
+        // debug: Augmented Items logging removed
         if (!this.filteredItemValuesArray[index]) {
           this.filteredItemValuesArray[index] = new ReplaySubject<any[]>(1);
         }
@@ -818,7 +818,7 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
       separator: '',
     }));
 
-    console.log(augmentedItems);
+    // debug: augmentedItems logging removed
 
     // Mettre à jour le BehaviorSubject avec les éléments augmentés
     if (!this.statementOptions[index]) {
@@ -1013,15 +1013,15 @@ export class StatementSearchComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   protected filterQualifierLiteralVariables() {
-    console.log(this.qualifierLiteralVariables);
+    // debug: qualifierLiteralVariables logging removed
     if (this.qualifierLiteralVariables === undefined) {
       return;
     }
     // get the search keyword
     let search = this.qualifierLiteralFilterCtrl.value;
-    console.log(search);
+    // debug: qualifier search logging removed
     if (!search) {
-      console.log(this.qualifierLiteralVariables);
+      // debug: qualifierLiteralVariables logging removed
       this.filteredQualifierLiteralVariables.next(this.qualifierLiteralVariables.slice());
       return;
     } else {

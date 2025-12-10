@@ -51,7 +51,7 @@ describe('SearchComponent', () => {
   });
 
   it('does not navigate when embedded (parent listens to itemSelected)', async () => {
-    const navigateSpy = vi.vi.vi.spyOn((component as any).router, 'navigate');
+    const navigateSpy = vi.spyOn((component as any).router, 'navigate');
     const captured: string[] = [];
     component.itemSelected.subscribe((id) => captured.push(id));
 
@@ -63,7 +63,7 @@ describe('SearchComponent', () => {
   });
 
   it('navigates when standalone (no subscribers)', async () => {
-    const navigateSpy = vi.vi.vi.spyOn((component as any).router, 'navigate');
+    const navigateSpy = vi.spyOn((component as any).router, 'navigate');
 
     component.onItemRowClick('Q888');
     await new Promise((r) => setTimeout(r, 220));
@@ -72,10 +72,10 @@ describe('SearchComponent', () => {
   });
 
   it('pressing Enter with a QID navigates to that item', async () => {
-    const navigateSpy = vi.vi.vi.spyOn((component as any).router, 'navigate');
+    const navigateSpy = vi.spyOn((component as any).router, 'navigate');
     component.searchInput.setValue('Q888', { emitEvent: true });
     // call handler as if Enter was pressed
-    (component as any).onSearchEnter({ target: { value: 'Q888' } } as unknown as unknown as KeyboardEvent);
+    (component as any).onSearchEnter({ target: { value: 'Q888' } } as unknown as unknown as unknown as KeyboardEvent);
     await new Promise((r) => setTimeout(r, 220));
     expect(navigateSpy).toHaveBeenCalledWith(['/item', 'Q888']);
   });
@@ -154,7 +154,7 @@ describe('SearchComponent', () => {
 
   it('returns an entity when input is a QID (Q123)', async () => {
     const items = [{ id: 'Q123', label: 'Entity Q123', description: '', aliases: [] }];
-    const spy = vi.vi.vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of(items));
+    const spy = vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of(items));
     component.searchInput.setValue('Q123', { emitEvent: true });
     // debounce + async processing
     await new Promise((r) => setTimeout(r, 500));
@@ -167,7 +167,7 @@ describe('SearchComponent', () => {
 
   it('supports Item:Q123 and lowercase q123', async () => {
     const items = [{ id: 'Q123', label: 'Entity Q123', description: '', aliases: [] }];
-    const spy = vi.vi.vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of(items));
+    const spy = vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of(items));
     component.searchInput.setValue('item:q123', { emitEvent: true });
     await new Promise((r) => setTimeout(r, 500));
     expect(vi.mocked(spy).mock.calls[0][0]).toEqual(['Q123']);
@@ -194,7 +194,7 @@ describe('SearchComponent', () => {
     const srf = TestBed.inject(SelectedResearchFieldService);
     srf.setSelectedResearchField({ id: 'Q10', name: 'Project X', description: '' });
     const items = [{ id: 'Q321', label: 'Entity Q321', description: '', aliases: [] }];
-    const spy = vi.vi.vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of(items));
+    const spy = vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of(items));
     component.searchInput.setValue('Q321', { emitEvent: true });
     await new Promise((r) => setTimeout(r, 500));
     expect(vi.mocked(spy).mock.calls[0][0]).toEqual(['Q321']);
@@ -377,7 +377,7 @@ describe('SearchComponent', () => {
       search: [{ id: 'Q1', label: 'Cached item', aliases: [], description: '' }],
     };
     const searchSpy = vi
-      .vi.vi.spyOn((component as any).request, 'searchItem')
+      .spyOn((component as any).request, 'searchItem')
       .mockReturnValue(of(response));
 
     // first call -> network
@@ -420,10 +420,10 @@ describe('SearchComponent', () => {
     };
 
     const qidsSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockReturnValue(of({ titles: titles, total: titles.length }));
     const getItemSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getItem')
+      .spyOn((component as any).request, 'getItem')
       .mockReturnValue(of(entitiesResponse));
 
     // ensure component's language matches our pre-warmed entity cache
@@ -488,10 +488,10 @@ describe('SearchComponent', () => {
 
   it('single-letter fallback uses wbsearchentities for all-project searches but not for project searches', async () => {
     const searchSpy = vi
-      .vi.vi.spyOn((component as any).request, 'searchItem')
+      .spyOn((component as any).request, 'searchItem')
       .mockReturnValue(of({ searchinfo: { totalhits: 0 }, search: [] }));
     const qidsSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockReturnValue(of({ titles: [], total: 0 }));
 
     // no project -> should call wbsearchentities (searchItem)
@@ -593,10 +593,10 @@ describe('SearchComponent', () => {
     };
 
     const qidsSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockReturnValue(of({ titles: titles, total: titles.length }));
     const getItemSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getItem')
+      .spyOn((component as any).request, 'getItem')
       .mockReturnValue(of(entitiesResponse));
 
     // run a project-mode search where the server returns "Pauline Jeanne David"
@@ -620,7 +620,7 @@ describe('SearchComponent', () => {
     const subj1 = new Subject<any>();
     const subj2 = new Subject<any>();
     let call = 0;
-    vi.vi.vi.spyOn(component as any, 'fetchAutocompleteEntities').mockImplementation(
+    vi.spyOn(component as any, 'fetchAutocompleteEntities').mockImplementation(
       (searchTerm: any) => {
         call += 1;
         if (call === 1) {
@@ -663,7 +663,7 @@ describe('SearchComponent', () => {
     // should cause updateItemsList to be called.
 
     // Spy updateItemsList so we can assert on calls
-    const updateSpy = vi.vi.vi.spyOn(component as any, 'updateItemsList');
+    const updateSpy = vi.spyOn(component as any, 'updateItemsList');
 
     // Simulate first (unrelated) payload
     const payload1 = {
@@ -725,13 +725,13 @@ describe('SearchComponent', () => {
 
     // spy AutocompleteIndexService to return a candidate with id+prop
     // Spy on the prototype so any instance used by the component will be intercepted
-    vi.vi.vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
+    vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
       Promise.resolve([{ label: 'FrÃ©dÃ©ric', id: 'Q12345', prop: 'P248', norm: 'frederic' }] as any)
     );
 
     // spy request.getQidsList to observe the crafted query for project + P248
     const reqSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockReturnValue(of({ titles: ['Page:Q452897'], total: 1 }));
 
     // instead of driving the full input pipeline (which is timing-sensitive),
@@ -764,12 +764,12 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
 
     // stub autocomplete index to return candidate
-    vi.vi.vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
+    vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
       Promise.resolve([{ label: 'FrÃ©dÃ©ric', id: 'Q12345', prop: 'P248', norm: 'frederic' }] as any)
     );
 
     // stub remote qids list and the component's fetchEntities to return an entity
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: ['Page:Q452897'], total: 1 })
     );
     // ensure the fetched entity is relevant for the search term so it will be
@@ -782,7 +782,7 @@ describe('SearchComponent', () => {
       aliases: [],
       description: 'FrÃ©dÃ©ric',
     } as any;
-    vi.vi.vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of([fakeEntity]));
+    vi.spyOn(component as any, 'fetchEntities').mockReturnValue(of([fakeEntity]));
 
     const qid = (component as any).currentQueryId;
 
@@ -857,7 +857,7 @@ describe('SearchComponent', () => {
     } as any;
 
     const spyFetch = vi
-      .vi.vi.spyOn(component as any, 'fetchAutocompleteEntities')
+      .spyOn(component as any, 'fetchAutocompleteEntities')
       .mockReturnValue(of(res));
 
     // set input so seeMore has a term to work with
@@ -890,7 +890,7 @@ describe('SearchComponent', () => {
       total: 7,
     } as any;
     const spyFetch = vi
-      .vi.vi.spyOn(component as any, 'fetchAutocompleteEntities')
+      .spyOn(component as any, 'fetchAutocompleteEntities')
       .mockReturnValue(of(res));
 
     component.searchInput.setValue('other', { emitEvent: false });
@@ -915,16 +915,16 @@ describe('SearchComponent', () => {
     srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
 
     // stub autocomplete match candidate
-    vi.vi.vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
+    vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
       Promise.resolve([{ label: 'Alice', id: 'Q123', prop: 'P248', norm: 'alice' }] as any)
     );
 
     // getQidsList returns empty titles
     const qidsSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockReturnValue(of({ titles: [], total: 0 }));
 
-    const updateSpy = vi.vi.vi.spyOn(component as any, 'updateItemsList');
+    const updateSpy = vi.spyOn(component as any, 'updateItemsList');
 
     const qid = (component as any).currentQueryId;
     await (component as any).attemptProjectExpansion('Al', 'Q10', qid, 'al');
@@ -944,21 +944,21 @@ describe('SearchComponent', () => {
     const srf = TestBed.inject(SelectedResearchFieldService) as SelectedResearchFieldService;
     srf.setSelectedResearchField({ id: 'Q10', name: 'Test project', description: '' });
 
-    vi.vi.vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
+    vi.spyOn(AutocompleteIndexService.prototype, 'getMatches').mockReturnValue(
       Promise.resolve([{ label: 'Bob', id: 'Q555', prop: 'P248', norm: 'bob' }] as any)
     );
 
     // getQidsList returns one title so attempt will proceed
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: ['Page:Q1'], total: 1 })
     );
 
     // force fetchEntities to return an observable that errors
-    vi.vi.vi.spyOn(component as any, 'fetchEntities').mockReturnValue(
+    vi.spyOn(component as any, 'fetchEntities').mockReturnValue(
       throwError(() => new Error('boom')) as any
     );
 
-    const updateSpy = vi.vi.vi.spyOn(component as any, 'updateItemsList');
+    const updateSpy = vi.spyOn(component as any, 'updateItemsList');
 
     const qid = (component as any).currentQueryId;
     await (component as any).attemptProjectExpansion('Bo', 'Q10', qid, 'bo');
@@ -980,7 +980,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning two page titles for project search
     const titles = ['Page:Q452897', 'Page:Q410337'];
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: titles, total: titles.length })
     );
 
@@ -1047,7 +1047,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning the page title for Jacques Louis David
     const titles = ['Page:Q452897'];
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: titles, total: titles.length })
     );
 
@@ -1084,7 +1084,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning the page title for Jacques Louis David
     const titles = ['Page:Q452897'];
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: titles, total: titles.length })
     );
 
@@ -1121,7 +1121,7 @@ describe('SearchComponent', () => {
 
     // Simulate Cirrus returning two page titles for project search - both contain tokens
     const titles = ['Page:Q100', 'Page:Q200'];
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: titles, total: titles.length })
     );
 
@@ -1165,7 +1165,7 @@ describe('SearchComponent', () => {
 
     // Cirrus returns both possible pages
     const titles = ['Page:Q200', 'Page:Q100'];
-    vi.vi.vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
+    vi.spyOn((component as any).request, 'getQidsList').mockReturnValue(
       of({ titles: titles, total: titles.length })
     );
 
@@ -1207,7 +1207,7 @@ describe('SearchComponent', () => {
 
     // Fake getQidsList: long query ('david') is slower (delay 50), short query faster (delay 10)
     const requestSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockImplementation((srsearch: string, max: number) => {
         if (srsearch.includes('david')) {
           // make the "long" response sufficiently slower than the short one
@@ -1343,7 +1343,7 @@ describe('SearchComponent', () => {
 
     // Configure a delayed project search so a new query will be pending
     const qidsSpy = vi
-      .vi.vi.spyOn((component as any).request, 'getQidsList')
+      .spyOn((component as any).request, 'getQidsList')
       .mockReturnValue(of({ titles: ['Page:Q100'], total: 1 }).pipe(delay(400)));
 
     // ensure entity is cached so fetchEntities will return quickly once getQidsList resolves
@@ -1417,7 +1417,7 @@ describe('SearchComponent', () => {
       total: 5,
     } as any;
     const spyFetch = vi
-      .vi.vi.spyOn(component as any, 'fetchAutocompleteEntities')
+      .spyOn(component as any, 'fetchAutocompleteEntities')
       .mockReturnValue(of(res));
 
     component.seeMore();
@@ -1466,5 +1466,10 @@ describe('SearchComponent', () => {
   // and exactPhraseMatch behaviour via unit tests on fetchAutocompleteEntities
   // (phrase-priority test), so we avoid DOM-based overlay checks here.
 });
+
+
+
+
+
 
 

@@ -66,7 +66,7 @@ export class ParisSearchComponent implements OnInit, OnDestroy {
   );
 
   openItem(item: any) {
-    console.log('openItem called with:', item);
+    // debug: openItem logging removed
     sessionStorage.setItem('from', 'paris-search');
     this.router.navigate(['/item', item.id], { state: { from: 'paris-search' } });
   }
@@ -81,13 +81,13 @@ export class ParisSearchComponent implements OnInit, OnDestroy {
     */
 
     this.formerVisitsTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-    console.log('selectedParisItemsList:', this.selectedParisItemsList);
+    // debug: selectedParisItemsList logging removed
 
     this.labels = this.searchInput.valueChanges //search engine
       .pipe(
         debounceTime(400),
         map((res) => 'Paris, ' + res),
-        tap((res) => console.log(res)),
+        // debug: tap logging removed
         //switchMap(label => this.request.searchItem(label, this.selectedLang)),
         switchMap((label) => this.request.searchItem(label, this.lang.selectedLang)),
 

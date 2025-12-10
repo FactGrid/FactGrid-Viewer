@@ -138,15 +138,9 @@ export class ItemSparqlService {
   batchAskQuery(itemId: string): Observable<BatchAskResult> {
     // Vérifie le cache
     if (this.batchAskCache.has(itemId)) {
-      if (this.DEBUG_ITEM === '*' || itemId === this.DEBUG_ITEM) {
-        console.debug('[ItemSparql] batchAskQuery cache HIT for', itemId);
-      }
       return this.batchAskCache.get(itemId)!;
     }
 
-    if (this.DEBUG_ITEM === '*' || itemId === this.DEBUG_ITEM) {
-      console.debug('[ItemSparql] batchAskQuery cache MISS for', itemId);
-    }
 
     const sparql = `
     SELECT ?isLocality ?isOrganisation ?isCareer ?isFamilyName ?isAddress ?isFactGridClass ?isList ?isSet ?isSuperclass ?isSuperclass1 ?isGOV WHERE {
@@ -195,9 +189,7 @@ export class ItemSparqlService {
   // item -> expects at least { id: string }; returns the same item enriched
   // with `sparql: Observable<SparqlTuple[]>` and `sparqlFlags: BatchAskResult`.
   itemSparql(item: { id: string; [k: string]: any }): Observable<SparqlEnabledItem> {
-    if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*' || item?.id === this.DEBUG_ITEM) {
-      console.debug('[ItemSparql] itemSparql() start for', item?.id);
-    }
+    // debug logs removed: keep the DEBUG_ITEM feature available for future use
 
     return this.batchAskQuery(item.id).pipe(
       switchMap((batch) => {
@@ -343,173 +335,11 @@ export class ItemSparqlService {
     );
   }
 
-  // ========================================================================
-  // MÉTHODES OBSOLÈTES CONSERVÉES POUR COMPATIBILITÉ (utilisent maintenant les stratégies)
-  // ========================================================================
-  // Ces méthodes sont dépréciées mais conservées pour éviter de casser le code existant.
-  // Elles délèguent désormais aux stratégies correspondantes.
-
-  /** @deprecated Utilisez directement les stratégies via ItemTypeResolverService */
-  selectSparql0(test1: boolean, test2: boolean, item: any): Observable<SparqlTuple> {
-    if (test1) return this.superclassStrategy.query(item);
-    if (test2) return this.superclass1Strategy.query(item);
-    return this.noResult();
-  }
-
-  /** @deprecated Utilisez directement les stratégies via ItemTypeResolverService */
-  selectSparql1(t1: boolean, t2: boolean, t3: boolean, t4: boolean, t5: boolean, t6: boolean, item: any): Observable<SparqlTuple> {
-    if (t5) return this.addressStrategy.query(item);
-    if (t1) return this.organisationStrategy.query(item);
-    if (t2) return this.careerStrategy.query(item);
-    if (t3) return this.creatorStrategy.query(item);
-    if (t4) return this.familyNameStrategy.query(item);
-    if (t6) return this.factGridPropertyClassStrategy.query(item);
-    return this.noResult();
-  }
-
-  /** @deprecated Utilisez directement les stratégies via ItemTypeResolverService */
-  selectSparql2(test1: boolean, test2: boolean, item: any): Observable<SparqlTuple> {
-    if (test1) return this.healthPractitionerStrategy.query(item);
-    return this.noResult();
-  }
-
-  /** @deprecated Utilisez directement les stratégies via ItemTypeResolverService */
-  selectSparql3(t1: boolean, t2: boolean, t3: boolean, t4: boolean, item: any): Observable<SparqlTuple> {
-    if (t1) return this.masterStrategy.query(item);
-    if (t2) return this.listStrategy.query(item);
-    if (t3) return this.setStrategy.query(item);
-    if (t4) return this.currentAddress(item);
-    return this.noResult();
-  }
-
-  /** @deprecated Utilisez directement les stratégies via ItemTypeResolverService */
-  selectSparql4(test1: boolean, test2: boolean, item: any): Observable<SparqlTuple> {
-    if (test1) return this.locationStrategy.query(item);
-    if (test2) return this.govStrategy.query(item);
-    return this.noResult();
-  }
-
-  /** @deprecated Utilisez directement OrganisationStrategy */
-  Q12Sparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.organisationStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement CareerStrategy */
-  Q37073Sparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.careerStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement CreatorStrategy */
-  Q456376Sparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.creatorStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement HealthPractitionerStrategy */
-  Q140759Sparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.healthPractitionerStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement MasterStrategy */
-  masterSparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.masterStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement ListStrategy */
-  listSparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.listStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement SetStrategy */
-  setSparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.setStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement SuperclassStrategy */
-  superclassSparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.superclassStrategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement Superclass1Strategy */
-  superclass1Sparql(test: boolean, item: any): Observable<SparqlTuple> {
-    return test ? this.superclass1Strategy.query(item) : this.noResult();
-  }
-
-  /** @deprecated Utilisez directement FamilyNameStrategy */
-  Q24499Sparql(item: any): Observable<SparqlTuple> {
-    return this.familyNameStrategy.query(item);
-  }
-
-  /** @deprecated Utilisez directement LocationStrategy */
-  Q8Sparql(item: any): Observable<SparqlTuple> {
-    return this.locationStrategy.query(item);
-  }
-
-  /** @deprecated Utilisez directement GOVStrategy */
-  GOVSparql(item: any): Observable<SparqlTuple> {
-    return this.govStrategy.query(item);
-  }
-
-  /** @deprecated Utilisez directement AddressStrategy */
-  Q16200Sparql(item: any): Observable<SparqlTuple> {
-    return this.addressStrategy.query(item);
-  }
-
-  /** @deprecated Utilisez directement FactGridPropertyClassStrategy */
-  Q77457Sparql(item: any): Observable<SparqlTuple> {
-    return this.factGridPropertyClassStrategy.query(item);
-  }
-
-  // ========================================================================
-  // MÉTHODES DE TEST OBSOLÈTES (remplacées par batchAskQuery)
-  // ========================================================================
-
-  /** @deprecated Utilisez batchAskQuery à la place */
-  Q24499TestGet(item: any): Observable<boolean> {
-    return of(item?.claims?.P2?.[0]?.mainsnak?.datavalue?.value?.id === 'Q24499');
-  }
-
-  /** @deprecated Utilisez batchAskQuery à la place */
-  Q8TestGet(item: any): Observable<boolean> {
-    return of(item?.claims?.P2?.[0]?.mainsnak?.datavalue?.value?.id === 'Q8');
-  }
-
-  /** @deprecated Utilisez batchAskQuery à la place */
-  Q16200TestGet(item: any): Observable<boolean> {
-    return of(item?.claims?.P2?.[0]?.mainsnak?.datavalue?.value?.id === 'Q16200');
-  }
-
-  /** @deprecated Utilisez batchAskQuery à la place */
-  Q172192TestGet(item: any): Observable<boolean> {
-    return of(item?.claims?.P2?.[0]?.mainsnak?.datavalue?.value?.id === 'Q172192');
-  }
-
-  /** @deprecated Utilisez batchAskQuery à la place */
-  Q77457TestGet(item: any): Observable<boolean> {
-    return of(item?.claims?.P2?.[0]?.mainsnak?.datavalue?.value?.id === 'Q77457');
-  }
-
-  /** @deprecated Utilisez batchAskQuery à la place */
-  GOVTestGet(item: any): Observable<boolean> {
-    return of(item?.claims?.P2?.[0]?.mainsnak?.datavalue?.value?.id === 'Q780657');
-  }
-
-  // ========================================================================
-  // FIN DES MÉTHODES OBSOLÈTES
-  // ========================================================================
-
   // Méthode de requête SPARQL réutilisable (conservée)
   sparqlQuery(sparql: string): Observable<SparqlResults> {
     sparql = this.newSparqlAdress(sparql);
     // log the actual sparql query URL (truncate long queries for readability)
-    try {
-      const short = sparql?.length && sparql.length > 200 ? sparql.slice(0, 200) + '…' : sparql;
-      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*')
-        console.debug('[ItemSparql] sparqlQuery ->', short);
-    } catch (e) {
-      // defensive: don't throw from logging
-      if (!this.DEBUG_ITEM || this.DEBUG_ITEM === '*')
-        console.debug('[ItemSparql] sparqlQuery -> (unable to format url)');
-    }
+    // removed debug log: previously printed truncated SPARQL query
     return this.request.getList(sparql).pipe(map((res: SparqlResults) => this.listFromSparql(res)));
   }
 
@@ -609,16 +439,7 @@ export class ItemSparqlService {
   }
 
   listFromSparql(res?: SparqlResults | any): SparqlResults {
-    // Track incoming SPARQL result shape & length to detect where lists vanish
-    try {
-      const len = res?.results?.bindings?.length ?? 'undefined';
-      // listFromSparql is often called for many items; restrict to verbose only
-      if (this.DEBUG_ITEM === '*')
-        console.debug('[ItemSparql] listFromSparql called, incoming bindings length =', len);
-    } catch (e) {
-      if (this.DEBUG_ITEM === '*')
-        console.debug('[ItemSparql] listFromSparql called, error reading length');
-    }
+    // Track incoming SPARQL result shape & length to detect where lists vanish — debug logs removed
 
     if (res !== undefined) {
       if (res.results !== undefined) {
@@ -640,15 +461,7 @@ export class ItemSparqlService {
           });
         });
         // After sorting, log first few ids (if any) for tracing
-        try {
-          const summaries = res.results.bindings
-            .slice(0, 5)
-            .map((b) => ({ id: b.item?.id, label: b.fLabel?.value || b.itemLabel?.value }));
-          if (this.DEBUG_ITEM === '*')
-            console.debug('[ItemSparql] listFromSparql sorted preview =', summaries);
-        } catch (e) {
-          /* ignore */
-        }
+        // Previously: logged preview of first bindings for debugging; removed for production
       }
     } else {
       res = {
