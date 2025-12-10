@@ -1,6 +1,5 @@
 <div class="search-center2 compact-only">
   <div class="search-field-col">
-
     <!-- Projects used only via the inline button — old top-project input removed -->
 
     <!-- Input item compact (REBUILT) -->
@@ -14,7 +13,7 @@
         (click)="toggleProjectOverlay()"
         [attr.aria-label]="projectDisplayValue || projectsInput"
         matTooltip="{{ projectDisplayValue || projectsInput }}"
-        >
+      >
         <mat-icon aria-hidden="true">folder_open</mat-icon>
       </button>
 
@@ -26,134 +25,155 @@
           [placeholder]="itemsInput"
           [formControl]="searchInput"
           (input)="onSearchFieldInput($event)"
+          (keydown.enter)="onSearchEnter($event)"
           #compactOrigin="cdkOverlayOrigin"
           cdkOverlayOrigin
-          />
-          @if (searchInput.value) {
-            <button type="button" class="new-clear-btn" [attr.aria-label]="'Effacer'" (click)="clearItemSearch()">✕</button>
-          }
+        />
+        @if (searchInput.value) {
+          <button
+            type="button"
+            class="new-clear-btn"
+            [attr.aria-label]="'Effacer'"
+            (click)="clearItemSearch()"
+          >
+            ✕
+          </button>
+        }
+      </div>
+
+      <!-- History Button (Always on the right) -->
+      <button
+        type="button"
+        class="new-history-btn"
+        #historyOrigin="cdkOverlayOrigin"
+        cdkOverlayOrigin
+        (click)="toggleHistoryOverlay()"
+        [attr.aria-label]="formerVisitsTitle"
+        matTooltip="{{ formerVisitsTitle }}"
+      >
+        <mat-icon aria-hidden="true">history</mat-icon>
+      </button>
+
+      <!-- Compact suggestions dropdown via CDK Overlay -->
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="compactOrigin"
+        [cdkConnectedOverlayOpen]="overlayOpen$ | async"
+        [cdkConnectedOverlayHasBackdrop]="false"
+        [cdkConnectedOverlayPositions]="[
+          { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
+        ]"
+        [cdkConnectedOverlayPanelClass]="['search-items_panel', 'compact-overlay-panel']"
+      >
+        <div class="search-items_inner">
+          <div class="compact-suggestions">
+            <ul>
+              @for (item of (filteredItems$ | async)?.slice(0, 50); track trackById(item)) {
+                <li
+                  class="compact-suggestion-item"
+                  [class.clicked]="clickedItemId === item.id"
+                  [class.exact-match]="item.exactPhraseMatch"
+                >
+                  <a
+                    class="compact-suggestion-link"
+                    href="#"
+                    (click)="onItemRowClick(item.id, $event)"
+                    [attr.aria-label]="item.label + ' — ouvrir'"
+                  >
+                    <div class="typo-item-label">
+                      {{ item.label }} <span class="typo-item-id" *ngIf="item.id">({{ item.id }})</span>
+                    </div>
+                    @if (item.description) {
+                      <div class="typo-item-desc">{{ item.description }}</div>
+                    }
+                  </a>
+                </li>
+              }
+            </ul>
+            @if (currentTotalCount > ((filteredItems$ | async)?.length || 0)) {
+              <div class="see-more">
+                <button type="button" (click)="seeMore()">
+                  Voir {{ currentTotalCount - ((filteredItems$ | async)?.length || 0) }} autres
+                  résultats
+                </button>
+              </div>
+            }
+          </div>
         </div>
+      </ng-template>
 
-        <!-- History Button (Always on the right) -->
-        <button
-          type="button"
-          class="new-history-btn"
-          #historyOrigin="cdkOverlayOrigin"
-          cdkOverlayOrigin
-          (click)="toggleHistoryOverlay()"
-          [attr.aria-label]="formerVisitsTitle"
-          matTooltip="{{ formerVisitsTitle }}"
-          >
-          <mat-icon aria-hidden="true">history</mat-icon>
-        </button>
+      <!-- Inline fallback removed: overlay-only suggestions to avoid flicker -- see commit history for previous behavior -->
 
-        <!-- Compact suggestions dropdown via CDK Overlay -->
-        <ng-template
-
-
-
-
-
-
-
-
-
-          cdkConnectedOverlay
-          [cdkConnectedOverlayOrigin]="compactOrigin"
-          [cdkConnectedOverlayOpen]="overlayOpen$ | async"
-          [cdkConnectedOverlayHasBackdrop]="false"
-          [cdkConnectedOverlayPositions]="[{originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8}]"
-          [cdkConnectedOverlayPanelClass]="['search-items_panel', 'compact-overlay-panel']"
-          >
-          <div class="search-items_inner">
-            <div class="compact-suggestions">
+      <!-- Projects overlay anchored to the left project button (compact mode) -->
+      @let projects = filteredResearchFields$ | async;
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="projectBtnOrigin"
+        [cdkConnectedOverlayOpen]="showProjectDropdown && projects?.length > 0"
+        [cdkConnectedOverlayHasBackdrop]="false"
+        [cdkConnectedOverlayPositions]="[
+          { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
+          { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8 },
+        ]"
+        [cdkConnectedOverlayPanelClass]="[
+          'search-items_panel',
+          'compact-overlay-panel',
+          'compact-project-panel',
+        ]"
+      >
+        <div class="search-items_inner">
+          <div class="compact-project-dropdown">
+            @for (project of projects; track trackById(project)) {
+              <div class="compact-project-option" (mousedown)="selectProjectCompact(project)">
+                {{ project.name }}
+              </div>
+            }
+          </div>
+        </div>
+      </ng-template>
+      <!-- History overlay panel anchored to the history button (compact mobile) -->
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="historyOrigin"
+        [cdkConnectedOverlayOpen]="historyOverlayOpen$ | async"
+        [cdkConnectedOverlayHasBackdrop]="true"
+        (backdropClick)="closeHistoryOverlay()"
+        [cdkConnectedOverlayBackdropClass]="'cdk-backdrop-translucent'"
+        [cdkConnectedOverlayPositions]="[
+          { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8 },
+          { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
+        ]"
+        [cdkConnectedOverlayPanelClass]="['search-history_panel', 'compact-history-panel']"
+      >
+        <div class="search-items_inner history-panel">
+          <div class="compact-history-list">
+            <div class="history-title">{{ formerVisitsTitle }}</div>
+            @if (!selectedItemsList || selectedItemsList.length === 0) {
+              <div class="history-empty">Aucune visite récente</div>
+            } @else {
               <ul>
-                @for (item of (filteredItems$ | async)?.slice(0,50); track trackById(item)) {
-                  <li class="compact-suggestion-item" [class.clicked]="clickedItemId === item.id" [class.exact-match]="item.exactPhraseMatch">
+                @for (sel of selectedItemsList; track trackById(sel)) {
+                  <li class="compact-suggestion-item">
                     <a
                       class="compact-suggestion-link"
                       href="#"
-                      (click)="onItemRowClick(item.id, $event)"
-                      [attr.aria-label]="item.label + ' — ouvrir'"
-                      >
-                      <div class="typo-item-label">{{ item.label }}</div>
-                      @if (item.description) {
-                        <div class="typo-item-desc">{{ item.description }}</div>
-                      }
+                      (click)="onItemRowClick(sel.value?.id, $event); closeHistoryOverlay()"
+                      [attr.aria-label]="
+                        (sel.label || sel.value?.label || sel.value?.id) + ' — ouvrir'
+                      "
+                    >
+                      <div class="typo-item-label">
+                        {{ sel.label || sel.value?.label || sel.value?.id }}
+                      </div>
+                      <div class="typo-item-desc">{{ sel.value?.id }}</div>
                     </a>
                   </li>
                 }
               </ul>
-              @if (currentTotalCount > ((filteredItems$ | async)?.length || 0)) {
-                <div class="see-more">
-                  <button type="button" (click)="seeMore()">Voir {{ currentTotalCount - ((filteredItems$ | async)?.length || 0) }} autres résultats</button>
-                </div>
-              }
-            </div>
+            }
           </div>
-        </ng-template>
-
-        <!-- Inline fallback removed: overlay-only suggestions to avoid flicker -- see commit history for previous behavior -->
-
-        <!-- Projects overlay anchored to the left project button (compact mode) -->
-        @let projects = filteredResearchFields$ | async;
-        <ng-template
-          cdkConnectedOverlay
-          [cdkConnectedOverlayOrigin]="projectBtnOrigin"
-          [cdkConnectedOverlayOpen]="showProjectDropdown && (projects?.length > 0)"
-          [cdkConnectedOverlayHasBackdrop]="false"
-          [cdkConnectedOverlayPositions]="[
-            { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
-            { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8 }
-          ]"
-          [cdkConnectedOverlayPanelClass]="['search-items_panel', 'compact-overlay-panel', 'compact-project-panel']"
-          >
-          <div class="search-items_inner">
-            <div class="compact-project-dropdown">
-              @for (project of projects; track trackById(project)) {
-                <div class="compact-project-option" (mousedown)="selectProjectCompact(project)">
-                  {{ project.name }}
-                </div>
-              }
-            </div>
-          </div>
-        </ng-template>
-        <!-- History overlay panel anchored to the history button (compact mobile) -->
-        <ng-template
-          cdkConnectedOverlay
-          [cdkConnectedOverlayOrigin]="historyOrigin"
-          [cdkConnectedOverlayOpen]="historyOverlayOpen$ | async"
-          [cdkConnectedOverlayHasBackdrop]="true"
-          (backdropClick)="closeHistoryOverlay()"
-          [cdkConnectedOverlayBackdropClass]="'cdk-backdrop-translucent'"
-          [cdkConnectedOverlayPositions]="[
-            {originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8},
-            {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8}
-          ]"
-          [cdkConnectedOverlayPanelClass]="['search-history_panel', 'compact-history-panel']"
-          >
-          <div class="search-items_inner history-panel">
-            <div class="compact-history-list">
-              <div class="history-title">{{ formerVisitsTitle }}</div>
-              @if (!selectedItemsList || selectedItemsList.length === 0) {
-                <div class="history-empty">Aucune visite récente</div>
-              } @else {
-                <ul>
-                  @for (sel of selectedItemsList; track trackById(sel)) {
-                    <li class="compact-suggestion-item">
-                      <a class="compact-suggestion-link" href="#" (click)="onItemRowClick(sel.value?.id, $event); closeHistoryOverlay()" [attr.aria-label]="(sel.label || sel.value?.label || sel.value?.id) + ' — ouvrir'">
-                        <div class="typo-item-label">{{ sel.label || sel.value?.label || sel.value?.id }}</div>
-                        <div class="typo-item-desc">{{ sel.value?.id }}</div>
-                      </a>
-                    </li>
-                  }
-                </ul>
-              }
-            </div>
-          </div>
-        </ng-template>
-
-      </div>
+        </div>
+      </ng-template>
     </div>
   </div>
-
+</div>

@@ -6,10 +6,10 @@
   height: 56px;
   padding: 0 16px;
   background-color: #fff;
-    /* single shadow will be applied below the combined toolbars instead of
+  /* single shadow will be applied below the combined toolbars instead of
       on the top toolbar itself to prevent a visible seam between stacked
       toolbars */
-    box-shadow: none;
+  box-shadow: none;
   /* S'assurer que la barre d'outils reste au-dessus des iframes
      qui peuvent occuper toute la hauteur de la fenêtre (height:100vh).
      Sans z-index, un iframe peut recouvrir la toolbar et intercepter les clics. */
@@ -28,7 +28,7 @@
   letter-spacing: 0.8px;
   font-size: 24px; /* larger to balance toolbar icons */
   color: #1976d2; /* use same blue as the search loupe (active) */
-  text-shadow: 0 1px 0 rgba(255,255,255,0.85); /* subtle emboss */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85); /* subtle emboss */
   pointer-events: none; /* don't block clicks in the toolbar */
   padding-bottom: 4px; /* leave space for underline */
   border-bottom: 2px solid #000; /* thin black rule under the title */

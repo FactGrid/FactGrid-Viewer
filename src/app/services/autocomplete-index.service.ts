@@ -20,13 +20,15 @@ export class AutocompleteIndexService {
 
   private normalize(s: string | undefined | null): string {
     if (!s) return '';
-    return s
-      .toLowerCase()
-      .normalize('NFD')
-      // remove combining diacritical marks (e.g. accents) only
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return (
+      s
+        .toLowerCase()
+        .normalize('NFD')
+        // remove combining diacritical marks (e.g. accents) only
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    );
   }
 
   private async ensureLoaded(): Promise<AutocompleteEntry[]> {
@@ -52,7 +54,16 @@ export class AutocompleteIndexService {
     const normalized = this.normalize(prefix);
     if (!normalized) return [];
     try {
-      console.debug('[AutocompleteIndexService] getMatches prefix ->', prefix, 'normalized ->', normalized, 'categories ->', categories, 'topN ->', topN);
+      console.debug(
+        '[AutocompleteIndexService] getMatches prefix ->',
+        prefix,
+        'normalized ->',
+        normalized,
+        'categories ->',
+        categories,
+        'topN ->',
+        topN
+      );
     } catch {}
     const list = await this.ensureLoaded();
     // prefer exact prefix on norm; also consider alias norms if present
@@ -64,13 +75,19 @@ export class AutocompleteIndexService {
           if (!intersects) return false;
         }
         if (e.norm.startsWith(normalized)) return true;
-        if (e.aliases && e.aliases.some((a) => this.normalize(a).startsWith(normalized))) return true;
+        if (e.aliases && e.aliases.some((a) => this.normalize(a).startsWith(normalized)))
+          return true;
         return false;
       })
       .sort((a, b) => (b.weight || 0) - (a.weight || 0));
 
     try {
-      console.debug('[AutocompleteIndexService] matches for', normalized, '->', matches.slice(0, topN));
+      console.debug(
+        '[AutocompleteIndexService] matches for',
+        normalized,
+        '->',
+        matches.slice(0, topN)
+      );
     } catch {}
     return matches.slice(0, topN);
   }

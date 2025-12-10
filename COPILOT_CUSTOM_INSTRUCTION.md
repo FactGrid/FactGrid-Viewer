@@ -1,17 +1,9 @@
 # FactGrid-Viewer — Custom instruction (pour Copilot Chat)
 
-But du projet (1 phrase)
-- Interface Angular 20 pour consulter et naviguer la base FactGrid (Wikibase).
-
-Contexte technique essentiel
-- Stack : Angular 20, Angular Material, RxJS, Leaflet.
-- Environnement attendu : Node LTS (ex. v20.x). CI : .github/workflows/ci.yml.
-- Entrées clés pour l’analyse : src/app/display/display.component.ts, src/app/search/, src/app/services/request.service.ts, src/styles.scss, package.json.
-
-Objectifs pour l’agent
-- Diagnostiquer et corriger rapidement les erreurs de build / runtime.
-- Proposer patches minimaux (rsync/diff ou snippets) compatibles Angular 20.
-- Suggérer optimisations (taille des chunks, performances, accessibilité).
+ - Stack : Angular 21, Angular Material, RxJS, Leaflet.
+ - Note : Angular 21 renforce les patterns standalone et `signals`. Privilégier `signal`/`computed` pour l'état local quand cela reste pertinent (tests + compatibilité RxJS). 
+ - Proposer patches minimaux (rsync/diff ou snippets) compatibles Angular 21.
+ - Remarque : le projet est déjà sous Angular 21 — n'inclure **pas** de checklist de migration; proposez plutôt des PRs d'adoption des patterns Angular 21 (signals, standalone, OnPush) quand cela apporte une valeur.
 - Générer tests unitaires simples (Jasmine/Karma) et exemples d’e2e quand nécessaire.
 
 Conventions de code & style (attentes)
@@ -25,7 +17,8 @@ Contraintes & sécurité
 - Éviter changements majeurs sans tests ; proposer étapes de rollback.
 
 Exemples de prompts (haute valeur)
-- "Explique brièvement la responsabilité de display.component.ts et propose 3 optimisations rapides."
+ - "Explique brièvement la responsabilité de display.component.ts et propose 3 optimisations rapides."
+ - "Propose une PR pour convertir un composant à `signals` + OnPush : diff minimal et tests unitaires."
 - "Voici une erreur de build X — propose un patch minimal (.diff) et les tests associés."
 - "Génère 2 tests unitaires pour advanced-search.component couvrant les cas edge."
 

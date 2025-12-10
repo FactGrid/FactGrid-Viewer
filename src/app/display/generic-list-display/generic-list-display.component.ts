@@ -1,4 +1,4 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Component, Input, ViewEncapsulation, signal } from '@angular/core';
 import { DisplayItem, ItemDisplayTuple, EnrichedItem } from '../../services/item-types';
 import { UnitPipe } from '../../unit.pipe';
 import { ProtectShortWordsPipe } from './protect-short-words.pipe';
@@ -30,28 +30,36 @@ export class GenericListDisplayComponent {
   // Accept either legacy raw shapes (any) or the newer compact UI-level DisplayItem
   // and the tuple/enriched shapes used by the display pipeline. Keep permissive to
   // remain backward compatible during the gradual migration.
-  private _items: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any> = [];
+  // single source of truth for items
+  // signal-backed items so templates may react directly
+  readonly itemsSignal = signal<Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>>(
+    []
+  );
 
   @Input()
-  set items(v: DisplayItem | ItemDisplayTuple | EnrichedItem | Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any> | any) {
-    // Normalize to array so the template can always iterate safely
-    if (v === undefined || v === null) this._items = [];
-    else if (Array.isArray(v)) this._items = v as Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
-    else this._items = [v];
+  set items(
+    v:
+      | DisplayItem
+      | ItemDisplayTuple
+      | EnrichedItem
+      | Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>
+      | any
+  ) {
+    // Normalize to array so the template can always iterate safely and set signal
+    const normalized = v === undefined || v === null ? [] : Array.isArray(v) ? (v as any[]) : [v];
+    this.itemsSignal.set(normalized);
   }
 
-  get items(): any[] {
-    return this._items;
-  }
-
-  openReferences = new Set<string>();
+  // track expanded reference blocks using a signal of Set
+  openReferences = signal(new Set<string>());
 
   toggleReferences(key: string): void {
-    if (this.openReferences.has(key)) {
-      this.openReferences.delete(key);
-    } else {
-      this.openReferences.add(key);
-    }
+    this.openReferences.update((s) => {
+      const next = new Set(s as Set<string>);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next as Set<string>;
+    });
   }
 
   // Template helper so we don't call global Array.isArray from templates

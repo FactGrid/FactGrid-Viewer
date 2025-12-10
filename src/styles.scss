@@ -20,8 +20,8 @@
   --sparql-display-max-width: 900px;
   --md-sys-color-primary: #6699cc; // bleu personnalisé
   --color-primary: #6699cc;
-  --md-sys-color-secondary: #F8EDE3; // accent (Option E: crème pêche très légère)
-  --color-accent: #F8EDE3;
+  --md-sys-color-secondary: #f8ede3; // accent (Option E: crème pêche très légère)
+  --color-accent: #f8ede3;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -117,8 +117,6 @@ $my-theme: mat.m2-define-light-theme(
   &.mat-primary,
   &.mat-accent,
   &.mat-warn,
-
-  
   &.mat-button-disabled {
     &.mat-button-disabled {
       $palette: if($property == 'color', $foreground, $background);
@@ -359,9 +357,9 @@ body {
   max-width: 100%;
   font-size: 16px;
   /* centralize indentation via CSS variable so card styles can override it */
-    /* Delegated indentation for statements — value is now controlled by card contexts
+  /* Delegated indentation for statements — value is now controlled by card contexts
       (src/app/display/_cards.scss). No global fallback here to avoid duplication. */
-    padding-left: var(--statement-indent);
+  padding-left: var(--statement-indent);
   padding-top: 2px;
   padding-bottom: 2px; // from 3px
 }
@@ -374,7 +372,7 @@ body {
   display: inline;
 }
 
-  .qualifierProperty {
+.qualifierProperty {
   //size and color of the label of the qualifier
   font-size: var(--typo-qualifier-desc-size);
   color: #3f51b5;
@@ -582,7 +580,6 @@ body {
   }
   /* responsive rules for legacy non-compact search removed */
 }
-
 
 /* The following mat-form-field/search-field legacy rule removed in cleanup.
    If a future component needs a global uniform height, reintroduce a

@@ -31,14 +31,16 @@ export class ItemInfoComponent implements OnChanges {
   // infoList holds a set of named lists (subclassesList, instancesList, classesList,
   // natureOfList, technicalities, infoProperties). Each list may contain legacy
   // enriched tuples, enriched entities or the compact DisplayItem shape used by UI.
-  @Input() infoList: {
-    subclassesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
-    instancesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
-    classesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
-    natureOfList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
-    technicalities?: any[];
-    infoProperties?: any[];
-  } | any;
+  @Input() infoList:
+    | {
+        subclassesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+        instancesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+        classesList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+        natureOfList?: Array<DisplayItem | ItemDisplayTuple | EnrichedItem | any>;
+        technicalities?: any[];
+        infoProperties?: any[];
+      }
+    | any;
 
   selectedLang: string =
     localStorage['selectedLang'] === undefined ? 'en' : localStorage['selectedLang'];
@@ -78,8 +80,9 @@ export class ItemInfoComponent implements OnChanges {
     // use compact DisplayItem objects or ItemDisplayTuple shapes.
     // Accept multiple shapes: array-tuples, objects wrapping an `item` field, or
     // compact DisplayItem objects directly in lists.
-    const maybeDisplayItem = Array.isArray(L) ? L[L.length - 1] : L?.item ?? L;
-    const id = maybeDisplayItem?.id ?? maybeDisplayItem?.value?.id ?? L?.mainsnak?.datavalue?.value?.id;
+    const maybeDisplayItem = Array.isArray(L) ? L[L.length - 1] : (L?.item ?? L);
+    const id =
+      maybeDisplayItem?.id ?? maybeDisplayItem?.value?.id ?? L?.mainsnak?.datavalue?.value?.id;
     if (id) return id;
     const label = (L?.itemLabel?.value ?? L?.itemLabel ?? '').toString().trim();
     if (label) return label;

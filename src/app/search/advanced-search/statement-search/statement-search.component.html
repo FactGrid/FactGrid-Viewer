@@ -154,7 +154,9 @@
                       </mat-option>
                       @for (itemValue of filteredItemValuesArray[i] | async; track itemValue) {
                         <mat-option [value]="[i, itemValue.label, itemValue.col, itemValue.id]">
-                          <span class="label-no-break">{{ itemValue.label }}&#x2060;{{ itemValue.separator }}</span>{{ itemValue.description }}
+                          <span class="label-no-break"
+                            >{{ itemValue.label }}&#x2060;{{ itemValue.separator }}</span
+                          >{{ itemValue.description }}
                         </mat-option>
                       }
                     </mat-select>
@@ -278,7 +280,11 @@
                                       qualifierValue.id,
                                     ]"
                                   >
-                                    <span class="label-no-break">{{ qualifierValue.label }}&#x2060;{{ qualifierValue.separator }}</span>{{ qualifierValue.description }}
+                                    <span class="label-no-break"
+                                      >{{ qualifierValue.label }}&#x2060;{{
+                                        qualifierValue.separator
+                                      }}</span
+                                    >{{ qualifierValue.description }}
                                   </mat-option>
                                 }
                               </mat-select>

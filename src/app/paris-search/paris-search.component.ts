@@ -29,8 +29,8 @@ import { Router } from '@angular/router';
     MatTableModule,
     MatIconModule,
     MatButtonModule,
-    MatCardModule
-],
+    MatCardModule,
+  ],
   templateUrl: './paris-search.component.html',
   styleUrls: ['./paris-search.component.scss'],
 })

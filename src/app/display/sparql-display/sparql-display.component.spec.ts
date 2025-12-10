@@ -48,21 +48,22 @@ describe('SparqlDisplayComponent', () => {
       { itemLabel: { value: 'FooBar' }, item: { id: 'Q1' } },
       { itemText: 'baz', item: { id: 'Q2' } },
     ];
-    component.list = component.listWithoutDuplicate.slice();
+    component.sparqlData = component.listWithoutDuplicate.slice();
+    component.ngOnChanges({} as any);
 
     component.applyFilter({ target: { value: 'foobar' } });
-    expect(component.list.length).toBe(1);
-    expect(component.list[0].itemLabel.value).toBe('FooBar');
+    expect((component as any).listSignal().length).toBe(1);
+    expect((component as any).listSignal()[0].itemLabel.value).toBe('FooBar');
   });
 
   it('download button is disabled when csv service missing', () => {
     // initial state: undefined csv service
-    component.list = [];
+    (component as any).listSignal.set([]);
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const button = el.querySelector('button[aria-label="Download CSV"]') as HTMLButtonElement;
     expect(button).toBeTruthy();
-    expect(button.disabled).toBeTrue();
+    expect(button.disabled).toBe(true);
   });
 
   it('renders items as visual cards when sparqlData has entries', () => {

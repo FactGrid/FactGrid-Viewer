@@ -29,12 +29,11 @@ describe('SearchCacheService', () => {
     expect(got.list[0]).toBe(9);
   });
 
-  it('should prune expired entries (TTL)', (done) => {
+  it('should prune expired entries (TTL)', async () => {
     service.setItem('ttl::1::a', { list: [1] }, 10); // 10ms TTL
     expect(service.getItem('ttl::1::a')).toBeTruthy();
     setTimeout(() => {
       expect(service.getItem('ttl::1::a')).toBeNull();
-      done();
     }, 30);
   });
 

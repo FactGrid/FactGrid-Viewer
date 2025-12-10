@@ -16,9 +16,17 @@ export function mapEntityToDisplayItem(entity: any, sourceProject?: string): Dis
   // Prefer top-level prepared fields (label/description) which are likely already
   // language-selected upstream. Fall back to label/descriptions maps only when
   // the top-level field is not present.
-  const label = entity.label || entity.name || entity.labels?.en?.value || entity.labels?.fr?.value || undefined;
+  const label =
+    entity.label ||
+    entity.name ||
+    entity.labels?.en?.value ||
+    entity.labels?.fr?.value ||
+    undefined;
   const description =
-    entity.description || entity.descriptions?.en?.value || entity.descriptions?.fr?.value || undefined;
+    entity.description ||
+    entity.descriptions?.en?.value ||
+    entity.descriptions?.fr?.value ||
+    undefined;
 
   const aliases = (() => {
     if (Array.isArray(entity.aliases)) return entity.aliases;

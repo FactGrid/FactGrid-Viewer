@@ -6,6 +6,8 @@ import {
   ViewEncapsulation,
   OnChanges,
   SimpleChanges,
+  ChangeDetectorRef,
+  signal,
 } from '@angular/core';
 
 import { MatIconModule } from '@angular/material/icon';
@@ -17,12 +19,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 @Component({
   selector: 'app-thematic-card',
   standalone: true,
-  imports: [
-    MatIconModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule
-],
+  imports: [MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatTooltipModule],
   templateUrl: './thematic-card.component.html',
   styleUrls: ['./thematic-card.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -61,21 +58,41 @@ export class ThematicCardComponent implements AfterContentInit, OnChanges {
   // New: accept a compact UI shape (DisplayItem) or the older tuple/enriched shapes
   // so the component can derive a title or show image-related behaviour when an
   // item is provided by parent components.
-  @Input() item?: import('../../services/item-types').DisplayItem | import('../../services/item-types').ItemDisplayTuple | import('../../services/item-types').EnrichedItem;
+  @Input() item?:
+    | import('../../services/item-types').DisplayItem
+    | import('../../services/item-types').ItemDisplayTuple
+    | import('../../services/item-types').EnrichedItem;
 
-  isCollapsed: boolean = false;
-  hasProjectedHeader: boolean = false;
+  // use signals for internal state
+  private isCollapsedSignal = signal(false);
+  get isCollapsed(): boolean {
+    return this.isCollapsedSignal();
+  }
+  set isCollapsed(v: boolean) {
+    this.isCollapsedSignal.set(v);
+  }
+  private hasProjectedHeaderSignal = signal(false);
+  get hasProjectedHeader(): boolean {
+    return this.hasProjectedHeaderSignal();
+  }
+  set hasProjectedHeader(v: boolean) {
+    this.hasProjectedHeaderSignal.set(v);
+  }
   @Input() compact: boolean = false;
   @Input() flush: boolean = false;
   @Input() imageOnly: boolean = false;
 
-  constructor(private el: ElementRef<HTMLElement>) {}
+  constructor(
+    private el: ElementRef<HTMLElement>,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngAfterContentInit(): void {
     // Détecter si un header personnalisé est projeté via attribut [card-header]
     this.hasProjectedHeader = !!this.el.nativeElement.querySelector('[card-header]');
-    // initialize collapsed state based on inputs
-    this.isCollapsed = this.collapsible && !!this.startCollapsed;
+    // initialize collapsed state based on inputs is handled in ngOnChanges so avoid
+    // reassigning here which can cause ExpressionChangedAfterItHasBeenCheckedError
+    // under strict change-detection in Angular v21.
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,7 +101,28 @@ export class ThematicCardComponent implements AfterContentInit, OnChanges {
     // user toggles from leaking into the next item when the host component reuses
     // the same ThematicCard instance.
     if (changes['startCollapsed'] || changes['collapsible'] || changes['resetKey']) {
-      this.isCollapsed = this.collapsible && !!this.startCollapsed;
+      // Compute the desired collapsed state based on inputs.
+      const desired = this.collapsible && !!this.startCollapsed;
+
+      // If it's the first change we can safely set synchronously so the
+      // initial rendering matches the inputs. For subsequent changes we must
+      // NOT mutate template-bound properties synchronously since doing so
+      // during Angular's change detection can trigger
+      // ExpressionChangedAfterItHasBeenCheckedError under strict checks.
+      // Therefore use a microtask to apply the change when it's not the
+      // firstChange of the observed SimpleChange.
+      const changeObj = changes['startCollapsed'] ?? changes['collapsible'] ?? changes['resetKey'];
+      if (changeObj && changeObj.firstChange) {
+        this.isCollapsedSignal.set(desired);
+      } else {
+        // Use a macrotask so the change is applied after the current
+        // change-detection cycle finishes. This avoids triggering
+        // ExpressionChangedAfterItHasBeenCheckedError under strict checking
+        // while still ensuring the state updates shortly after inputs change.
+        setTimeout(() => {
+          this.isCollapsedSignal.set(desired);
+        }, 0);
+      }
     }
     // If the content may change, re-check for projected header
     if (changes['title']) {
@@ -110,13 +148,14 @@ export class ThematicCardComponent implements AfterContentInit, OnChanges {
         }
 
         // prefer label properties used by the UI
-        this.title = displayCandidate?.label || displayCandidate?.title || displayCandidate?.id || this.title;
+        this.title =
+          displayCandidate?.label || displayCandidate?.title || displayCandidate?.id || this.title;
       } catch {}
     }
   }
 
   toggle(): void {
     if (!this.collapsible) return;
-    this.isCollapsed = !this.isCollapsed;
+    this.isCollapsedSignal.update((v) => !v);
   }
 }

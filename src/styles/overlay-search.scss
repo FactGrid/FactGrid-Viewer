@@ -257,8 +257,13 @@
       font-size: 0.95rem !important;
     }
 
-    .search-items_panel .typo-item-label { font-size: 0.98rem !important; }
-    .search-items_panel .typo-item-desc { font-size: 0.86rem !important; line-height: 1.16 !important; }
+    .search-items_panel .typo-item-label {
+      font-size: 0.98rem !important;
+    }
+    .search-items_panel .typo-item-desc {
+      font-size: 0.86rem !important;
+      line-height: 1.16 !important;
+    }
   }
 
   /* Medium-small phones (360-412): slightly larger gutters */
@@ -287,7 +292,6 @@
       padding-right: calc(10px + env(safe-area-inset-right, 0px)) !important;
     }
   }
-
 
   /* Prevent body scrolling while overlay is open on mobile. The component toggles
      the class `no-overlay-scroll` on body; define the visual behaviour here. */
@@ -350,29 +354,31 @@
   text-decoration: none !important;
   color: inherit !important;
   border-radius: 6px !important;
-  transition: background-color 120ms ease, transform 100ms ease !important;
+  transition:
+    background-color 120ms ease,
+    transform 100ms ease !important;
 }
 
-  /* Mobile-specific tweaks for suggestion items: reduce right padding and account
+/* Mobile-specific tweaks for suggestion items: reduce right padding and account
      for safe-area insets so long suggestion text doesn't overflow to the right. */
-  .search-items_panel .compact-suggestion-item .compact-suggestion-link {
-    /* smaller horizontal padding to give content more room on small screens */
-    padding-inline-start: calc(8px + env(safe-area-inset-left, 0px)) !important;
-    /* give more horizontal breathing room but reduce right padding to avoid overflow */
-    padding-inline-end: calc(3px + env(safe-area-inset-right, 0px)) !important;
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-    box-sizing: border-box !important;
-  }
+.search-items_panel .compact-suggestion-item .compact-suggestion-link {
+  /* smaller horizontal padding to give content more room on small screens */
+  padding-inline-start: calc(8px + env(safe-area-inset-left, 0px)) !important;
+  /* give more horizontal breathing room but reduce right padding to avoid overflow */
+  padding-inline-end: calc(3px + env(safe-area-inset-right, 0px)) !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  box-sizing: border-box !important;
+}
 
-  /* Reduce inner right-margin of description to avoid the feeling of too much right-padding */
-  .search-items_panel .typo-item-desc {
-    margin-right: 0 !important;
-    padding-right: 0 !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-  }
+/* Reduce inner right-margin of description to avoid the feeling of too much right-padding */
+.search-items_panel .typo-item-desc {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
 
 .search-items_panel .compact-suggestion-item .compact-suggestion-link:hover,
 .search-history_panel .compact-suggestion-item .compact-suggestion-link:hover {
@@ -409,7 +415,7 @@
 
 .search-items_panel .compact-suggestion-item .typo-item-desc,
 .search-history_panel .compact-suggestion-item .typo-item-desc {
-  color: rgba(31,45,64,0.7) !important;
+  color: rgba(31, 45, 64, 0.7) !important;
   font-size: 0.92rem !important;
   line-height: 1.2 !important;
 }

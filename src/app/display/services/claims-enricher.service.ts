@@ -73,7 +73,11 @@ export class ClaimsEnricherService {
     // P3 ancestry) implies an organisation class; that signal is exposed
     // as item.sparqlFlags.Q12Test by ItemSparqlService.
     const orgIds = ['Q12', 'Q220833', 'Q140806', 'Q11214'];
-    const sparqlIndicatesOrg = !!(getEntity(item) && (getEntity(item) as any).sparqlFlags && (getEntity(item) as any).sparqlFlags.Q12Test === true);
+    const sparqlIndicatesOrg = !!(
+      getEntity(item) &&
+      (getEntity(item) as any).sparqlFlags &&
+      (getEntity(item) as any).sparqlFlags.Q12Test === true
+    );
     if (orgIds.some((id) => p2HasId(id)) || sparqlIndicatesOrg) {
       (claims.P2 as any).org = (claims.P2 as any).org ?? true;
     }
@@ -98,7 +102,8 @@ export class ClaimsEnricherService {
 
     // Activity-like types
     const activityIds = ['Q146602', 'Q21909', 'Q37073'];
-    if (activityIds.some((id) => p2HasId(id))) (claims.P2 as any).activity = (claims.P2 as any).activity ?? true;
+    if (activityIds.some((id) => p2HasId(id)))
+      (claims.P2 as any).activity = (claims.P2 as any).activity ?? true;
 
     // Place detection: treat P2 as place when either the P2 value is a known place id
     // or when top-level place-related properties are present on the item.
@@ -121,7 +126,11 @@ export class ClaimsEnricherService {
     const hasPlaceProps = placePropNames.some((pr) => claims[pr] !== undefined);
     // SPARQL may detect place ancestry via Q8Test — check it as an additional
     // signal when deciding whether the item should be considered a place.
-    const sparqlIndicatesPlace = !!(getEntity(item) && (getEntity(item) as any).sparqlFlags && (getEntity(item) as any).sparqlFlags.Q8Test === true);
+    const sparqlIndicatesPlace = !!(
+      getEntity(item) &&
+      (getEntity(item) as any).sparqlFlags &&
+      (getEntity(item) as any).sparqlFlags.Q8Test === true
+    );
     // Prefer explicit P2-derived signals (e.g. P2.org) over top-level place
     // props. Items like organisations may legitimately carry coordinates — in
     // such cases we prefer the P2 classification (organisation) unless P2

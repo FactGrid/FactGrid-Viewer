@@ -39,8 +39,8 @@ export interface Lang {
     MatTooltipModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
-    MatDividerModule
-],
+    MatDividerModule,
+  ],
 })
 export class AppComponent implements OnInit {
   private router = inject(Router);
@@ -116,15 +116,19 @@ export class AppComponent implements OnInit {
     this.projectSearch = this.lang.getTranslation('projectSearch', this.lang.selectedLang);
     this.projectName = this.lang.getTranslation('projectName', this.lang.selectedLang);
 
+    // Defer updates to avoid mutating template-bound state during initial
+    // change detection which can trigger ExpressionChangedAfterItHasBeenCheckedError.
     this.selectedResearchFieldService.showResearchField$.subscribe((show) => {
-      this.showResearchField = show;
+      Promise.resolve().then(() => (this.showResearchField = show));
     });
 
     // Keep track of whether we're on the root page so we can hide the Home icon
     this.isHome = this.router?.url === '/' || this.router?.url === '';
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((ev: any) => {
-      const url = ev?.urlAfterRedirects ?? ev?.url;
-      this.isHome = url === '/' || url === '';
+      Promise.resolve().then(() => {
+        const url = ev?.urlAfterRedirects ?? ev?.url;
+        this.isHome = url === '/' || url === '';
+      });
     });
   }
 

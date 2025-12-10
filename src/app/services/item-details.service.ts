@@ -52,7 +52,7 @@ export class ItemDetailsService {
         if (itemProperties[i] === 'P188') {
           let u = (statement.mainsnak.datavalue.value as any).substring(0, 5);
           if (u !== 'http:') {
-            statement.picture = (statement.mainsnak.datavalue.value as any);
+            statement.picture = statement.mainsnak.datavalue.value as any;
           }
         }
         if (itemProperties[i] === 'P320') {
@@ -158,7 +158,9 @@ export class ItemDetailsService {
               const date = this.setDate.setDate(value, lang);
               statement.mainsnak.timeOrder = value;
               let era = value.charAt(0);
-              statement.mainsnak.timeOrder = Number(value.replace(/\-/g, '').replace(/\+/g, '').substring(0, 8));
+              statement.mainsnak.timeOrder = Number(
+                value.replace(/\-/g, '').replace(/\+/g, '').substring(0, 8)
+              );
               if (era !== '+') {
                 statement.mainsnak.timeOrder = -Math.abs(statement.mainsnak.timeOrder);
               }
@@ -196,7 +198,7 @@ export class ItemDetailsService {
           qualifier2.display = display;
         }
 
-          // Si la propriété est "P2", on force timeOrder à "0"
+        // Si la propriété est "P2", on force timeOrder à "0"
         if (prop === 'P2') {
           statement.mainsnak.timeOrder = '0';
         }
@@ -279,11 +281,7 @@ export class ItemDetailsService {
                 continue;
               }
               let display = [];
-              for (
-                let n = 0;
-                n < claimsForProp[j].references[l].snaks[props[m]].length;
-                n++
-              ) {
+              for (let n = 0; n < claimsForProp[j].references[l].snaks[props[m]].length; n++) {
                 if (claimsForProp[j].references2[k][m].id === props[m]) {
                   const candidateSnak = claimsForProp[j].references[l].snaks[props[m]][n];
                   if (candidateSnak && candidateSnak.datavalue && candidateSnak.datavalue.value) {

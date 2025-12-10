@@ -33,7 +33,8 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideZoneChangeDetection(),importProvidersFrom(
+    provideZoneChangeDetection(),
+    importProvidersFrom(
       BrowserModule,
       FormsModule,
       ReactiveFormsModule,

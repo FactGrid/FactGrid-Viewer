@@ -67,8 +67,8 @@ import { MutatorService } from './services/mutator.service';
     MatSelectModule,
     NgxMatSelectSearchModule,
     ProjectSelectComponent,
-    StatementSearchComponent
-],
+    StatementSearchComponent,
+  ],
   templateUrl: './advanced-search.component.html',
   styleUrls: ['./advanced-search.component.scss'],
 })

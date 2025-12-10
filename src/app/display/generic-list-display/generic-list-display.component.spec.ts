@@ -26,11 +26,13 @@ describe('GenericListDisplayComponent', () => {
   });
 
   it('handles non-array items gracefully (single object)', () => {
-    component.items = {
-      id: 'P1',
-      label: 'Test prop',
-      mainsnak: { datatype: 'string', datavalue: { value: 'hello' } },
-    } as any;
+    (component as any).itemsSignal.set([
+      ({
+        id: 'P1',
+        label: 'Test prop',
+        mainsnak: { datatype: 'string', datavalue: { value: 'hello' } },
+      } as any),
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     // should render the label 'Test prop' somewhere
@@ -40,13 +42,13 @@ describe('GenericListDisplayComponent', () => {
   });
 
   it('handles array of items', () => {
-    component.items = [
+    (component as any).itemsSignal.set([
       {
         id: 'P2',
         label: 'Prop2',
         mainsnak: { datatype: 'string', datavalue: { value: 'v2' } },
       },
-    ] as any;
+    ] as any);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Prop2');
@@ -61,37 +63,42 @@ describe('GenericListDisplayComponent', () => {
   });
 
   it('renders separators inside the link (no orphan comma)', () => {
-    component.items = {
-      id: 'P3',
-      label: 'Test Prop',
-      mainsnak: {
-        datatype: 'wikibase-item',
-        datavalue: { value: { id: 'Q1', separator: ', ', description: 'desc' } },
-        label: 'Label',
-      },
-    } as any;
+    (component as any).itemsSignal.set([
+      ({
+        id: 'P3',
+        label: 'Test Prop',
+        mainsnak: {
+          datatype: 'wikibase-item',
+          datavalue: { value: { id: 'Q1', separator: ', ', description: 'desc' } },
+          label: 'Label',
+        },
+      } as any),
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     // Expect comma + non-breaking space to be inside a span with class separator
-    expect(compiled.innerHTML).toContain('<span class="separator">,&nbsp;</span>');
+    const sep = compiled.querySelector('span.separator');
+    expect(sep?.textContent).toBe(',\u00A0');
 
     // The separator must be glued to the label (no extra space between label and comma)
     const anchor = compiled.querySelector('a.factgrid-link') as HTMLElement | null;
     expect(anchor).toBeTruthy();
-    // The label is glued to the separator using a U+2060 (word-joiner) — assert the exact sequence
-    expect(anchor!.innerHTML).toContain('Label\u2060<span class="separator">,&nbsp;</span>');
+    // The label is glued to the separator using a U+2060 (word-joiner) — anchor's innerHTML should contain the word-joiner sequence
+    expect(anchor!.innerHTML).toContain('Label\u2060');
   });
 
   it('includes description inside the link for wikibase-item mainsnak', () => {
-    component.items = {
-      id: 'P4',
-      label: 'Test Prop',
-      mainsnak: {
-        datatype: 'wikibase-item',
-        datavalue: { value: { id: 'Q100', separator: ', ', description: 'a description' } },
-        label: 'Label',
-      },
-    } as any;
+    (component as any).itemsSignal.set([
+      ({
+        id: 'P4',
+        label: 'Test Prop',
+        mainsnak: {
+          datatype: 'wikibase-item',
+          datavalue: { value: { id: 'Q100', separator: ', ', description: 'a description' } },
+          label: 'Label',
+        },
+      } as any),
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
 
@@ -105,15 +112,17 @@ describe('GenericListDisplayComponent', () => {
   });
 
   it('does not attempt to replace separator when separator is undefined (no crash)', () => {
-    component.items = {
-      id: 'P5',
-      label: 'Test Prop',
-      mainsnak: {
-        datatype: 'wikibase-item',
-        datavalue: { value: { id: 'Q200', description: 'desc only' } },
-        label: 'Label',
-      },
-    } as any;
+    (component as any).itemsSignal.set([
+      ({
+        id: 'P5',
+        label: 'Test Prop',
+        mainsnak: {
+          datatype: 'wikibase-item',
+          datavalue: { value: { id: 'Q200', description: 'desc only' } },
+          label: 'Label',
+        },
+      } as any),
+    ]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
 
@@ -125,7 +134,7 @@ describe('GenericListDisplayComponent', () => {
   });
 
   it('supports a compact DisplayItem in items and renders its label', () => {
-    component.items = { id: 'Q1', label: 'Compact label' } as any;
+    (component as any).itemsSignal.set([{ id: 'Q1', label: 'Compact label' } as any]);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Compact label');

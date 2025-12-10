@@ -2,7 +2,7 @@
    THEMATIC CARD - Style unifié et moderne
    ======================================== */
 
-@use "../../../styles/_typography" as typo;
+@use '../../../styles/_typography' as typo;
 
 /* NOTE: Utilisation de .thematic-card (classe hôte) plutôt que :host car ViewEncapsulation.None désactive le prétraitement Angular des pseudo-sélecteurs. */
 /* Variables CSS locales pour contrôler l'espacement et l'apparence des cartes.
@@ -70,7 +70,7 @@
   margin-bottom: 6px !important;
   padding-left: 12px !important;
   padding-right: 8px !important;
-  
+
   /* Ensure wrapping happens for the whole block */
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
@@ -135,10 +135,10 @@
 
 .thematic-card--compact .visited-list .propertyStyle {
   /* Centralised typographic tokens — keep component-specific visual tone */
-    @include typo.typo-property-label();
-    /* Use central semantic token for property label color so the change to
+  @include typo.typo-property-label();
+  /* Use central semantic token for property label color so the change to
       `--typo-property-label-color` applies consistently across the app */
-    color: var(--typo-property-label-color, #000);
+  color: var(--typo-property-label-color, #000);
   display: inline;
   margin-right: 4px;
   padding: 0 1px;
@@ -295,11 +295,11 @@ header.card-header {
   justify-content: space-between;
   padding: 6px 16px 6px 16px; /* réduit vertical */
   border-bottom: 1px solid rgba(227, 232, 239, 0.5);
-      /* Use an attenuated primary color for header backgrounds by default.
+  /* Use an attenuated primary color for header backgrounds by default.
         This keeps the header visible but subtle (light tint of --color-primary).
         We use a fixed rgba fallback derived from the primary fallback (#6c7a89). */
-      background: var(--color-header-bg, rgba(108, 122, 137, 0.06));
-      border-bottom: 1px solid rgba(108, 122, 137, 0.12);
+  background: var(--color-header-bg, rgba(108, 122, 137, 0.06));
+  border-bottom: 1px solid rgba(108, 122, 137, 0.12);
   /* use darker text on very light warm backgrounds so icons/text remain readable */
   color: #111; /* prefer black-ish text for warm/light accent backgrounds */
   min-height: 34px; /* plus compact */
@@ -352,7 +352,7 @@ header.card-header .title,
 header.card-header .title-icon,
 .title-icon {
   font-size: 1.25rem; /* réduit */
-  color: black; 
+  color: black;
   opacity: 0.9;
   transition: transform 200ms ease;
 }

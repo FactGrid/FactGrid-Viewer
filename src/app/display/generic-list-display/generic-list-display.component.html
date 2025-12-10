@@ -1,5 +1,5 @@
 <div class="cardBackground">
-  @for (P of items; track P.id + '-' + pidx; let pidx = $index) {
+  @for (P of itemsSignal(); track P.id + '-' + pidx; let pidx = $index) {
     <div class="listStyle">
       @if (P.label) {
         <span class="propertyStyle hover-bg-light">
@@ -11,7 +11,7 @@
           >:
         </span>
       }
-      @for (M of (isArray(P) ? P : [P]); track M.id + '-' + idx; let idx = $index) {
+      @for (M of isArray(P) ? P : [P]; track M.id + '-' + idx; let idx = $index) {
         <div class="statementStyle">
           <div [ngStyle]="{ 'background-color': M?.rank === 'deprecated' ? '#f1f1f1' : '#ffffff' }">
             @if (M && M.mainsnak && M.mainsnak.datatype === 'time') {
@@ -33,15 +33,21 @@
             }
             @if (M && M.mainsnak && M.mainsnak.datatype === 'monolingualtext') {
               <span>
-                {{ M.mainsnak.datavalue.value.text | protectShortWords }}&#x2060;,&nbsp;{{ M.mainsnak.datavalue.value.language | protectShortWords }}
+                {{ M.mainsnak.datavalue.value.text | protectShortWords }}&#x2060;,&nbsp;{{
+                  M.mainsnak.datavalue.value.language | protectShortWords
+                }}
               </span>
             }
             @if (M && M.mainsnak && M.mainsnak.datatype === 'string') {
-              <span class="displayLayout">{{ M.mainsnak.datavalue.value | protectShortWords }}</span>
+              <span class="displayLayout">{{
+                M.mainsnak.datavalue.value | protectShortWords
+              }}</span>
             }
             @if (M && M.mainsnak && M.mainsnak.datatype === 'url') {
               <span class="displayLayout">
-                <a href="{{ M.mainsnak.datavalue.value }}" target="_blank">{{ M.mainsnak.datavalue.value | protectShortWords }}</a>
+                <a href="{{ M.mainsnak.datavalue.value }}" target="_blank">{{
+                  M.mainsnak.datavalue.value | protectShortWords
+                }}</a>
               </span>
             }
             @if (M && M.mainsnak) {
@@ -71,9 +77,17 @@
                   class="linkedItemText factgrid-link"
                   [routerLink]="['/item', M.mainsnak.datavalue.value.id]"
                 >
-                  {{ M.mainsnak.label | protectShortWords }}@if (M.mainsnak.datavalue.value.separator) {&#x2060;<span class="separator">{{ M.mainsnak.datavalue.value.separator.replace(' ', '\u00A0') }}</span>}
+                  {{ M.mainsnak.label | protectShortWords }}
+                  @if (M.mainsnak.datavalue.value.separator) {
+                    &#x2060;<span class="separator">{{
+                      M.mainsnak.datavalue.value.separator.replace(' ', '\u00A0')
+                    }}</span>
+                  }
                   @if (M.mainsnak.datavalue.value.description) {
-                    <span class="typo-item-desc generic-description-layout card-description-layout">{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span>
+                    <span
+                      class="typo-item-desc generic-description-layout card-description-layout"
+                      >{{ M.mainsnak.datavalue.value.description | protectShortWords }}</span
+                    >
                   }
                 </a>
               </span>
@@ -85,7 +99,15 @@
           @if (M['qualifiers-order']) {
             <div class="qualifierStyle">
               <span>
-                @for (Q of (isArray(M.qualifiers2) ? M.qualifiers2 : (M.qualifiers2 ? [M.qualifiers2] : [])); track Q.id + '-' + idx; let idx = $index) {
+                @for (
+                  Q of isArray(M.qualifiers2)
+                    ? M.qualifiers2
+                    : M.qualifiers2
+                      ? [M.qualifiers2]
+                      : [];
+                  track Q.id + '-' + idx;
+                  let idx = $index
+                ) {
                   <div>
                     <span
                       class="qualifierProperty hover-bg-light"
@@ -144,7 +166,9 @@
                         }
                         @if (D.datatype === 'external-id') {
                           <span>
-                            <a href="{{ D.link }}" target="_blank">{{ D.string | protectShortWords }}</a>
+                            <a href="{{ D.link }}" target="_blank">{{
+                              D.string | protectShortWords
+                            }}</a>
                           </span>
                           @if (!isLast) {
                             <span>&#x2060;,&nbsp;</span>
@@ -152,7 +176,9 @@
                         }
                         @if (D.datatype === 'url') {
                           <span class="displayLayout">
-                            <a href="{{ D.value }}" target="_blank">{{ D.value | protectShortWords }}</a>
+                            <a href="{{ D.value }}" target="_blank">{{
+                              D.value | protectShortWords
+                            }}</a>
                           </span>
                           @if (!isLast) {
                             <span>&#x2060;,&nbsp;</span>
@@ -161,11 +187,19 @@
                         @if (D.datatype === 'wikibase-item') {
                           <span>
                             <span class="label-no-break">
-                              <a class="linkedItemText" [routerLink]="['/item', D.id]">{{ D.label | protectShortWords }}</a>
-                              @if (D.description) {&#x2060;<span class="separator">{{ D.separator.replace(' ', '\u00A0') }}</span>}
+                              <a class="linkedItemText" [routerLink]="['/item', D.id]">{{
+                                D.label | protectShortWords
+                              }}</a>
+                              @if (D.description) {
+                                &#x2060;<span class="separator">{{
+                                  D.separator.replace(' ', '\u00A0')
+                                }}</span>
+                              }
                             </span>
                             @if (D.description) {
-                              <span class="description-text">{{ D.description | protectShortWords }}</span>
+                              <span class="description-text">{{
+                                D.description | protectShortWords
+                              }}</span>
                             }
                           </span>
                         }
@@ -197,20 +231,29 @@
                 >
                   <span
                     class="triangle-icon"
-                    [class.open]="openReferences.has(pidx + '-' + idx)"
+                    [class.open]="openReferences().has(pidx + '-' + idx)"
                   ></span>
                   <span class="references-label">Références</span>
                 </button>
               </div>
-              @if (openReferences.has(pidx + '-' + idx) && M['references2']) {
-                        @for (
-                          Ma of (isArray(M['references2']) ? M['references2'] : (M['references2'] ? [M['references2']] : []));
+              @if (openReferences().has(pidx + '-' + idx) && M['references2']) {
+                @for (
+                  Ma of isArray(M['references2'])
+                    ? M['references2']
+                    : M['references2']
+                      ? [M['references2']]
+                      : [];
                   track Ma.id + '-' + idx;
                   let idx = $index;
                   let isLast = $last
                 ) {
                   <div class="referenceStyle">
-                    @for (N of (isArray(Ma) ? Ma : [Ma]); track N.id + '-' + idx; let idx = $index; let isLast = $last) {
+                    @for (
+                      N of isArray(Ma) ? Ma : [Ma];
+                      track N.id + '-' + idx;
+                      let idx = $index;
+                      let isLast = $last
+                    ) {
                       <div class="inlineStyle">
                         <span
                           class="referenceProperty hover-bg-light"
@@ -220,8 +263,8 @@
                           {{ N.label }}:
                         </span>
                         <span>
-                            @for (
-                            P of (isArray(N.display) ? N.display : (N.display ? [N.display] : []));
+                          @for (
+                            P of isArray(N.display) ? N.display : N.display ? [N.display] : [];
                             track P.id + '-' + idx;
                             let idx = $index;
                             let isLast = $last
@@ -229,10 +272,18 @@
                             @if (N.datatype === 'wikibase-item') {
                               <span>
                                 <span class="label-no-break">
-                                  <a class="linkedItemText" [routerLink]="['/item', P.id]">{{ P.label | protectShortWords }}</a>
-                                  @if (P.separator) {&#x2060;<span class="separator">{{ P.separator.replace(' ', '\u00A0') }}</span>}
+                                  <a class="linkedItemText" [routerLink]="['/item', P.id]">{{
+                                    P.label | protectShortWords
+                                  }}</a>
+                                  @if (P.separator) {
+                                    &#x2060;<span class="separator">{{
+                                      P.separator.replace(' ', '\u00A0')
+                                    }}</span>
+                                  }
                                 </span>
-                                <span class="description-text">{{ P.description | protectShortWords }}</span>
+                                <span class="description-text">{{
+                                  P.description | protectShortWords
+                                }}</span>
                               </span>
                               @if (!isLast) {
                                 <span>&#x2060;,&nbsp;</span>
@@ -264,7 +315,9 @@
                             }
                             @if (N.datatype === 'external-id') {
                               <span>
-                                <a href="{{ P.link }}" target="_blank">{{ P.value | protectShortWords }}</a>
+                                <a href="{{ P.link }}" target="_blank">{{
+                                  P.value | protectShortWords
+                                }}</a>
                               </span>
                               @if (!isLast) {
                                 <span>&#x2060;,&nbsp;</span>

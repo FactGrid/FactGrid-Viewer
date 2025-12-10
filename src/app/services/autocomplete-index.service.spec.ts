@@ -7,7 +7,10 @@ describe('AutocompleteIndexService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [HttpClientTestingModule], providers: [AutocompleteIndexService] });
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [AutocompleteIndexService],
+    });
     service = TestBed.inject(AutocompleteIndexService);
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -20,7 +23,7 @@ describe('AutocompleteIndexService', () => {
     const testIndex = [
       { label: 'Frédéric', id: 'Q1', categories: ['firstName'] },
       { label: 'Fred', id: 'Q2', categories: ['firstName'] },
-      { label: 'Pierre', id: 'Q3', categories: ['firstName'] }
+      { label: 'Pierre', id: 'Q3', categories: ['firstName'] },
     ];
 
     const p = service.getMatches('Fred', 2, ['firstName']).then((res) => {

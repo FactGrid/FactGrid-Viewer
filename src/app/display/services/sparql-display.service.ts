@@ -84,8 +84,6 @@ export class SparqlDisplayService {
     }
   }
 
-  
-
   /**
    * À partir du flux brut `sparql$` (structure [[subject, rows], ...])
    * calcule pour toutes les cartes SPARQL les sujets, listes transformées

@@ -399,12 +399,22 @@
      very specific and constrained to the generic-list-display inside the
      thematic cards to avoid collateral effects elsewhere. */
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .linkedItemText,
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-qualifier-label,
+  :host
+    ::ng-deep
+    .thematic-cards-grid
+    app-generic-list-display
+    .qualifierStyle
+    .typo-qualifier-label,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-item-label,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,
   :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle span,
-  :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .card-description-layout {
+  :host
+    ::ng-deep
+    .thematic-cards-grid
+    app-generic-list-display
+    .qualifierStyle
+    .card-description-layout {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
@@ -413,7 +423,12 @@
 
   @media (max-width: 700px) {
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .linkedItemText,
-    :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-qualifier-label,
+    :host
+      ::ng-deep
+      .thematic-cards-grid
+      app-generic-list-display
+      .qualifierStyle
+      .typo-qualifier-label,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .typo-item-label,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle .displayLayout,
     :host ::ng-deep .thematic-cards-grid app-generic-list-display .qualifierStyle a,

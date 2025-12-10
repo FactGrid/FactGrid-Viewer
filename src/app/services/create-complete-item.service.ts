@@ -22,13 +22,13 @@ export class CreateCompleteItemService {
     const itemArray = this.setLanguage.item(res, this.lang.selectedLang);
     const firstItem = itemArray[0];
 
-    // Lancement SPARQL en tâche de fond (pas besoin d'attendre)
-    this.itemSparql.itemSparql(firstItem).subscribe({
-      error: (err) => console.error('Error while populating SPARQL data:', err),
-    });
-
-    // Rendu immédiat de l'item d'affichage, récupération des listes en arrière-plan
-    return this.createItem.createItemToDisplay(firstItem, this.lang.selectedLang).pipe(
+    // CRITICAL: Wait for SPARQL data to be attached to the item BEFORE emitting
+    // This ensures item.sparql is defined when the display component receives it
+    return this.itemSparql.itemSparql(firstItem).pipe(
+      switchMap((itemWithSparql) => {
+        // Now create the display item with SPARQL data attached
+        return this.createItem.createItemToDisplay(itemWithSparql, this.lang.selectedLang);
+      }),
       tap((display) => {
         // Déclenche les listes sans bloquer l'émission principale
         this.itemInfo.infoListBuilding(firstItem).subscribe({

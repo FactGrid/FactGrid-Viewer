@@ -16,7 +16,7 @@ describe('Integration: ItemSparqlService -> SparqlDisplayService', () => {
     sparqlDisplay = new SparqlDisplayService();
   });
 
-  it('should produce SPARQL tuples then build UI state for Q8 (Buildings)', (done) => {
+  it('should produce SPARQL tuples then build UI state for Q8 (Buildings)', async () => {
     // Mock request service so itemSparql produces predictable tuples
     const mockRequest: any = {
       getList: (url: string) => {
@@ -26,37 +26,51 @@ describe('Integration: ItemSparqlService -> SparqlDisplayService', () => {
         }
 
         // Q8Sparql SELECT response
-        return of({ results: { bindings: [{ item: { value: 'https://database.factgrid.de/entity/Q1' }, itemLabel: { value: 'House' } }] } });
+        return of({
+          results: {
+            bindings: [
+              {
+                item: { value: 'https://database.factgrid.de/entity/Q1' },
+                itemLabel: { value: 'House' },
+              },
+            ],
+          },
+        });
       },
       getAsk: (url: string) => of(false),
       getItem: (u: string) => of({}),
     };
 
-    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => (k === 'buildingTitle' ? 'Buildings' : '') };
+    const mockLang: any = {
+      selectedLang: 'en',
+      getTranslation: (k: string) => (k === 'buildingTitle' ? 'Buildings' : ''),
+    };
 
     // inject mocks into itemSparql service instance
     (itemSvc as any).request = mockRequest;
     (itemSvc as any).lang = mockLang;
 
-    const mockItem = { id: 'QINT', claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q8' } } } }], P165: [] } };
+    const mockItem = {
+      id: 'QINT',
+      claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q8' } } } }], P165: [] },
+    };
 
     itemSvc.itemSparql(mockItem).subscribe((itemOut) => {
       expect(itemOut.sparql).toBeDefined();
 
       // itemOut.sparql is a forkJoin observable producing SparqlTuple[]
-      const sparql$ = (itemOut.sparql as any);
+      const sparql$ = itemOut.sparql as any;
 
       sparqlDisplay.buildAllCardsState(sparql$, mockLang).subscribe((state) => {
         // sparql4 should have recognized Q8 -> 'Buildings'
         expect(state.sparql4.title).toBe('Buildings');
-        expect(Array.isArray(state.sparql4.list)).toBeTrue();
+        expect(Array.isArray(state.sparql4.list)).toBe(true);
         expect(state.sparql4.list.length).toBeGreaterThan(0);
-        done();
       });
     });
   });
 
-  it('should produce a current address tuple and preserve display_name in sparql3', (done) => {
+  it('should produce a current address tuple and preserve display_name in sparql3', async () => {
     const mockRequest: any = {
       getList: (url: string) => {
         // batchAskQuery -> mark isAddress true so sparql3->currentAddress flows
@@ -71,61 +85,93 @@ describe('Integration: ItemSparqlService -> SparqlDisplayService', () => {
       getItem: (u: string) => of({ display_name: 'Rue Example 1, Paris' }),
     };
 
-    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => (k === 'addressTitle' ? 'Address' : '') };
+    const mockLang: any = {
+      selectedLang: 'en',
+      getTranslation: (k: string) => (k === 'addressTitle' ? 'Address' : ''),
+    };
 
     (itemSvc as any).request = mockRequest;
     (itemSvc as any).lang = mockLang;
 
-    const mockItem = { id: 'QINT2', claims: { P48: [{ mainsnak: { datavalue: { value: { latitude: 48.8566, longitude: 2.3522 } } } }], P2: [], P165: [] } };
+    const mockItem = {
+      id: 'QINT2',
+      claims: {
+        P48: [{ mainsnak: { datavalue: { value: { latitude: 48.8566, longitude: 2.3522 } } } }],
+        P2: [],
+        P165: [],
+      },
+    };
 
     itemSvc.itemSparql(mockItem).subscribe((itemOut) => {
-      const sparql$ = (itemOut.sparql as any);
+      const sparql$ = itemOut.sparql as any;
       sparqlDisplay.buildAllCardsState(sparql$, mockLang).subscribe((state) => {
         // sparql3 should carry the current address tuple (label Q16200)
         expect(state.sparql3.subject).toBe('Q16200');
         expect(state.sparql3.list.length).toBeGreaterThan(0);
         expect(state.sparql3.list[0].itemLabel.value).toContain('Rue Example');
-        done();
       });
     });
   });
 
-  it('should build titles & lists for list (Q172192) and set (Q945258) on sparql3', (done) => {
+  // TODO: vitest-migration: The 'done' callback was used in an unhandled way. Please migrate manually.
+  // TODO: vitest-migration: The 'done' callback was used in an unhandled way. Please migrate manually.
+  // TODO: vitest-migration: The 'done' callback was used in an unhandled way. Please migrate manually.
+  it('should build titles & lists for list (Q172192) and set (Q945258) on sparql3', async () => {
     // We'll craft two separate mock runs: first list (Q172192), then set (Q945258)
-    const run = (subjectId: string, expTitleKey: string, cb: () => void) => {
-      const mockRequest: any = {
-        getList: (url: string) => {
-          // batchAskQuery -> mark list/set true as needed
-          if (url?.includes('BIND(EXISTS')) {
-            if (subjectId === 'Q172192') return of({ results: { bindings: [{ isList: { value: 'true' } }] } });
-            if (subjectId === 'Q945258') return of({ results: { bindings: [{ isSet: { value: 'true' } }] } });
-          }
-          // SELECT response for list/set queries
-          return of({ results: { bindings: [{ item: { value: 'https://database.factgrid.de/entity/Q10' }, itemLabel: { value: 'Member X' } }] } });
-        },
-        getAsk: (url: string) => of(false),
-        getItem: (u: string) => of({}),
-      };
+    const run = (subjectId: string, expTitleKey: string) =>
+      new Promise<void>((resolve) => {
+        const mockRequest: any = {
+          getList: (url: string) => {
+            // batchAskQuery -> mark list/set true as needed
+            if (url?.includes('BIND(EXISTS')) {
+              if (subjectId === 'Q172192')
+                return of({ results: { bindings: [{ isList: { value: 'true' } }] } });
+              if (subjectId === 'Q945258')
+                return of({ results: { bindings: [{ isSet: { value: 'true' } }] } });
+            }
+            // SELECT response for list/set queries
+            return of({
+              results: {
+                bindings: [
+                  {
+                    item: { value: 'https://database.factgrid.de/entity/Q10' },
+                    itemLabel: { value: 'Member X' },
+                  },
+                ],
+              },
+            });
+          },
+          getAsk: (url: string) => of(false),
+          getItem: (u: string) => of({}),
+        };
 
-      const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => (k === expTitleKey ? (expTitleKey === 'listTitle' ? 'List' : 'Set') : '') };
+        const mockLang: any = {
+          selectedLang: 'en',
+          getTranslation: (k: string) =>
+            k === expTitleKey ? (expTitleKey === 'listTitle' ? 'List' : 'Set') : '',
+        };
 
-      (itemSvc as any).request = mockRequest;
-      (itemSvc as any).lang = mockLang;
+        (itemSvc as any).request = mockRequest;
+        (itemSvc as any).lang = mockLang;
 
-      const mockItem = { id: 'QINT3', claims: { P2: [{ mainsnak: { datavalue: { value: { id: subjectId } } } }], P165: [] } };
+        const mockItem = {
+          id: 'QINT3',
+          claims: { P2: [{ mainsnak: { datavalue: { value: { id: subjectId } } } }], P165: [] },
+        };
 
-      itemSvc.itemSparql(mockItem).subscribe((itemOut) => {
-        const sparql$ = (itemOut.sparql as any);
-        sparqlDisplay.buildAllCardsState(sparql$, mockLang).subscribe((state) => {
-          expect(state.sparql3.subject).toBe(subjectId);
-          expect(state.sparql3.title).toBeTruthy();
-          expect(state.sparql3.list.length).toBeGreaterThan(0);
-          cb();
+        itemSvc.itemSparql(mockItem).subscribe((itemOut) => {
+          const sparql$ = itemOut.sparql as any;
+          sparqlDisplay.buildAllCardsState(sparql$, mockLang).subscribe((state) => {
+            expect(state.sparql3.subject).toBe(subjectId);
+            expect(state.sparql3.title).toBeTruthy();
+            expect(state.sparql3.list.length).toBeGreaterThan(0);
+            resolve();
+          });
         });
       });
-    };
 
-    // run for list then set
-    run('Q172192', 'listTitle', () => run('Q945258', 'setTitle', done));
+    // run for list then set sequentially
+    await run('Q172192', 'listTitle');
+    await run('Q945258', 'setTitle');
   });
 });

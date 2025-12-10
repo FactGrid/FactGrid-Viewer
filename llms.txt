@@ -4,7 +4,7 @@ But
 - UI Angular pour naviguer la base FactGrid (Wikibase).
 
 Stack principal
-- Angular 20, Angular Material, RxJS, Leaflet.
+- Angular 21 (standalone components, signals), Angular Material, RxJS, Leaflet.
 - Node LTS recommandé (ex. 20.x).
 
 Points d’entrée importants

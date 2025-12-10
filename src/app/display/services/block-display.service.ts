@@ -53,7 +53,10 @@ export class BlockDisplayService {
     return targetArray;
   }
 
-  setExcludedProperties(item: ItemDisplayTuple | EnrichedItemTuple, excludedProperties: any[]): any[] {
+  setExcludedProperties(
+    item: ItemDisplayTuple | EnrichedItemTuple,
+    excludedProperties: any[]
+  ): any[] {
     return this.populateDisplay(item, excludedProperties, EXCLUDED_DISPLAY_PROPERTIES);
   }
 
@@ -105,7 +108,10 @@ export class BlockDisplayService {
     return this.populateDisplay(item, careerAndActivities, CAREER_DISPLAY_PROPERTIES);
   }
 
-  setSociabilityDisplay(item: ItemDisplayTuple | EnrichedItemTuple, sociabilityAndCulture: any[]): any[] {
+  setSociabilityDisplay(
+    item: ItemDisplayTuple | EnrichedItemTuple,
+    sociabilityAndCulture: any[]
+  ): any[] {
     return this.populateDisplay(item, sociabilityAndCulture, SOCIABILITY_DISPLAY_PROPERTIES);
   }
 
@@ -176,7 +182,8 @@ export class BlockDisplayService {
 
     if (getEntity(item)?.claims?.P76 !== undefined) {
       getEntity(item)!.claims.P76.url =
-        'https://explore.gnd.network/gnd/' + getEntity(item)!.claims.P76[0].mainsnak.datavalue.value;
+        'https://explore.gnd.network/gnd/' +
+        getEntity(item)!.claims.P76[0].mainsnak.datavalue.value;
     }
     if (getEntity(item)?.claims?.P368 !== undefined) {
       getEntity(item)!.claims.P368.url =
@@ -200,8 +207,8 @@ export class BlockDisplayService {
       let parish = value.slice(5, 7);
       let es = value.slice(7, 9);
       if (getEntity(item)!.claims.P650.externalLink !== undefined) {
-        let url = getEntity(item)!.claims.P650.externalLink
-          .replace('$1', province)
+        let url = getEntity(item)!
+          .claims.P650.externalLink.replace('$1', province)
           .replace('$2', municipality)
           .replace('$3', parish)
           .replace('$4', es)

@@ -71,7 +71,7 @@ describe('BlockDisplayService', () => {
     service.setPlaceDisplay(item, target);
     expect(target.length).toBe(1);
     // ensure index entry removed
-    expect(item[1].includes('P625')).toBeFalse();
+    expect(item[1].includes('P625')).toBe(false);
 
     // calling again should not duplicate
     service.setPlaceDisplay(item, target);

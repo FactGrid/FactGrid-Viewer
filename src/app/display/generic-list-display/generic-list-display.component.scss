@@ -1,10 +1,12 @@
-@use "../../../styles/_typography" as typo;
+@use '../../../styles/_typography' as typo;
 
 .linkedItemText {
   /* Interaction feedback for inline item links */
   padding: 0;
   border-radius: 4px;
-  transition: background-color 150ms ease, color 120ms ease;
+  transition:
+    background-color 150ms ease,
+    color 120ms ease;
   cursor: pointer;
 }
 
@@ -55,28 +57,28 @@
 .hover-bg-light {
   padding: 0 !important;
 
-:host ::ng-deep button.references-toggle-btn,
-:host ::ng-deep .references-toggle-btn.mdc-button,
-:host ::ng-deep .references-toggle-btn.mat-mdc-button,
-:host ::ng-deep .references-toggle-btn.mat-mdc-button-base {
-  background-color: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
+  :host ::ng-deep button.references-toggle-btn,
+  :host ::ng-deep .references-toggle-btn.mdc-button,
+  :host ::ng-deep .references-toggle-btn.mat-mdc-button,
+  :host ::ng-deep .references-toggle-btn.mat-mdc-button-base {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
 
-:host ::ng-deep .references-toggle-btn .mat-button-focus-overlay,
-:host ::ng-deep .references-toggle-btn .mat-mdc-focus-indicator,
-:host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple,
-:host ::ng-deep .references-toggle-btn .mat-mdc-button-persistent-ripple,
-:host ::ng-deep .references-toggle-btn .mat-mdc-button-touch-target,
-:host ::ng-deep .references-toggle-btn .mdc-button__focus-ring,
-:host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple,
-:host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple:after {
-  background-color: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-}
+  :host ::ng-deep .references-toggle-btn .mat-button-focus-overlay,
+  :host ::ng-deep .references-toggle-btn .mat-mdc-focus-indicator,
+  :host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple,
+  :host ::ng-deep .references-toggle-btn .mat-mdc-button-persistent-ripple,
+  :host ::ng-deep .references-toggle-btn .mat-mdc-button-touch-target,
+  :host ::ng-deep .references-toggle-btn .mdc-button__focus-ring,
+  :host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple,
+  :host ::ng-deep .references-toggle-btn .mat-mdc-button-ripple:after {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
   margin: 0 !important;
 }
 // Bloc pour forcer l'affichage des références sur une nouvelle ligne
@@ -263,9 +265,9 @@
 // Indentation plus importante pour les statements (valeurs, qualifiers, références)
 // Indentation plus importante pour les statements (valeurs, qualifiers, références)
 .statementStyle {
-    /* statements/values appear below the property and are indented so
+  /* statements/values appear below the property and are indented so
       qualifiers and references line up neatly with the main value. */
-    padding: 6px 0 6px var(--statement-indent);
+  padding: 6px 0 6px var(--statement-indent);
   width: auto;
   max-width: 100%;
   line-height: 1.7;
@@ -276,7 +278,6 @@
     // text-indent: -20px;   /* retrait négatif pour la première ligne */
     // marginleft: 20px;    /* décale tout le bloc, y compris les lignes suivantes */
   }
-
 }
 
 .factgrid-link:hover {
@@ -336,7 +337,6 @@
   font-style: italic;
   font-weight: 500;
 }
-
 
 .generic-description-layout {
   /* layout-only for inline descriptions next to labels in generic lists */

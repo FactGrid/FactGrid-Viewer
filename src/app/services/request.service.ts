@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, forkJoin, of } from 'rxjs';
+import { Observable, forkJoin, of, from, throwError, timer } from 'rxjs';
 import { saveAs } from 'file-saver';
-import { expand, map, reduce, catchError, tap, shareReplay, switchMap } from 'rxjs/operators';
+import { expand, map, reduce, catchError, tap, shareReplay, switchMap, retryWhen, scan, mergeMap } from 'rxjs/operators';
 import { SparqlResults } from './sparql-types';
+import { extractQidFromString } from '../utils/id-utils';
 import { WikibaseEntity } from '../models/wikibase-entity.model';
 
 // ---- typed response shapes (small, pragmatic set) ----
@@ -45,6 +46,28 @@ export interface GetEntitiesResponse {
 })
 export class RequestService {
   constructor(private http?: HttpClient) {}
+
+  /**
+   * Safe GET wrapper with retry-exponential backoff.
+   * Returns an Observable that retries a few times on network or transient errors.
+   * The caller can still use `catchError` to provide a fallback value.
+   */
+  private safeGet<T = any>(url: string, options: any = {}, attempts = 3, baseDelayMs = 300): Observable<any> {
+    return this.http!.get<any>(url, options).pipe(
+      retryWhen((errors) =>
+        errors.pipe(
+          scan((acc, err) => {
+            const next = acc + 1;
+            if (next >= attempts) {
+              throw err;
+            }
+            return next;
+          }, 0),
+          mergeMap((retryCount) => timer(Math.pow(2, retryCount - 1) * baseDelayMs))
+        )
+      )
+    );
+  }
 
   // simple in-memory cache for commons metadata to avoid repeated requests
   // cache stores resolved CommonsImageMetadata (or null when none available)
@@ -123,15 +146,24 @@ export class RequestService {
     const lists = [...propertiesLists];
     while (lists.length < 8) lists.push(undefined);
 
-    const requests = lists.map((list) =>
-      list
-        ? this.http
-            .get<GetEntitiesResponse>(this.baseGetURL + list + this.getUrlSuffix)
-            .pipe(catchError(() => of(undefined)))
-        : of(undefined)
+    // Limit outward concurrency when making multiple batched requests.
+    const entries = lists.map((list, index) => ({ list, index }));
+    return from(entries).pipe(
+      mergeMap(
+        (entry) =>
+          entry.list
+            ? this.safeGet<GetEntitiesResponse>(this.baseGetURL + entry.list + this.getUrlSuffix).pipe(
+                catchError(() => of(undefined)),
+                map((res) => ({ idx: entry.index, res }))
+              )
+            : of({ idx: entry.index, res: undefined }),
+        3 // concurrency limit
+      ),
+      reduce((acc: (GetEntitiesResponse | undefined)[], cur: { idx: number; res: any }) => {
+        acc[cur.idx] = cur.res;
+        return acc;
+      }, Array(lists.length).fill(undefined as GetEntitiesResponse | undefined))
     );
-
-    return forkJoin(requests);
   }
 
   /**
@@ -141,18 +173,57 @@ export class RequestService {
     const lists = [...itemsLists];
     while (lists.length < 8) lists.push(undefined);
 
-    const requests = lists.map((list) =>
-      list
-        ? this.http
-            .get<GetEntitiesResponse>(this.baseGetURL + list + this.getUrlSuffix)
-            .pipe(catchError(() => of(undefined)))
-        : of(undefined)
+    const entries = lists.map((list, index) => ({ list, index }));
+    return from(entries).pipe(
+      mergeMap(
+        (entry) =>
+          entry.list
+            ? this.safeGet<GetEntitiesResponse>(this.baseGetURL + entry.list + this.getUrlSuffix).pipe(
+                catchError(() => of(undefined)),
+                map((res) => ({ idx: entry.index, res }))
+              )
+            : of({ idx: entry.index, res: undefined }),
+        3 // concurrency
+      ),
+      reduce((acc: (GetEntitiesResponse | undefined)[], cur: { idx: number; res: any }) => {
+        acc[cur.idx] = cur.res;
+        return acc;
+      }, Array(lists.length).fill(undefined as GetEntitiesResponse | undefined))
     );
-
-    return forkJoin(requests);
   }
 
-  searchItem(label: string, lang: string, offset: number = 0, limit: number = 50): Observable<WBSearchResponse> {
+  searchItem(
+    label: string,
+    lang: string,
+    offset: number = 0,
+    limit: number = 50
+  ): Observable<WBSearchResponse> {
+    // If the query is an explicit Q/P id (e.g. Q123, item:Q123, wd:Q 123), return the wbgetentities response
+    const id = extractQidFromString(label);
+    if (id) {
+      const res$ = this.safeGet<GetEntitiesResponse>(this.baseGetURL + id + this.getUrlSuffix).pipe(
+        map((res) => {
+          const entities = res?.entities || {};
+          // convert to WBSearchResponse shape
+          const search: WBSearchEntry[] = Object.keys(entities).map((k) => {
+            const e: any = entities[k];
+            return {
+              id: e.id || k,
+              title: e.id || k,
+              label: e.labels?.[lang]?.value || e.labels?.en?.value || '',
+              description: e.descriptions?.[lang]?.value || e.descriptions?.en?.value || '',
+              aliases: (e.aliases?.[lang] || []).map((a: any) => a.value) || [],
+            } as WBSearchEntry;
+          });
+          return {
+            searchinfo: { totalhits: search.length },
+            search,
+          } as WBSearchResponse;
+        }),
+        catchError(() => of({ searchinfo: { totalhits: 0 }, search: [] } as WBSearchResponse))
+      );
+      return res$ as Observable<WBSearchResponse>;
+    }
     const params = new HttpParams()
       .set('action', 'wbsearchentities')
       .set('search', label)
@@ -162,7 +233,7 @@ export class RequestService {
       .set('format', 'json')
       .set('origin', '*')
       .set('offset', offset.toString());
-    return this.http.get('https://database.factgrid.de//w/api.php', { params });
+    return this.safeGet<WBSearchResponse>('https://database.factgrid.de//w/api.php', { params }).pipe(catchError(() => of(undefined)) as any);
   }
 
   searchProperty(label: string, lang: string): Observable<WBSearchResponse> {
@@ -175,26 +246,26 @@ export class RequestService {
       .set('limit', '50')
       .set('format', 'json')
       .set('origin', '*');
-    return this.http.get('https://database.factgrid.de//w/api.php', { params });
+    return this.safeGet<WBSearchResponse>('https://database.factgrid.de//w/api.php', { params }).pipe(catchError(() => of(undefined)) as any);
   }
 
   getAsk(re: string): Observable<boolean> {
     // SPARQL ASK endpoint returns an object like { boolean: true }
     // Normalize to boolean and return false on any error.
-    return this.http.get<{ boolean?: boolean }>(re).pipe(
+    return this.safeGet<{ boolean?: boolean }>(re).pipe(
       map((res) => !!res?.boolean),
       catchError(() => of(false))
     );
   }
 
   getItem(re: string): Observable<GetEntitiesResponse | undefined> {
-    return this.http.get<GetEntitiesResponse>(re).pipe(catchError(() => of(undefined)));
+    return this.safeGet<GetEntitiesResponse>(re).pipe(catchError(() => of(undefined)));
   }
 
   getList(sparql: string): Observable<SparqlResults> {
     if (sparql !== undefined) {
       const params = new HttpParams().set('format', 'json');
-      return this.http.get<SparqlResults>(sparql, { params }).pipe(
+      return this.safeGet<SparqlResults>(sparql, { params }).pipe(
         catchError(() => of({ results: { bindings: [] }, head: { vars: [] } } as SparqlResults))
       );
     }
@@ -205,9 +276,7 @@ export class RequestService {
     if (sparql !== undefined) {
       const headers = new HttpHeaders().set('Accept', 'text/csv');
       const params = new HttpParams();
-      this.http
-        .get(sparql, { headers, responseType: 'arraybuffer', params })
-        .subscribe((response) => this.downLoadFile(response));
+      this.safeGet(sparql, { headers, responseType: 'arraybuffer', params }).pipe(catchError(() => of(undefined))).subscribe((response) => this.downLoadFile(response));
     }
   }
 
@@ -218,7 +287,7 @@ export class RequestService {
       .set('prop', 'text')
       .set('formatversion', '2')
       .set('origin', '*');
-    return this.http.get('https://database.factgrid.de//w/api.php?action=parse', { params });
+    return this.safeGet('https://database.factgrid.de//w/api.php?action=parse', { params }).pipe(catchError(() => of(undefined)) as any);
   }
 
   getItemTalkPageHtml(itemId: string): Observable<any> {
@@ -231,7 +300,7 @@ export class RequestService {
       .set('rvprop', 'content')
       .set('origin', '*');
     const url = 'https://database.factgrid.de/w/api.php';
-    return this.http.get(url, { params }).pipe(catchError(() => of(undefined)));
+    return this.safeGet(url, { params }).pipe(catchError(() => of(undefined)));
   }
 
   getStat() {
@@ -240,7 +309,7 @@ export class RequestService {
       .set('meta', 'siteinfo')
       .set('siprop', 'statistics')
       .set('origin', '*');
-    return this.http.get('https://database.factgrid.de//w/api.php?action=query', { params });
+    return this.safeGet('https://database.factgrid.de//w/api.php?action=query', { params }).pipe(catchError(() => of(undefined)) as any);
   }
 
   newSparqlAddress(address: string) {
@@ -258,14 +327,12 @@ export class RequestService {
     if (url !== undefined) {
       const headers = new HttpHeaders().set('Accept', 'text/csv');
       const params = new HttpParams();
-      this.http
-        .get(url, { headers, responseType: 'arraybuffer', params })
-        .subscribe((response) => this.downLoadFile(response));
+      this.safeGet(url, { headers, responseType: 'arraybuffer', params }).pipe(catchError(() => of(undefined))).subscribe((response) => this.downLoadFile(response));
     }
   }
 
   getProjectList(re: string): Observable<any> {
-    return this.http.get(re).pipe(catchError(() => of(false)));
+    return this.safeGet(re).pipe(catchError(() => of(false)) as any);
   }
 
   getBackList(item: string, lang: string): Observable<any> {
@@ -284,8 +351,8 @@ export class RequestService {
       .set('gbltitle', item)
       .set('origin', '*');
     const params2 = params1.set('uselang', 'en');
-    const u1 = this.http.get(prefix, { params: params1 }).pipe(catchError(() => of(undefined)));
-    const u2 = this.http.get(prefix, { params: params2 }).pipe(catchError(() => of(undefined)));
+    const u1 = this.safeGet(prefix, { params: params1 }).pipe(catchError(() => of(undefined)));
+    const u2 = this.safeGet(prefix, { params: params2 }).pipe(catchError(() => of(undefined)));
     return forkJoin([u1, u2]);
   }
 
@@ -300,7 +367,7 @@ export class RequestService {
       'https://database.factgrid.de/query/sparql?query=' +
       encodeURIComponent(sparql) +
       '&format=json';
-    return this.http.get<any>(url).pipe(
+    return this.safeGet<any>(url).pipe(
       map((res) =>
         res.results.bindings.map((b) => ({
           id: b.item.value.split('/').pop(),
@@ -315,10 +382,7 @@ export class RequestService {
    * Default behavior: return up to `limit` titles and the server-side total if available.
    * This will request pages of up to 50 results and stop early once accumulated >= limit.
    */
-  getQidsList(
-    search: string,
-    limit: number = 50
-  ): Observable<{ titles: string[]; total: number }> {
+  getQidsList(search: string, limit: number = 50): Observable<{ titles: string[]; total: number }> {
     const perPage = Math.min(limit, 50);
 
     const baseParams = new HttpParams()
@@ -330,10 +394,13 @@ export class RequestService {
       .set('srnamespace', '120')
       .set('origin', '*');
 
-    const fetchPage = (sroffset?: number, acc: string[] = []): Observable<{ titles: string[]; total: number }> => {
+    const fetchPage = (
+      sroffset?: number,
+      acc: string[] = []
+    ): Observable<{ titles: string[]; total: number }> => {
       let params = baseParams;
       if (sroffset !== undefined) params = params.set('sroffset', sroffset.toString());
-      return this.http.get<any>('https://database.factgrid.de/w/api.php', { params }).pipe(
+      return this.safeGet<any>('https://database.factgrid.de/w/api.php', { params }).pipe(
         switchMap((resp) => {
           const newTitles = resp?.query?.search?.map((item: any) => item.title) ?? [];
           const all = acc.concat(newTitles);

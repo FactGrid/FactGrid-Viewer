@@ -63,7 +63,10 @@ export class SearchFilterService {
     if (showInDescription && normalizedDesc.includes(searchTerm)) return true;
 
     // Otherwise, do prefix word matching for tokens
-    const tokens = (searchTerm || '').split(' ').map((t) => t.trim()).filter(Boolean);
+    const tokens = (searchTerm || '')
+      .split(' ')
+      .map((t) => t.trim())
+      .filter(Boolean);
     if (tokens.length === 0) return true;
 
     const labelWords = normalizedLabel.split(/[^a-z0-9]+/).filter(Boolean);

@@ -8,6 +8,8 @@ import {
   inject,
   TemplateRef,
   ChangeDetectorRef,
+  signal,
+  computed,
 } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,20 +48,58 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   constructor() {}
   @Input() sparqlType: SparqlDisplayType = 'sparql0';
   @Input() sparqlSubject: string;
-  @Input() sparqlData: any[];
+  private _sparqlData: any[];
+  @Input() 
+  set sparqlData(value: any[]) {
+    this._sparqlData = value;
+    if (value && value.length > 0) {
+      this.listWithoutDuplicateSignal.set(value);
+      this.listSignal.set(value);
+    } else {
+      this.listSignal.set([]);
+      this.listWithoutDuplicateSignal.set([]);
+    }
+    // Trigger change detection for OnPush strategy
+    this.cdr.markForCheck();
+  }
+  get sparqlData(): any[] {
+    return this._sparqlData;
+  }
   @Input() langService: any; // doit être passé depuis le parent
   // Optionnel: si le parent fournit déjà un titre, on peut l'utiliser
   @Input() parentTitle?: string;
   @Input() customRowTemplate?: TemplateRef<any>; // pour ultra-flexibilité
 
-  list: any[] = [];
-  isList: boolean = false;
-  isSearch: boolean = false;
-  private subTitleSubject = new BehaviorSubject<string>('SPARQL 1');
-  subTitle$ = this.subTitleSubject.asObservable();
-  isWorks: boolean = false;
-  query: string = '';
-  listWithoutDuplicate: any[] = [];
+  public listSignal = signal<any[]>([]);
+  private listWithoutDuplicateSignal = signal<any[]>([]);
+  // list is now signal-only via `listSignal`
+  readonly isList = computed(() => this.listSignal().length > 0);
+  readonly isSearch = computed(() => this.listSignal().length > 15);
+  // title derived as a computed signal (maintains previous behavior)
+  readonly subTitle = computed(() =>
+    this.parentTitle
+      ? this.parentTitle
+      : this.sparqlDisplayService.getTitle(
+          this.sparqlType,
+          this.sparqlSubject,
+          this.langService,
+          this.listSignal()
+        )
+  );
+  isWorks = computed(() => !!this.subTitle());
+  private querySignal = signal('');
+  get query(): string {
+    return this.querySignal();
+  }
+  set query(v: string) {
+    this.querySignal.set(v);
+  }
+  get listWithoutDuplicate(): any[] {
+    return this.listWithoutDuplicateSignal();
+  }
+  set listWithoutDuplicate(v: any[]) {
+    this.listWithoutDuplicateSignal.set(v ?? []);
+  }
   rowHeight: number = 48;
   maxViewportHeight: number = 400;
 
@@ -70,33 +110,10 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.query = '';
-    this.isWorks = false;
-    this.isList = false;
-    this.isSearch = false;
+    this.querySignal.set('');
 
-    // La liste est déjà transformée/dédupliquée côté parent
-    if (this.sparqlData && this.sparqlData.length > 0) {
-      this.isList = true;
-      this.listWithoutDuplicate = this.sparqlData;
-      this.list = this.sparqlData;
-      if (this.list.length > 15) this.isSearch = true;
-    } else {
-      this.list = [];
-    }
-
-    // Titre dynamique: si le parent fournit un titre, on le privilégie, sinon on calcule ici.
-    const newTitle = this.parentTitle
-      ? this.parentTitle
-      : this.sparqlDisplayService.getTitle(
-          this.sparqlType,
-          this.sparqlSubject,
-          this.langService,
-          this.list
-        );
-    this.subTitleSubject.next(newTitle);
-    this.isWorks = !!newTitle;
-    // Ensure OnPush components update when inputs change asynchronously
+    // Le setter sparqlData gère déjà la mise à jour des signals
+    // On s'assure juste que le ChangeDetection est marqué
     this.cdr.markForCheck();
   }
 
@@ -105,19 +122,20 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   }
 
   applyFilter(event: any) {
-    this.query = (event?.target?.value || '').toString().trim().toLowerCase();
-
-    this.list = this.sparqlDisplayService.removeDuplicates(
-      this.listWithoutDuplicate.filter((el) => {
+    const q = (event?.target?.value || '').toString().trim().toLowerCase();
+    this.querySignal.set(q);
+    const filtered = this.listWithoutDuplicateSignal()
+      .filter((el) => {
         const txt = (el?.itemText ?? el?.itemLabel?.value ?? '').toString().toLowerCase();
-        return txt.includes(this.query);
+        return txt.includes(q);
       })
-    );
+      .slice();
+    this.listSignal.set(this.sparqlDisplayService.removeDuplicates(filtered));
   }
 
   onClickDownload(csvService: any) {
     if (!csvService) return;
-    const dataToDownload = this.sparqlDisplayService.prepareCsv(this.sparqlType, this.list);
+    const dataToDownload = this.sparqlDisplayService.prepareCsv(this.sparqlType, this.listSignal());
     try {
       const csv = csvService.arrayToCsv(dataToDownload);
       csvService.downloadBlob(csv, 'factGrid', 'text/csv;charset=utf-8;');
@@ -129,9 +147,7 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.sparqlSubject = '';
     this.sparqlData = [];
-    this.list = [];
-    this.query = '';
-    this.isSearch = false;
-    this.isList = false;
+    this.listSignal.set([]);
+    this.querySignal.set('');
   }
 }

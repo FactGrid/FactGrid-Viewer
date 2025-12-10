@@ -25,15 +25,15 @@
     [displayWith]="displayResearchField"
     (optionSelected)="onProjectSelected($event.option.value)"
   >
-      @for (researchField of filteredResearchFields$ | async; track trackById(researchField)) {
-        <mat-option [value]="researchField">
-          <span>{{ researchField.name }}</span>
-          @if (researchField.description) {
-            <span class="project-description">
-              {{ researchField.description }}
-            </span>
-          }
-        </mat-option>
-      }
+    @for (researchField of filteredResearchFields$ | async; track trackById(researchField)) {
+      <mat-option [value]="researchField">
+        <span>{{ researchField.name }}</span>
+        @if (researchField.description) {
+          <span class="project-description">
+            {{ researchField.description }}
+          </span>
+        }
+      </mat-option>
+    }
   </mat-autocomplete>
 </div>

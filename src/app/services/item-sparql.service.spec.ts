@@ -43,7 +43,7 @@ describe('ItemSparqlService', () => {
     expect(out.results.bindings.length).toBe(2);
   });
 
-  it('should run itemSparql pipeline and produce non-empty list for Q38612 (mocked)', (done) => {
+  it('should run itemSparql pipeline and produce non-empty list for Q38612 (mocked)', async () => {
     // Mock RequestService so the pipeline returns predictable data
     const mockRequest: any = {
       getList: (url: string) => {
@@ -130,115 +130,142 @@ describe('ItemSparqlService', () => {
         console.debug = orig;
         // optionally print debug messages so they appear in test output
         // logs.forEach(l => orig(...l));
-
-        done();
       });
     });
   });
 
-      it('sparql0$ should return superclass list when superclassTest is true', (done) => {
-        const mockRequest: any = {
-          getList: (url: string) => {
-            if (url?.includes('BIND(EXISTS') || url?.includes('isSuperclass')) {
-              return of({
-                results: { bindings: [{ isSuperclass: { value: 'true' }, isSuperclass1: { value: 'false' } }] },
-              });
-            }
-            // SELECT responses
-            return of({ results: { bindings: [{ item: { value: 'https://database.factgrid.de/entity/Q10' }, itemLabel: { value: 'SupX' } }] } });
-          },
-          getAsk: (url: string) => of(false),
-          getItem: (u: string) => of({}),
-        };
-        const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
-
-        const svc = TestBed.inject(ItemSparqlService);
-        (svc as any).request = mockRequest;
-        (svc as any).lang = mockLang;
-
-        const mockItem = { id: 'Q38612', claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }], P165: [] } };
-
-        svc.itemSparql(mockItem).subscribe((itemOut) => {
-          (itemOut.sparql as any).subscribe((cards: any[]) => {
-            // sparql0$ result should be a tuple where label is 'Q945280' (superclassSparql)
-            const [label, rows] = cards[0];
-            expect(label).toBe('Q945280');
-            expect(Array.isArray(rows)).toBeTrue();
-            done();
+  it('sparql0$ should return superclass list when superclassTest is true', async () => {
+    const mockRequest: any = {
+      getList: (url: string) => {
+        if (url?.includes('BIND(EXISTS') || url?.includes('isSuperclass')) {
+          return of({
+            results: {
+              bindings: [{ isSuperclass: { value: 'true' }, isSuperclass1: { value: 'false' } }],
+            },
           });
-        });
-      });
-
-      it('sparql1$ should return Q12 list when Q12Test is true', (done) => {
-        const mockRequest: any = {
-          getList: (url: string) => {
-            if (url?.includes('BIND(EXISTS') || url?.includes('isOrganisation')) {
-              return of({ results: { bindings: [{ isOrganisation: { value: 'true' } }] } });
-            }
-            return of({ results: { bindings: [{ item: { value: 'https://database.factgrid.de/entity/Q200' }, itemLabel: { value: 'OrgMember' } }] } });
+        }
+        // SELECT responses
+        return of({
+          results: {
+            bindings: [
+              {
+                item: { value: 'https://database.factgrid.de/entity/Q10' },
+                itemLabel: { value: 'SupX' },
+              },
+            ],
           },
-          getAsk: (url: string) => of(false),
-          getItem: (u: string) => of({}),
-        };
-        const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
-
-        const svc = TestBed.inject(ItemSparqlService);
-        (svc as any).request = mockRequest;
-        (svc as any).lang = mockLang;
-
-        const mockItem = { id: 'Q38612', claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }], P165: [] } };
-
-        svc.itemSparql(mockItem).subscribe((itemOut) => {
-          (itemOut.sparql as any).subscribe((cards: any[]) => {
-              const [label, rows] = cards[1];
-              expect(label).toBe('Q12');
-              expect(Array.isArray(rows)).toBeTrue();
-              expect(rows.length).toBeGreaterThan(0);
-              done();
-            });
-          });
         });
+      },
+      getAsk: (url: string) => of(false),
+      getItem: (u: string) => of({}),
+    };
+    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
 
-    it('sparql0$ and sparql1$ should return empty tuples when no tests are true', (done) => {
-      const mockRequest: any = {
-        getList: (url: string) => {
-          // Always return empty ASK/SELECT results (no tests true, no rows)
-          if (url?.includes('BIND(EXISTS') || url?.includes('isList') || url?.includes('isOrganisation')) {
-            return of({ results: { bindings: [{ isLocality: { value: 'false' } }] } });
-          }
-          // default SELECT empty
-          return of({ results: { bindings: [] } });
-        },
-        getAsk: (url: string) => of(false),
-        getItem: (u: string) => of({}),
-      };
-      const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
+    const svc = TestBed.inject(ItemSparqlService);
+    (svc as any).request = mockRequest;
+    (svc as any).lang = mockLang;
 
-      const svc = TestBed.inject(ItemSparqlService);
-      (svc as any).request = mockRequest;
-      (svc as any).lang = mockLang;
+    const mockItem = {
+      id: 'Q38612',
+      claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }], P165: [] },
+    };
 
-      const mockItem = { id: 'Q38612', claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }], P165: [] } };
-
-      svc.itemSparql(mockItem).subscribe((itemOut) => {
-        (itemOut.sparql as any).subscribe((cards: any[]) => {
-          // both sparql0$ and sparql1$ should be [undefined, []]
-          const [label0, rows0] = cards[0];
-          const [label1, rows1] = cards[1];
-          expect(label0).toBeUndefined();
-          expect(Array.isArray(rows0)).toBeTrue();
-          expect(rows0.length).toBe(0);
-
-          expect(label1).toBeUndefined();
-          expect(Array.isArray(rows1)).toBeTrue();
-          expect(rows1.length).toBe(0);
-
-          done();
-        });
+    svc.itemSparql(mockItem).subscribe((itemOut) => {
+      (itemOut.sparql as any).subscribe((cards: any[]) => {
+        // sparql0$ result should be a tuple where label is 'Q945280' (superclassSparql)
+        const [label, rows] = cards[0];
+        expect(label).toBe('Q945280');
+        expect(Array.isArray(rows)).toBe(true);
       });
     });
+  });
 
-  it('sparql3$ should return address tuple (Q16200) when address test is true', (done) => {
+  it('sparql1$ should return Q12 list when Q12Test is true', async () => {
+    const mockRequest: any = {
+      getList: (url: string) => {
+        if (url?.includes('BIND(EXISTS') || url?.includes('isOrganisation')) {
+          return of({ results: { bindings: [{ isOrganisation: { value: 'true' } }] } });
+        }
+        return of({
+          results: {
+            bindings: [
+              {
+                item: { value: 'https://database.factgrid.de/entity/Q200' },
+                itemLabel: { value: 'OrgMember' },
+              },
+            ],
+          },
+        });
+      },
+      getAsk: (url: string) => of(false),
+      getItem: (u: string) => of({}),
+    };
+    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
+
+    const svc = TestBed.inject(ItemSparqlService);
+    (svc as any).request = mockRequest;
+    (svc as any).lang = mockLang;
+
+    const mockItem = {
+      id: 'Q38612',
+      claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }], P165: [] },
+    };
+
+    svc.itemSparql(mockItem).subscribe((itemOut) => {
+      (itemOut.sparql as any).subscribe((cards: any[]) => {
+        const [label, rows] = cards[1];
+        expect(label).toBe('Q12');
+        expect(Array.isArray(rows)).toBe(true);
+        expect(rows.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  it('sparql0$ and sparql1$ should return empty tuples when no tests are true', async () => {
+    const mockRequest: any = {
+      getList: (url: string) => {
+        // Always return empty ASK/SELECT results (no tests true, no rows)
+        if (
+          url?.includes('BIND(EXISTS') ||
+          url?.includes('isList') ||
+          url?.includes('isOrganisation')
+        ) {
+          return of({ results: { bindings: [{ isLocality: { value: 'false' } }] } });
+        }
+        // default SELECT empty
+        return of({ results: { bindings: [] } });
+      },
+      getAsk: (url: string) => of(false),
+      getItem: (u: string) => of({}),
+    };
+    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
+
+    const svc = TestBed.inject(ItemSparqlService);
+    (svc as any).request = mockRequest;
+    (svc as any).lang = mockLang;
+
+    const mockItem = {
+      id: 'Q38612',
+      claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q1' } } } }], P165: [] },
+    };
+
+    svc.itemSparql(mockItem).subscribe((itemOut) => {
+      (itemOut.sparql as any).subscribe((cards: any[]) => {
+        // both sparql0$ and sparql1$ should be [undefined, []]
+        const [label0, rows0] = cards[0];
+        const [label1, rows1] = cards[1];
+        expect(label0).toBeUndefined();
+        expect(Array.isArray(rows0)).toBe(true);
+        expect(rows0.length).toBe(0);
+
+        expect(label1).toBeUndefined();
+        expect(Array.isArray(rows1)).toBe(true);
+        expect(rows1.length).toBe(0);
+      });
+    });
+  });
+
+  it('sparql3$ should return address tuple (Q16200) when address test is true', async () => {
     const mockRequest: any = {
       getList: (url: string) => {
         // detect the batchAskQuery call and return isAddress true
@@ -257,16 +284,22 @@ describe('ItemSparqlService', () => {
     (svc as any).request = mockRequest;
     (svc as any).lang = mockLang;
 
-    const mockItem = { id: 'Q38612', claims: { P48: [{ mainsnak: { datavalue: { value: { latitude: 48.8566, longitude: 2.3522 } } } }], P2: [], P165: [] } };
+    const mockItem = {
+      id: 'Q38612',
+      claims: {
+        P48: [{ mainsnak: { datavalue: { value: { latitude: 48.8566, longitude: 2.3522 } } } }],
+        P2: [],
+        P165: [],
+      },
+    };
 
     svc.itemSparql(mockItem).subscribe((itemOut) => {
       (itemOut.sparql as any).subscribe((cards: any[]) => {
         const [label3, rows3] = cards[3];
         expect(label3).toBe('Q16200');
-        expect(Array.isArray(rows3)).toBeTrue();
+        expect(Array.isArray(rows3)).toBe(true);
         expect(rows3.length).toBe(1);
         expect(rows3[0].itemLabel.value).toContain('Rue Example');
-        done();
       });
     });
   });

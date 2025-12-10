@@ -18,7 +18,7 @@ describe('ItemDisplayDispatcherService', () => {
 
   it('dispatch should call ClaimsEnricherService.enrich', () => {
     const claimsEnricher = TestBed.inject(ClaimsEnricherService);
-    spyOn(claimsEnricher, 'enrich').and.callThrough();
+    vi.spyOn(claimsEnricher, 'enrich');
 
     const item: any = [
       { claims: { P2: [{ mainsnak: { datavalue: { value: { id: 'Q7' } } } }] } },
@@ -46,10 +46,10 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isPerson).toBeTrue();
-    expect(Array.isArray(target.lifeAndFamily)).toBeTrue();
+    expect(flags.isPerson).toBe(true);
+    expect(Array.isArray(target.lifeAndFamily)).toBe(true);
     // P154 should have been removed from the otherProps list
-    expect(item[1].includes('P154')).toBeFalse();
+    expect(item[1].includes('P154')).toBe(false);
   });
 
   it('dispatch should populate place block when P2.place and place claims are present', () => {
@@ -66,8 +66,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isPlace).toBeTrue();
-    expect(Array.isArray(target.locationAndSituation)).toBeTrue();
+    expect(flags.isPlace).toBe(true);
+    expect(Array.isArray(target.locationAndSituation)).toBe(true);
     expect(target.locationAndSituation.length).toBeGreaterThan(0);
   });
 
@@ -85,8 +85,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isPlace).toBeTrue();
-    expect(Array.isArray(target.locationAndSituation)).toBeTrue();
+    expect(flags.isPlace).toBe(true);
+    expect(Array.isArray(target.locationAndSituation)).toBe(true);
     expect(target.locationAndSituation.length).toBeGreaterThan(0);
   });
 
@@ -106,14 +106,14 @@ describe('ItemDisplayDispatcherService', () => {
     const flags = service.dispatch(item, target);
 
     // Since P2 indicates an organisation (Q12) we should treat item as org
-    expect(flags.isOrg).toBeTrue();
-    expect(flags.isPlace).toBeFalse();
+    expect(flags.isOrg).toBe(true);
+    expect(flags.isPlace).toBe(false);
     // Org display should be populated, place display should be empty
-    expect(Array.isArray(target.locationAndContext)).toBeTrue();
+    expect(Array.isArray(target.locationAndContext)).toBe(true);
     expect(target.locationAndContext.length).toBeGreaterThan(0);
     expect(
       target.locationAndSituation === undefined || target.locationAndSituation.length === 0
-    ).toBeTrue();
+    ).toBe(true);
   });
 
   it('dispatch should populate excludedProperties and remove them from the index list', () => {
@@ -129,10 +129,10 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(Array.isArray(target.excludedProperties)).toBeTrue();
+    expect(Array.isArray(target.excludedProperties)).toBe(true);
     expect(target.excludedProperties.length).toBeGreaterThan(0);
     // property removed from index
-    expect(item[1].includes('P899')).toBeFalse();
+    expect(item[1].includes('P899')).toBe(false);
   });
 
   it('dispatch should set info block and isInfo flag when INFO properties exist', () => {
@@ -148,8 +148,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isInfo).toBeTrue();
-    expect(Array.isArray(target.info)).toBeTrue();
+    expect(flags.isInfo).toBe(true);
+    expect(Array.isArray(target.info)).toBe(true);
     expect(target.info.length).toBeGreaterThan(0);
   });
 
@@ -168,8 +168,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isHeader).toBeTrue();
-    expect(Array.isArray(target.headerDetail)).toBeTrue();
+    expect(flags.isHeader).toBe(true);
+    expect(Array.isArray(target.headerDetail)).toBe(true);
     expect(target.headerDetail.length).toBeGreaterThan(0);
   });
 
@@ -191,21 +191,21 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isOrg).toBeTrue();
-    expect(Array.isArray(target.locationAndContext)).toBeTrue();
+    expect(flags.isOrg).toBe(true);
+    expect(Array.isArray(target.locationAndContext)).toBe(true);
     expect(target.locationAndContext.length).toBeGreaterThan(0);
 
-    expect(flags.isActivity).toBeTrue();
-    expect(Array.isArray(target.activityDetail)).toBeTrue();
+    expect(flags.isActivity).toBe(true);
+    expect(Array.isArray(target.activityDetail)).toBe(true);
 
-    expect(flags.isDocument).toBeTrue();
-    expect(Array.isArray(target.documentDetail)).toBeTrue();
+    expect(flags.isDocument).toBe(true);
+    expect(Array.isArray(target.documentDetail)).toBe(true);
 
-    expect(flags.isSource).toBeTrue();
-    expect(Array.isArray(target.sourcesList)).toBeTrue();
+    expect(flags.isSource).toBe(true);
+    expect(Array.isArray(target.sourcesList)).toBe(true);
 
-    expect(flags.isExternalLinks).toBeTrue();
-    expect(Array.isArray(target.externalLinks)).toBeTrue();
+    expect(flags.isExternalLinks).toBe(true);
+    expect(Array.isArray(target.externalLinks)).toBe(true);
   });
 
   it('mainList should not contain duplicate claim arrays (e.g. P267) when present in multiple blocks', () => {
@@ -223,8 +223,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isOrg).toBeTrue();
-    expect(flags.isActivity).toBeTrue();
+    expect(flags.isOrg).toBe(true);
+    expect(flags.isActivity).toBe(true);
 
     // mainList is built from locationAndContext + activityDetail etc.
     // Ensure the same claim array (item[0].claims.P267) appears only once
@@ -248,8 +248,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isOther).toBeTrue();
-    expect(Array.isArray(target.otherClaims)).toBeTrue();
+    expect(flags.isOther).toBe(true);
+    expect(Array.isArray(target.otherClaims)).toBe(true);
     expect(target.otherClaims.length).toBeGreaterThan(0);
   });
 
@@ -268,15 +268,15 @@ describe('ItemDisplayDispatcherService', () => {
     const flags = service.dispatch(item, target);
 
     // not a person, eventDetail should be included in mainList
-    expect(flags.isPerson).toBeFalse();
-    expect(Array.isArray(target.eventDetail)).toBeTrue();
+    expect(flags.isPerson).toBe(false);
+    expect(Array.isArray(target.eventDetail)).toBe(true);
     // mainList should contain the event data; handle either nested-array or flattened shape
     expect(
       target.mainList.length > 0 ||
         target.mainList.some(
           (g: any) => (Array.isArray(g) && g[0] && g[0].event === 'e') || (g && g.event === 'e')
         )
-    ).toBeTrue();
+    ).toBe(true);
   });
 
   it('dispatch should include P3 in mainList when P2 undefined', () => {
@@ -292,8 +292,8 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isMain).toBeTrue();
-    expect(Array.isArray(target.mainList)).toBeTrue();
+    expect(flags.isMain).toBe(true);
+    expect(Array.isArray(target.mainList)).toBe(true);
     expect(target.mainList.length).toBeGreaterThan(0);
   });
 
@@ -313,8 +313,8 @@ describe('ItemDisplayDispatcherService', () => {
     const flags = service.dispatch(item, target);
 
     // We should still show a main card by falling back to P3 list
-    expect(flags.isMain).toBeTrue();
-    expect(Array.isArray(target.mainList)).toBeTrue();
+    expect(flags.isMain).toBe(true);
+    expect(Array.isArray(target.mainList)).toBe(true);
     expect(target.mainList.length).toBeGreaterThan(0);
     // ensure the P3 array was added into the mainList
     expect(target.mainList).toContain(item[0].claims.P3);
@@ -329,9 +329,9 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isPerson).toBeTrue();
+    expect(flags.isPerson).toBe(true);
     // mainTitle should be cleared and mainIcon set to 'person' (life & family)
-    expect(target.mainTitle === '' || target.mainTitle === undefined).toBeTrue();
+    expect(target.mainTitle === '' || target.mainTitle === undefined).toBe(true);
     expect(target.mainIcon).toBe('person');
   });
 
@@ -344,7 +344,7 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isPerson).toBeTrue();
+    expect(flags.isPerson).toBe(true);
     expect(target.personIcon).toBe('person');
     expect(target.personTitle).toBeTruthy();
   });
@@ -362,7 +362,7 @@ describe('ItemDisplayDispatcherService', () => {
     const target: any = {};
     const flags = service.dispatch(item, target);
 
-    expect(flags.isPerson).toBeFalse();
+    expect(flags.isPerson).toBe(false);
     expect(target.mainTitle).toBe('PlaceTypeX');
   });
 });

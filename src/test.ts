@@ -2,6 +2,7 @@
 
 import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
+import { enableProdMode } from '@angular/core';
 import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting,
@@ -9,6 +10,10 @@ import {
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 // First, initialize the Angular testing environment.
+// Angular v21 introduced stricter change-detection checks which required
+// fixing tests to wait for async change-detection. We no longer enable
+// production mode here — tests should be stable in dev mode after fixes.
+
 getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting(), {
   teardown: { destroyAfterEach: false },
 });

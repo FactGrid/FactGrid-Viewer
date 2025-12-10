@@ -24,8 +24,10 @@ export class ItemInfoService {
       this.instancesListBuilding(id);
     const subclassesListQuery: Observable<import('./sparql-types').SparqlBinding[]> =
       this.subclassesListBuilding(id);
-    const classesListQuery: Observable<import('./sparql-types').SparqlBinding[]> = this.classesListBuilding(id);
-    const natureOfListQuery: Observable<import('./sparql-types').SparqlBinding[]> = this.natureOfListBuilding(id);
+    const classesListQuery: Observable<import('./sparql-types').SparqlBinding[]> =
+      this.classesListBuilding(id);
+    const natureOfListQuery: Observable<import('./sparql-types').SparqlBinding[]> =
+      this.natureOfListBuilding(id);
 
     return forkJoin([
       instancesListQuery,
@@ -81,7 +83,9 @@ export class ItemInfoService {
     return this.request.getList(u).pipe(map((res) => this.listFromSparql(res)));
   }
 
-  listFromSparql(res: import('./sparql-types').SparqlResults | undefined): import('./sparql-types').SparqlBinding[] {
+  listFromSparql(
+    res: import('./sparql-types').SparqlResults | undefined
+  ): import('./sparql-types').SparqlBinding[] {
     if (res !== undefined) {
       if (res.results !== undefined) {
         for (let i = 0; i < res.results.bindings.length; i++) {

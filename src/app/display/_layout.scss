@@ -102,7 +102,7 @@ body {
     flex-flow: column;
     /* SIMPLIFICATION: Use standard spacing for outer gutters on mobile.
        No extra margins on children needed. */
-    padding-left: var(--spacing-md);  /* 16px */
+    padding-left: var(--spacing-md); /* 16px */
     padding-right: var(--spacing-md); /* 16px */
     gap: var(--spacing-md);
   }

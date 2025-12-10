@@ -20,7 +20,7 @@ export class SetDataService {
   private lang = inject(SelectedLangService);
 
   sparqlResult = new Subject(); // In  case of BehaviorSubject I have to give an initial value
-  
+
   // Use shared entity/claim types for intermediate operations
   // (keeps the runtime flexibility while improving compile-time safety)
 
@@ -47,7 +47,9 @@ export class SetDataService {
             Object.values(entity.claims).forEach((claimArray: any[]) => {
               claimArray.forEach((claim: any) => {
                 if (claim['qualifiers-order']) {
-                  claim['qualifiers-order'] = this.reorderQualifiersOrder(claim['qualifiers-order']);
+                  claim['qualifiers-order'] = this.reorderQualifiersOrder(
+                    claim['qualifiers-order']
+                  );
                 }
               });
             });

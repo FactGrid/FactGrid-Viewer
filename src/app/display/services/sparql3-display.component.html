@@ -1,7 +1,9 @@
 <div [ngClass]="isList ? 'show-division' : 'hide-division'">
   <mat-card appearance="outlined" class="mat-elevation-z12">
     <mat-card-content class="cardBackground">
-      <div [ngClass]="isWorks ? 'subdivisionTitle' : 'propertyStyle typo-property-label'">{{ subTitle }}</div>
+      <div [ngClass]="isWorks ? 'subdivisionTitle' : 'propertyStyle typo-property-label'">
+        {{ subTitle }}
+      </div>
 
       @if (isSearch === true) {
         <div class="searchFormPadding">
@@ -16,16 +18,28 @@
         <div class="sparql-div sparql-card statementStyle">
           @if (L.itemLabel?.value) {
             <div class="sparql-card-content">
-              <a class="sparql-link" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+              <a
+                class="sparql-link"
+                [routerLink]="['/item', L.item.id]"
+                (click)="$event.stopPropagation()"
+              >
                 <span class="typo-item-label sparql-label-layout">{{ L.itemLabel.value }}</span>
                 @if (L.itemDescription?.value) {
                   <span class="typo-item-desc sparql-description-layout">
-                    {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
+                    {{ L.itemDescription.value }}
+                    @if (L.year?.value) {
+                      <span class="sparql-year">, {{ L.year.value }}</span>
+                    }
                   </span>
                 }
               </a>
               <div class="sparql-card-actions">
-                <button mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]" (click)="$event.stopPropagation()">
+                <button
+                  mat-icon-button
+                  class="internalLink"
+                  [routerLink]="['/item', L.item.id]"
+                  (click)="$event.stopPropagation()"
+                >
                   <mat-icon color="primary" [inline]="true">open_in_new</mat-icon>
                 </button>
               </div>

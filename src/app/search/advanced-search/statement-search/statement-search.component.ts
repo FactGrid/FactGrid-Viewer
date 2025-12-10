@@ -54,7 +54,11 @@ import {
 //import { takeUntil } from 'rxjs/operators';
 import { SelectedLangService } from '../../../selected-lang.service';
 import { PropertiesListService } from '../../../services/properties-list.service';
-import { RequestService, WBSearchResponse, GetEntitiesResponse } from '../../../services/request.service';
+import {
+  RequestService,
+  WBSearchResponse,
+  GetEntitiesResponse,
+} from '../../../services/request.service';
 import { SearchEngineService } from '../../../services/search-engine.service';
 import { SetLanguageService } from '../../../services/set-language.service';
 import { DataService } from '../services/data.service';

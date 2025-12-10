@@ -1,18 +1,17 @@
-<div class="cardBackground" [ngClass]="isList ? 'show-division' : 'hide-division'">
-  
-  @if (isSearch) {
+<div class="cardBackground" [ngClass]="isList() ? 'show-division' : 'hide-division'">
+  @if (isSearch()) {
     <div class="searchFormPadding">
       <mat-form-field appearance="outline" class="filterField">
         <input matInput (keyup)="applyFilter($event)" placeholder="Search" />
       </mat-form-field>
-      <span class="list-count">{{ list.length }}</span>
+      <span class="list-count">{{ listSignal().length }}</span>
       <div class="sparql-actions">
         <button
           mat-icon-button
           color="primary"
           class="download-btn internalLink"
           (click)="onClickDownload(langService?.csv)"
-          [disabled]="!langService?.csv || !list?.length"
+          [disabled]="!langService?.csv || !listSignal()?.length"
           matTooltip="Download CSV"
           aria-label="Download CSV"
           title="Download CSV"
@@ -23,20 +22,20 @@
     </div>
   }
 
-  @if (!isSearch) {
+  @if (!isSearch()) {
     <!-- show a compact header with count + download when no search filter is shown -->
     <div class="searchFormPadding compact">
       <mat-form-field appearance="outline" class="filterField compactField">
         <input matInput (keyup)="applyFilter($event)" placeholder="Search" />
       </mat-form-field>
-      <span class="list-count">{{ list.length }}</span>
+      <span class="list-count">{{ listSignal().length }}</span>
       <div class="sparql-actions">
         <button
           mat-icon-button
           color="primary"
           class="download-btn internalLink"
           (click)="onClickDownload(langService?.csv)"
-          [disabled]="!langService?.csv || !list?.length"
+          [disabled]="!langService?.csv || !listSignal()?.length"
           matTooltip="Download CSV"
           aria-label="Download CSV"
           title="Download CSV"
@@ -47,22 +46,33 @@
     </div>
   }
 
-  @if (list.length >= 10) {
+  @if (listSignal().length >= 10) {
     <cdk-virtual-scroll-viewport
       [itemSize]="rowHeight"
       class="virtual-scroll-viewport"
-      [style.height.px]="getViewportHeightPx(list.length)"
+      [style.height.px]="getViewportHeightPx(listSignal().length)"
     >
-      @for (L of list; track (L.item?.id || L.item?.value || $index)) {
+      @for (L of listSignal(); track L.item?.id || L.item?.value || $index) {
         @if (customRowTemplate) {
-          <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"
+          ></ng-container>
         } @else {
           <div class="sparql-div sparql-card statementStyle">
-            <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              <span class="typo-item-label sparql-label-layout">{{ L.itemLabel?.value || L.itemText || '' }}</span>
+            <a
+              class="sparql-link"
+              [routerLink]="['/item', L.item?.id]"
+              (click)="$event.stopPropagation()"
+            >
+              <span class="typo-item-label sparql-label-layout">{{
+                L.itemLabel?.value || L.itemText || ''
+              }}</span>
               @if (L.itemDescription?.value) {
                 <span class="typo-item-desc sparql-description-layout">
-                  {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
+                  {{ L.itemDescription.value }}
+                  @if (L.year?.value) {
+                    <span class="sparql-year">, {{ L.year.value }}</span>
+                  }
                 </span>
               }
             </a>
@@ -77,16 +87,27 @@
     </cdk-virtual-scroll-viewport>
   } @else {
     <div class="non-virtual-list">
-      @for (L of list; track (L.item?.id || L.item?.value || $index)) {
+      @for (L of listSignal(); track L.item?.id || L.item?.value || $index) {
         @if (customRowTemplate) {
-          <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"
+          ></ng-container>
         } @else {
           <div class="sparql-div sparql-card statementStyle">
-            <a class="sparql-link" [routerLink]="['/item', L.item?.id]" (click)="$event.stopPropagation()">
-              <span class="typo-item-label sparql-label-layout">{{ L.itemLabel?.value || '' }}</span>
+            <a
+              class="sparql-link"
+              [routerLink]="['/item', L.item?.id]"
+              (click)="$event.stopPropagation()"
+            >
+              <span class="typo-item-label sparql-label-layout">{{
+                L.itemLabel?.value || ''
+              }}</span>
               @if (L.itemDescription?.value) {
                 <span class="typo-item-desc sparql-description-layout">
-                  {{ L.itemDescription.value }}@if (L.year?.value) {<span class="sparql-year">, {{ L.year.value }}</span>}
+                  {{ L.itemDescription.value }}
+                  @if (L.year?.value) {
+                    <span class="sparql-year">, {{ L.year.value }}</span>
+                  }
                 </span>
               }
             </a>
@@ -103,9 +124,11 @@
   <!-- download button moved to header (near filter) -->
 
   <!-- Empty state: when the SPARQL card contains no rows, show a small hint -->
-  @if (!list || list.length === 0) {
+  @if (!listSignal() || listSignal().length === 0) {
     <div class="sparql-empty">
-      <p class="muted">{{ langService?.getTranslation('no_results', langService?.selectedLang) || 'No results' }}</p>
+      <p class="muted">
+        {{ langService?.getTranslation('no_results', langService?.selectedLang) || 'No results' }}
+      </p>
     </div>
   }
 </div>

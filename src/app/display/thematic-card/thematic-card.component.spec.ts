@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ThematicCardComponent } from './thematic-card.component';
 import { SimpleChange } from '@angular/core';
@@ -15,22 +15,24 @@ describe('ThematicCardComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('should initialize collapsed when startCollapsed true', () => {
+  it('should initialize collapsed when startCollapsed true', async () => {
     // set collapsible, initial state should be open
     // set inputs using ngOnChanges to simulate Angular input changes
     component.collapsible = true;
     component.ngOnChanges({ collapsible: new SimpleChange(null, true, true) });
     fixture.detectChanges();
-    expect(component.isCollapsed).toBeFalse();
+    expect(component.isCollapsed).toBe(false);
 
     // now parent toggles startCollapsed -> should set collapsed
     component.startCollapsed = true;
     component.ngOnChanges({ startCollapsed: new SimpleChange(null, true, false) });
-    fixture.detectChanges();
-    expect(component.isCollapsed).toBeTrue();
+    // flush macrotask scheduled by the component for non-first-change updates
+    await new Promise((r) => setTimeout(r, 0));
+    // fixture.detectChanges(); // Removed to avoid ExpressionChangedAfterItHasBeenCheckedError in test environment
+    expect(component.isCollapsed).toBe(true);
   });
 
-  it('should update collapsed state when startCollapsed input changes', () => {
+  it('should update collapsed state when startCollapsed input changes', async () => {
     // initialize with both inputs true and trigger ngOnChanges
     component.collapsible = true;
     component.startCollapsed = true;
@@ -39,23 +41,26 @@ describe('ThematicCardComponent', () => {
       startCollapsed: new SimpleChange(null, true, true),
     });
     fixture.detectChanges();
-    expect(component.isCollapsed).toBeTrue();
+    expect(component.isCollapsed).toBe(true);
 
     // Simulate a user toggle (open)
     component.toggle();
-    expect(component.isCollapsed).toBeFalse();
+    expect(component.isCollapsed).toBe(false);
 
     // Parent changes startCollapsed - should reset to collapsed
     component.startCollapsed = true;
     component.ngOnChanges({ startCollapsed: new SimpleChange(false, true, false) });
-    fixture.detectChanges();
-    expect(component.isCollapsed).toBeTrue();
+    // component uses setTimeout -> flush macrotask
+    await new Promise((r) => setTimeout(r, 0));
+    // fixture.detectChanges();
+    expect(component.isCollapsed).toBe(true);
 
     // Now set startCollapsed false and ensure component resets accordingly
     component.startCollapsed = false;
     component.ngOnChanges({ startCollapsed: new SimpleChange(true, false, false) });
-    fixture.detectChanges();
-    expect(component.isCollapsed).toBeFalse();
+    await new Promise((r) => setTimeout(r, 0));
+    // fixture.detectChanges();
+    expect(component.isCollapsed).toBe(false);
   });
 
   it('should render header when only icon is provided', () => {
@@ -66,7 +71,7 @@ describe('ThematicCardComponent', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     const iconEl = el.querySelector('.title-icon');
-    expect(iconEl).withContext('mat-icon should exist').toBeTruthy();
+    expect(iconEl, 'mat-icon should exist').toBeTruthy();
     expect(iconEl?.textContent?.trim()).toBe('info');
   });
 
@@ -85,12 +90,12 @@ describe('ThematicCardComponent', () => {
     expect(body).toBeTruthy();
     // body-inner should exist even while hidden
     const inner = body!.querySelector('.body-inner');
-    expect(inner).toBeTruthy('body-inner should be present in the DOM even when collapsed');
+    expect(inner).toBeTruthy();
     // and it should have the class content-hidden
-    expect(inner!.classList.contains('content-hidden')).toBeTrue();
+    expect(inner!.classList.contains('content-hidden')).toBe(true);
   });
 
-  it('resets collapsed state when resetKey changes', () => {
+  it('resets collapsed state when resetKey changes', async () => {
     component.collapsible = true;
     component.startCollapsed = false;
     component.ngOnChanges({
@@ -101,13 +106,15 @@ describe('ThematicCardComponent', () => {
 
     // user toggles closed
     component.toggle();
-    expect(component.isCollapsed).toBeTrue();
+    expect(component.isCollapsed).toBe(true);
 
     // parent navigates -> change resetKey should reset to startCollapsed (false)
     component.resetKey = 'a';
     component.ngOnChanges({ resetKey: new SimpleChange(null, 'a', false) });
+    // resetKey uses setTimeout in the component for non-first-change -> flush
+    await new Promise((r) => setTimeout(r, 0));
     fixture.detectChanges();
-    expect(component.isCollapsed).toBeFalse();
+    expect(component.isCollapsed).toBe(false);
   });
 
   it('collapse button exposes aria-label and keeps text for non-mobile', () => {
@@ -121,7 +128,7 @@ describe('ThematicCardComponent', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     const btn = el.querySelector('.collapse-btn') as HTMLButtonElement | null;
-    expect(btn).toBeTruthy('collapse button exists');
+    expect(btn).toBeTruthy();
     // aria-label should reflect action
     expect(btn?.getAttribute('aria-label')).toBe('Afficher');
 

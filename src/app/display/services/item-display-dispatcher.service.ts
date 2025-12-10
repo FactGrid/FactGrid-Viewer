@@ -71,7 +71,9 @@ export class ItemDisplayDispatcherService {
     const p2IsQ7 =
       claims?.P2?.person === true ||
       (Array.isArray(claims?.P2) &&
-      (claims!.P2 as ClaimArray).some((p) => (p?.mainsnak?.datavalue?.value as any)?.id === 'Q7')) ||
+        (claims!.P2 as ClaimArray).some(
+          (p) => (p?.mainsnak?.datavalue?.value as any)?.id === 'Q7'
+        )) ||
       (claims?.P2 && JSON.stringify(claims.P2).includes('"Q7"'));
 
     if (claims.P2?.person !== undefined || p2IsQ7) {
@@ -366,7 +368,11 @@ export class ItemDisplayDispatcherService {
     return false;
   }
 
-  private buildMainList(item: ItemDisplayTuple | EnrichedItemTuple, target: any, isPerson: boolean): void {
+  private buildMainList(
+    item: ItemDisplayTuple | EnrichedItemTuple,
+    target: any,
+    isPerson: boolean
+  ): void {
     const claims = getEntity(item)?.claims;
     if (claims.P2 === undefined) {
       if (claims.P3 !== undefined) target.mainList.push(claims.P3);

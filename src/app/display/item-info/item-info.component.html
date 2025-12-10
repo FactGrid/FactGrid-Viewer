@@ -31,10 +31,7 @@
                   tech.propertyLabel || tech.propertyId || '?'
                 }}</span>
                 <ul>
-                  @for (
-                        val of tech.statements;
-                        track trackTechKey(index, val)
-                      ) {
+                  @for (val of tech.statements; track trackTechKey(index, val)) {
                     <li class="entry-row">
                       @if (val.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                         {{
@@ -43,7 +40,9 @@
                             val.mainsnak?.datavalue?.value
                         }}
                         @if (val.mainsnak?.description) {
-                          <span class="typo-item-desc iteminfo-description-layout">({{ val.mainsnak.description }})</span>
+                          <span class="typo-item-desc iteminfo-description-layout"
+                            >({{ val.mainsnak.description }})</span
+                          >
                         }
                       } @else {
                         {{ val.mainsnak?.datavalue?.value }}
@@ -76,8 +75,10 @@
               >
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                    @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                  @if (L.itemDescription?.value) {
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                   <mat-icon-button
                     class="internalLink"
@@ -92,8 +93,10 @@
                       L.mainsnak?.datavalue?.value?.id ||
                       L.mainsnak?.datavalue?.value
                   }}
-                    @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                  @if (L.mainsnak?.description) {
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -105,8 +108,10 @@
               <div class="entry-row">
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                    @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                  @if (L.itemDescription?.value) {
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                   <mat-icon-button
                     class="internalLink"
@@ -121,8 +126,10 @@
                       L.mainsnak?.datavalue?.value?.id ||
                       L.mainsnak?.datavalue?.value
                   }}
-                    @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                  @if (L.mainsnak?.description) {
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -152,8 +159,10 @@
               >
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
-                    @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                  @if (L.itemDescription?.value) {
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -162,7 +171,9 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -175,7 +186,9 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -184,7 +197,9 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -215,7 +230,9 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -224,7 +241,9 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -237,7 +256,9 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                 } @else if (L.mainsnak?.datavalue?.type === 'wikibase-entityid') {
                   {{
@@ -246,7 +267,9 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -277,7 +300,9 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                   <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"
                     ><mat-icon color="primary" [inline]="true"
@@ -291,7 +316,9 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}
@@ -304,7 +331,9 @@
                 @if (L.itemLabel?.value) {
                   {{ L.itemLabel.value }}
                   @if (L.itemDescription?.value) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.itemDescription.value }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.itemDescription.value }})</span
+                    >
                   }
                   <mat-icon-button class="internalLink" [routerLink]="['/item', L.item.id]"
                     ><mat-icon color="primary" [inline]="true"
@@ -318,7 +347,9 @@
                       L.mainsnak?.datavalue?.value
                   }}
                   @if (L.mainsnak?.description) {
-                    <span class="typo-item-desc iteminfo-description-layout">({{ L.mainsnak.description }})</span>
+                    <span class="typo-item-desc iteminfo-description-layout"
+                      >({{ L.mainsnak.description }})</span
+                    >
                   }
                 } @else {
                   {{ L.mainsnak?.datavalue?.value || L }}

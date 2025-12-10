@@ -105,33 +105,49 @@
 /* Thematic card title — slightly larger, bold, semantic role used for card headers */
 @mixin typo-thematic-card-title() {
   font-size: 1.35rem; /* matches existing card header sizing */
-    /* Thematic card titles should be neutral black and regular weight by default
+  /* Thematic card titles should be neutral black and regular weight by default
       (icons or accents can still be styled locally when needed). */
-    font-weight: 400; /* normal */
-    color: #000;
+  font-weight: 400; /* normal */
+  color: #000;
   letter-spacing: 0.01em;
 }
 
 /* Semantic classes — prefer markup composition (class="propertyStyle typo-property-label")
    so components don't need to import mixins. */
-.typo-property-label { @include typo-property-label(); }
-.typo-item-label { @include typo-item-label(); }
-.typo-item-desc { @include typo-item-desc(); }
+.typo-property-label {
+  @include typo-property-label();
+}
+.typo-item-label {
+  @include typo-item-label();
+}
+.typo-item-desc {
+  @include typo-item-desc();
+}
 
-.typo-qualifier-property-label { @include typo-qualifier-property-label(); }
+.typo-qualifier-property-label {
+  @include typo-qualifier-property-label();
+}
 
-.typo-qualifier-desc { @include typo-qualifier-desc(); }
+.typo-qualifier-desc {
+  @include typo-qualifier-desc();
+}
 
-.typo-qualifier-label { @include typo-qualifier-label(); }
+.typo-qualifier-label {
+  @include typo-qualifier-label();
+}
 
 /* Semantic class for thematic-card title; prefer markup composition */
-.typo-thematic-card-title { @include typo-thematic-card-title(); }
+.typo-thematic-card-title {
+  @include typo-thematic-card-title();
+}
 
 /* Backwards compatibility: map existing local classes to the new semantic tokens */
 /* NOTE: legacy shims such as `.description-text` were removed so components must
   opt-in to the central semantic typography classes (e.g. `typo-item-desc`).
   Keep any purely layout-oriented rules in component stylesheets. */
-.calendarStyle { @extend .typo-caption; }
+.calendarStyle {
+  @extend .typo-caption;
+}
 
 /* Compat for selected-item helpers: keep visual color but inherit token sizes */
 .selectedItemText.typo-item-label {
@@ -139,4 +155,3 @@
   /* selectedItemText often uses white foreground — keep that by default */
   color: white !important;
 }
-

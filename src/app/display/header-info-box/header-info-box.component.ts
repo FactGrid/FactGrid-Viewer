@@ -13,6 +13,10 @@ import { GenericListDisplayComponent } from '../generic-list-display/generic-lis
 })
 export class HeaderInfoBoxComponent {
   // Keep permissive while migrating display internals to typed shapes
-  @Input() items: Array<import('../../services/item-types').DisplayItem | import('../../services/item-types').ItemDisplayTuple | any> = [];
+  @Input() items: Array<
+    | import('../../services/item-types').DisplayItem
+    | import('../../services/item-types').ItemDisplayTuple
+    | any
+  > = [];
   @Input() title: string = '';
 }

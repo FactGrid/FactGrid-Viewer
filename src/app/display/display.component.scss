@@ -4,7 +4,7 @@
    live in `src/styles.scss`.
 */
 
-@use "../../styles/_typography" as typo;
+@use '../../styles/_typography' as typo;
 
 // Déclarations globales de spacing (doivent être définies avant tout usage)
 $compact-gap: 4px;
@@ -46,12 +46,14 @@ $card-top-offset: 8px;
   color: #222;
 }
 
-.mobile-project-title, .project-title {
+.mobile-project-title,
+.project-title {
   display: inline-flex;
   align-items: center; /* vertical-align with the text */
   gap: 4px; /* reduced gap so icon sits closer to the text */
 
-  .mobile-project-name, .project-name {
+  .mobile-project-name,
+  .project-name {
     color: #000 !important; /* keep the project name black */
     font-size: 0.98rem;
     line-height: 1; /* tighter line height so icon centers properly */
@@ -135,11 +137,11 @@ $card-top-offset: 8px;
       align-items: center !important;
       justify-content: center !important;
       transform: none !important;
-      
+
       /* Align the chip's middle with the text's visual middle */
       vertical-align: middle !important;
       align-self: auto !important;
-      
+
       /* Re-add spacing since gap is gone */
       margin-left: 6px !important;
     }
@@ -162,13 +164,14 @@ $card-top-offset: 8px;
   }
 }
 
-
 /* Mobile specific tweaks: reduce the perceived weight of the project title
    and make the clear icon visually match the text. */
 @media (max-width: 700px) {
-  .mobile-project-title, .project-title {
+  .mobile-project-title,
+  .project-title {
     position: relative; /* allow absolute positioning of the chip for consistent alignment */
-    .mobile-project-name, .project-name {
+    .mobile-project-name,
+    .project-name {
       font-weight: 300 !important; /* slightly lighter on mobile */
       font-size: 0.96rem !important;
     }
@@ -183,7 +186,7 @@ $card-top-offset: 8px;
 
     .clear-project .mat-icon {
       font-size: 15px !important;
-      color: rgba(0,0,0,0.9) !important;
+      color: rgba(0, 0, 0, 0.9) !important;
     }
   }
 
@@ -204,21 +207,23 @@ $card-top-offset: 8px;
   }
 
   /* Keep the anchor and button packed tightly */
-  .mobile-project-title, .project-title {
-     /* Prevent wrapping so the close icon cannot be pushed to a new line. The
+  .mobile-project-title,
+  .project-title {
+    /* Prevent wrapping so the close icon cannot be pushed to a new line. The
        anchor will shrink and show an ellipsis when required keeping the icon
        visually attached to the title. */
-     white-space: nowrap;
+    white-space: nowrap;
     overflow: hidden;
 
-     /* On mobile we often render a two-line title. `align-items:center` was
+    /* On mobile we often render a two-line title. `align-items:center` was
        centering the chip relative to the full block which visually placed
        the chip slightly below the middle of the first line. Align top and
        nudge the chip vertically so it visually centers against the first
        line of the wrapped title. */
-     align-items: flex-start;
+    align-items: flex-start;
 
-    .mobile-project-name, .project-name {
+    .mobile-project-name,
+    .project-name {
       display: inline-block; /* predictable inline sizing */
       max-width: calc(100% - 52px); /* leave room for the button without wrapping */
       overflow: hidden;
@@ -578,7 +583,6 @@ $card-top-offset: 8px;
    extra shadow or top border so it appears as a single block with the
    main app toolbar above it. */
 
-
 /* Home-state toolbar: larger header area and centered search */
 .top-toolbar.home-state {
   min-height: 280px !important;
@@ -594,7 +598,9 @@ $card-top-offset: 8px;
   text-align: center;
   color: var(--text-primary);
   /* subtler transition to keep the movement gentle */
-  transition: transform 320ms ease-out, opacity 240ms ease-in;
+  transition:
+    transform 320ms ease-out,
+    opacity 240ms ease-in;
   display: block;
   pointer-events: none; /* header purely decorative in this stage */
 }
@@ -616,11 +622,13 @@ $card-top-offset: 8px;
   display: flex;
   justify-content: center;
   width: min(720px, 86%);
-  transition: width 220ms ease, transform 200ms ease, box-shadow 180ms ease;
+  transition:
+    width 220ms ease,
+    transform 200ms ease,
+    box-shadow 180ms ease;
   will-change: transform, width, box-shadow, opacity;
   box-shadow: 0 6px 18px rgba(10, 20, 30, 0.04);
 }
-
 
 /* Place the project header as a proper thematic-card variant that aligns
    with the left/right edges of the child columns. The card is a full-width
@@ -650,12 +658,7 @@ $card-top-offset: 8px;
 /* keep the inner layout of the project sub-header visually neutral so the
    thematic card frame provides the border/background */
 
-
-
 /* make the project label anchor appearance neutral but interactive */
-
-
-
 
 /* project-specific header and drawer related mobile tweaks removed — replaced by a single
    top-toolbar layout with the project title shown above the search field. */
@@ -685,7 +688,10 @@ $card-top-offset: 8px;
 /* hover / focus affordance for the external FactGrid id link */
 .title-card-id .title-id {
   cursor: pointer;
-  transition: color 150ms ease, text-decoration 150ms ease, transform 150ms ease;
+  transition:
+    color 150ms ease,
+    text-decoration 150ms ease,
+    transform 150ms ease;
 }
 .title-card-id .title-id:hover,
 .title-card-id .title-id:focus-visible {
@@ -706,15 +712,15 @@ $card-top-offset: 8px;
 
   /* project-sub-header references removed — nothing to align on narrow screens */
 
-    /* Removed content-nudging rules: the project sub-header card is no longer
+  /* Removed content-nudging rules: the project sub-header card is no longer
       rendered in mobile, so we keep normal layout behavior for the grid and
       avoid artificial negative margins / padding hacks. */
-
 } /* end @media (max-width: 600px) */
 
 /* Make the project title above the search visible on all viewports (previously
    it was mobile-only). This ensures the project label is always prominent. */
-  .mobile-project-title, .project-title {
+.mobile-project-title,
+.project-title {
   display: inline-block; /* avoid stretching full width so centering + max-width works */
   text-align: center;
   font-size: 1rem;
@@ -724,16 +730,17 @@ $card-top-offset: 8px;
   padding: 0 12px; /* breathing room from viewport edges */
   line-height: 1.2; /* tighter interline spacing for mobile project label */
   max-width: calc(100% - 48px); /* prevent the label from touching the viewport edges */
-    /* Allow wrapping instead of truncation so long project names flow to next line
+  /* Allow wrapping instead of truncation so long project names flow to next line
       (useful on narrow viewports or when user has a long project name). */
-    white-space: normal; /* permit wrapping */
-    overflow-wrap: anywhere; /* break long words if necessary */
-    word-break: break-word; /* ensure very long tokens wrap */
+  white-space: normal; /* permit wrapping */
+  overflow-wrap: anywhere; /* break long words if necessary */
+  word-break: break-word; /* ensure very long tokens wrap */
 }
 
 /* On desktop align project label to the left to match toolbar layout */
 @media (min-width: 700px) {
-  .mobile-project-title, .project-title {
+  .mobile-project-title,
+  .project-title {
     text-align: left;
     width: auto;
     margin-left: 8px; /* a small gap from the left controls */
@@ -743,7 +750,8 @@ $card-top-offset: 8px;
 
 /* When the display toolbar is in home-state (homepage), keep the project title centered
    regardless of viewport width so the label appears visually centered on the landing page. */
-.top-toolbar.home-state .mobile-project-title, .top-toolbar.home-state .project-title {
+.top-toolbar.home-state .mobile-project-title,
+.top-toolbar.home-state .project-title {
   text-align: center !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -1592,7 +1600,10 @@ $card-top-offset: 8px;
   }
   /* Images inside compact cards are flush; handled by the component styles */
   .thematic-card--compact .info-card-content .img2,
-  .thematic-card--compact .info-card-content img { padding-left: 0 !important; margin-left: 0 !important; }
+  .thematic-card--compact .info-card-content img {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
 }
 
 @media (min-width: 1280px) {
@@ -1844,7 +1855,7 @@ mat-card img {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    
+
     &:hover {
       text-decoration: underline;
       color: #283593;

@@ -9,7 +9,7 @@ describe('SparqlDisplayService', () => {
     service = new SparqlDisplayService();
   });
 
-  it('should return the building title for sparql4 when subject is Q8', (done) => {
+  it('should return the building title for sparql4 when subject is Q8', async () => {
     const mockLangService: any = {
       selectedLang: 'en',
       getTranslation: (k: string) => (k === 'buildingTitle' ? 'Buildings' : ''),
@@ -25,11 +25,10 @@ describe('SparqlDisplayService', () => {
 
     service.buildAllCardsState(of(sampleRows), mockLangService).subscribe((state) => {
       expect(state.sparql4.title).toBe('Buildings');
-      done();
     });
   });
 
-  it('should fall back to the work title when sparql4 subject is GOV', (done) => {
+  it('should fall back to the work title when sparql4 subject is GOV', async () => {
     const mockLangService: any = {
       selectedLang: 'en',
       getTranslation: (k: string) => (k === 'workTitle' ? 'Work' : ''),
@@ -45,7 +44,6 @@ describe('SparqlDisplayService', () => {
 
     service.buildAllCardsState(of(sampleRows), mockLangService).subscribe((state) => {
       expect(state.sparql4.title).toBe('Work');
-      done();
     });
   });
 });

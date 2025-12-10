@@ -136,7 +136,7 @@ export class RoleOfObjectRenderingService {
         for (const qid in statement.qualifiers) {
           if (qid === 'P499') continue;
           const q = statement.qualifiers[qid][0];
-          if (q?.datavalue?.value) extra += ` (${(q.datavalue.value as any)})`;
+          if (q?.datavalue?.value) extra += ` (${q.datavalue.value as any})`;
         }
       }
 
@@ -147,7 +147,10 @@ export class RoleOfObjectRenderingService {
     values.sort((a, b) => a.order - b.order);
 
     // label combiné, ex : "Jacques, Louis"
-    const combinedLabel = values.map((v) => v.label).filter(Boolean).join(', ');
+    const combinedLabel = values
+      .map((v) => v.label)
+      .filter(Boolean)
+      .join(', ');
 
     const first = statements[0];
 

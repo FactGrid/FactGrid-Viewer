@@ -9,7 +9,11 @@ import {
   ViewContainerRef,
   ComponentRef as NgComponentRef,
   SimpleChange,
+  signal,
+  effect,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { computed } from '@angular/core';
 import { trigger, state, style, transition, animate, AnimationEvent } from '@angular/animations';
 import { Observable, Subscription } from 'rxjs';
 import { SparqlTuple } from '../services/sparql-types';
@@ -82,7 +86,7 @@ import type { DisplayItem, ItemDisplayTuple } from '../services/item-types';
     // ensure mat-chips are available in the standalone component
     // NOTE: using MatChipsModule below
     NgClass,
-    TextDisplayComponent,
+    //TextDisplayComponent,
     // SparqlDisplayComponent, // removed from static imports to enable lazy loading
     // ItemInfoComponent removed from static imports to enable lazy loading
     SearchComponent,
@@ -124,7 +128,133 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'FactGrid';
   subtitle: string;
   private sparqlDisplayService = inject(SparqlDisplayService);
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef) {
+    console.log('[INIT DEBUG] DisplayComponent constructor called');
+    // Initialize reactive effects inside a valid injection context (constructor)
+
+    // Route params -> convert to signal and reflect itemId
+    const routeParamSignalCtor = toSignal(this.route.paramMap, {
+      initialValue: this.route.snapshot.paramMap,
+    });
+    effect(() => {
+      this.itemId = routeParamSignalCtor().get('id');
+      console.log('[NAV DEBUG] Route params changed, itemId:', this.itemId);
+      this.itemIdSignal.set(this.itemId);
+      if (!this.itemId) {
+        this.item = null;
+        this.itemSignal.set(null);
+        this.selectedItemsList = JSON.parse(localStorage.getItem('selectedItems')) || [];
+        try {
+          this.cdr.markForCheck();
+          this.isSpinner = false;
+        } catch {}
+        try {
+          this.cdr.detectChanges();
+        } catch {}
+      }
+    });
+
+    // Initialize the item-loading effect once (it will re-run on itemIdSignal changes)
+    this.loadItem();
+
+    // Whenever itemId becomes available, load back list
+    effect(() => {
+      if (this.itemIdSignal()) {
+        this.loadBackList();
+      }
+    });
+
+    // BreakpointObserver -> global mobile detection
+    const bpSignalCtor = toSignal(
+      this.observer.observe([
+        Breakpoints.Handset,
+        Breakpoints.HandsetPortrait,
+        Breakpoints.HandsetLandscape,
+      ]),
+      { initialValue: { matches: false } as any }
+    );
+    effect(() => {
+      Promise.resolve().then(() => {
+        this.isMobile = !!bpSignalCtor().matches;
+        try {
+          this.cdr.detectChanges();
+        } catch {}
+      });
+    });
+
+    // Transcription: listen to itemSignal and subscribe to the transcription Observable
+    effect((onCleanup) => {
+      const currentItem = this.itemSignal();
+      const claims = currentItem?.[0]?.claims as any | undefined;
+      if (claims && claims.P251 && claims.P251[0]?.mainsnak?.datavalue?.value) {
+        const a = this.transcript.transcript(claims.P251[0].mainsnak.datavalue.value);
+        const sub = a.subscribe((res) => {
+          this.trans = Object.keys(res)[0] == 'error' ? 'no transcription' : res.parse.text;
+          this.trans = this.changeTranscript.cleaning(this.trans);
+          try { this.cdr.detectChanges(); } catch {}
+        });
+        onCleanup(() => sub.unsubscribe());
+      } else {
+        this.trans = '';
+      }
+    });
+
+    // SPARQL lists: subscribe to sparql observable driven by itemSignal
+    effect((onCleanup) => {
+      const currentItem = this.itemSignal();
+      console.log('[SPARQL DEBUG] SPARQL effect triggered, currentItem:', currentItem);
+      // Robust validation: ensure we have a valid item array with at least one element
+      if (!currentItem || !Array.isArray(currentItem) || currentItem.length === 0 || !currentItem[0]) {
+        console.log('[SPARQL DEBUG] No valid currentItem, aborting');
+        this.sparql$ = null;
+        this.sparqlCards$ = null;
+        return;
+      }
+      // Additional safety: check if item[0] has the expected structure
+      if (!currentItem[0].id || !currentItem[0].claims) {
+        console.warn('[SPARQL DEBUG] Item has invalid structure:', currentItem[0]);
+        this.sparql$ = null;
+        this.sparqlCards$ = null;
+        return;
+      }
+      console.log('[SPARQL DEBUG] currentItem[0].sparql exists?', !!currentItem[0].sparql);
+      if (!currentItem[0].sparql) {
+        console.log('[SPARQL DEBUG] No sparql property on item');
+        this.sparql$ = null;
+        this.sparqlCards$ = null;
+        return;
+      }
+      if (currentItem[0].sparql && typeof currentItem[0].sparql.subscribe === 'function') {
+        this.sparql$ = currentItem[0].sparql as Observable<SparqlTuple[]>;
+        this.sparqlCards$ = this.sparqlDisplayService.buildAllCardsState(
+          this.sparql$,
+          this.lang
+        );
+        const sub = this.sparqlCards$.subscribe((cards) => {
+          if (!cards) return;
+          console.log('[SPARQL DEBUG] Cards received:', cards);
+          console.log('[SPARQL DEBUG] sparql0:', cards.sparql0?.list?.length, 'items');
+          console.log('[SPARQL DEBUG] sparql1:', cards.sparql1?.list?.length, 'items');
+          try {
+            this.cdr.markForCheck();
+            this.cdr.detectChanges();
+          } catch {}
+          setTimeout(() => {
+            console.log('[SPARQL DEBUG] Loading components...');
+            if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
+            if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
+            if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
+            if (cards.sparql3?.list?.length) this.loadSparqlAt(3, cards.sparql3);
+            if (cards.sparql4?.list?.length) this.loadSparqlAt(4, cards.sparql4);
+          }, 100);
+        });
+        onCleanup(() => sub.unsubscribe());
+      } else {
+        this.sparql$ = null;
+        this.sparqlCards$ = null;
+      }
+    });
+  }
 
   public from: string;
 
@@ -144,15 +274,28 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private observer = inject(BreakpointObserver);
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
+  // Signals used to progressively replace older Observable subscriptions
+  private selectedResearchFieldSignal = toSignal(
+    this.selectedResearchFieldService.selectedResearchField$,
+    { initialValue: this.selectedResearchFieldService.getSelectedResearchField() }
+  );
+
+  // Computed signals for template-friendly access to project id & name
+  readonly projectId = computed(() => this.selectedResearchFieldSignal()?.id ?? 'all');
+  readonly projectName = computed(() => this.selectedResearchFieldSignal()?.name ?? '');
 
   // Données principales
   // raw array or typed tuple returned by CreateItemToDisplayService
   // keep both shapes to remain backward-compatible while we migrate
   item: any[] | ItemDisplayTuple | null = null;
+  // Signal wrapper to drive effects when item changes
+  private itemSignal = signal<any[] | ItemDisplayTuple | null>(null);
   // UI-focused, typed representation of the current item (mapped from the rich entity)
   displayItem: DisplayItem | null = null;
   claims: any;
   itemId: string;
+  // Progressive signal wrapper for itemId to let effects re-run when the route changes
+  private itemIdSignal = signal<string | null>(null);
   id: string;
   label: string;
   description: string;
@@ -281,16 +424,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   // Titres/listes calculés au niveau parent pour les cartes SPARQL (via le service)
   sparqlCards$: Observable<SparqlAllCardsState> | null = null;
 
-  // Subscriptions
-  subscription0: Subscription;
-  subscription1: Subscription;
-  subscription2: Subscription;
-  subscription3: Subscription;
-
-  // Drawer removed — no toggle helper required
+  // Subscriptions (legacy: we keep certain subscriptions for non-intercepted services)
+  // legacy subscription3 removed; transcript subscription handled via effect
   sparqlSubscription: Subscription | null = null;
-  sparqlCardsSubscription: Subscription | null = null;
-  selectedResearchFieldSubscription: Subscription;
   subscriptions: Subscription[] = [];
 
   // Textes d’interface
@@ -309,10 +445,8 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   clickToDownload: string = 'click to download';
   stemma: string = 'stemma';
   factGridLogo: string = 'https://upload.wikimedia.org/wikipedia/commons/b/b6/FactGrid-Logo4.png';
-  currentProject: ResearchField | null = null;
 
   ngOnInit(): void {
-
     this.subtitle = this.lang.getTranslation('subtitle', this.lang.selectedLang);
 
     // Gestion de l’ancien format (simple string) et du nouveau (JSON)
@@ -327,13 +461,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.from = researchFieldId === 'Q10441' ? 'paris' : 'search';
-
-    // Projet sélectionné (pour l'affichage sur la page d'accueil)
-    this.currentProject = this.selectedResearchFieldService.getSelectedResearchField();
-    this.selectedResearchFieldSubscription =
-      this.selectedResearchFieldService.selectedResearchField$.subscribe((field) => {
-        this.currentProject = field;
-      });
 
     this.isSpinner = true;
     this.isInfo = false;
@@ -373,36 +500,14 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       this.lang.getTranslation('subtitle_life_and_family', this.lang.selectedLang) ||
       'Life and family';
 
-    // Subscription to route params (item id)
-    this.subscription0 = this.route.paramMap.subscribe((params) => {
-      this.itemId = params.get('id');
-      if (this.itemId) {
-        this.loadBackList();
-        this.loadItem();
-      } else {
-        // Aucun item au démarrage : afficher directement la page d'accueil
-        this.item = null;
-        // Charger la liste des items visités pour la page d'accueil
-        this.selectedItemsList = JSON.parse(localStorage.getItem('selectedItems')) || [];
-        this.isSpinner = false;
-      }
-    });
+    // Route params & item effects moved to constructor for injection safety
 
     // Drawer removed — no subscription needed.
 
     // Keep the component aware of small-handset viewports globally so that
     // template conditionals for mobile-only UI (e.g. .mobile-project-title)
     // work consistently at runtime and inside tests when needed.
-    const bpSub = this.observer
-      .observe([Breakpoints.Handset, Breakpoints.HandsetPortrait, Breakpoints.HandsetLandscape])
-      .subscribe((result) => {
-        this.isMobile = !!result?.matches;
-        // ensure template updates
-        try {
-          this.cdr.detectChanges();
-        } catch {}
-      });
-    this.subscriptions.push(bpSub);
+    // BreakpointObserver handling is performed in constructor
   }
 
   /**
@@ -425,7 +530,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         name: 'all',
         description: '',
       });
-      // the subscription to selectedResearchField$ will update `currentProject`
       try {
         this.cdr.detectChanges();
       } catch {}
@@ -518,10 +622,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   itemInfoLoaded = false;
   private itemInfoRefs: Array<NgComponentRef<any> | null> = [null, null];
 
-  private loadBackList() {
+  private doBackListFetch(id: string) {
     // getBackList returns a pair of responses: [userLangResult, englishResult]
-    this.subscription1 = this.backList
-      .backList(this.itemId)
+    const sub = this.backList
+      .backList(id)
       .pipe(
         map((res: any[]) => {
           // Primary list for the user's language
@@ -558,6 +662,15 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         })
       )
       .subscribe();
+    // Immediately unsubscribe would cancel work — rely on subscription lifecycle
+    // or let the observable complete; if needed we can keep a ref to unsubscribe later.
+    this.subscriptions.push(sub);
+  }
+
+  private loadBackList() {
+    const id = this.itemIdSignal() || this.itemId;
+    if (!id) return;
+    this.doBackListFetch(id);
   }
 
   private getNoneLabel(lang: string): string {
@@ -582,197 +695,230 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadItem() {
-    this.subscription2 = this.setData.itemToDisplay(this.itemId).subscribe((item) => {
-      // reset error flag for new load
-      this.isError = false;
+    effect((onCleanup) => {
+      const id = this.itemIdSignal() || this.itemId;
+      console.log('[LOAD DEBUG] loadItem effect triggered, id:', id);
+      if (!id) return;
+      const sub = this.setData.itemToDisplay(id!).subscribe((item) => {
+        console.log('[LOAD DEBUG] Item received:', item);
+        // reset error flag for new load
+        this.isError = false;
 
-      this.isMain =
-        this.isOther =
-        this.isPicture =
-        this.isSource =
-        this.isTraining =
-        this.isCareer =
-        this.isFamilyTree =
-        this.isIframes =
-        this.isActivity =
-        this.isWikis =
-        this.isExternalLinks =
-        this.isInfo =
-        this.isMap =
-          false;
+        this.isMain =
+          this.isOther =
+          this.isPicture =
+          this.isSource =
+          this.isTraining =
+          this.isCareer =
+          this.isFamilyTree =
+          this.isIframes =
+          this.isActivity =
+          this.isWikis =
+          this.isExternalLinks =
+          this.isInfo =
+          this.isMap =
+            false;
 
-      if (!item || !Array.isArray(item) || item.length === 0) {
-        this.item = null;
-        // Ensure homepage visuals are restored when there is no item
-        this.headerAnimState = 'home';
-        this.searchAnimState = 'home';
-        return;
-      }
-      this.item = item;
-          // optional typed DisplayItem appended as the 5th element by CreateItemToDisplayService
-          // read it type-safely from the ItemDisplayTuple
-          this.displayItem = Array.isArray(item) && item.length >= 5 ? (item[4] as DisplayItem) : null;
-      // Item present -> header should be closed and search pinned
-      this.headerAnimState = 'closed';
-      this.searchAnimState = 'pinned';
-      // Ensure any previously created dynamic SPARQL components and subscriptions
-      // are destroyed when switching items so new components can be created for
-      // the newly selected item.
-      this.clearSparqlComponents();
-      console.log('Item loaded:', this.item);
-      this.setList.addToSelectedItemsList(item[0]);
-      this.claims = item[0].claims;
-      if (!this.claims.P2) {
-        // mark as error so the template can display an explanatory message
-        this.isError = true;
-        this.item = null;
-        this.isSpinner = false;
-        return;
-      }
-      if (!this.claims.P320) {
-        this.hideList();
-      }
-      this.natureOf = this.claims.P2[0].mainsnak.datavalue.value.id;
-      if (this.mainTitle == 'Humain') {
-        this.mainTitle = 'Personne';
-      }
-      if (['Q37073', 'Q257052'].includes(this.claims.P2[0].mainsnak.datavalue.value.id)) {
-        this.mainTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
-      }
-      this.urlId = this.factGridUrl + this.id;
+        if (!item || !Array.isArray(item) || item.length === 0) {
+          this.item = null;
+          this.itemSignal.set(null);
+          // Ensure homepage visuals are restored when there is no item
+          this.headerAnimState = 'home';
+          this.searchAnimState = 'home';
+          return;
+        }
+        this.item = item;
+        console.log('[LOAD DEBUG] itemSignal set. Has sparql?', !!item[0]?.sparql);
+        // ensure the signal mirrors the legacy item field for new reactive patterns
+        // CRITICAL: Set signal AFTER item assignment to trigger dependent effects
+        this.itemSignal.set(this.item);
+        // optional typed DisplayItem appended as the 5th element by CreateItemToDisplayService
+        // read it type-safely from the ItemDisplayTuple
+        this.displayItem =
+          Array.isArray(item) && item.length >= 5 ? (item[4] as DisplayItem) : null;
+        // Item present -> header should be closed and search pinned
+        this.headerAnimState = 'closed';
+        this.searchAnimState = 'pinned';
+        // Ensure any previously created dynamic SPARQL components and subscriptions
+        // are destroyed when switching items so new components can be created for
+        // the newly selected item.
+        this.clearSparqlComponents();
+        console.log('Item loaded:', this.item);
+        this.setList.addToSelectedItemsList(item[0]);
+        this.claims = item[0].claims;
+        if (!this.claims.P2) {
+          // mark as error so the template can display an explanatory message
+          this.isError = true;
+          this.item = null;
+          this.itemSignal.set(null);
+          this.isSpinner = false;
+          return;
+        }
+        if (!this.claims.P320) {
+          this.hideList();
+        }
+        this.natureOf = this.claims.P2[0].mainsnak.datavalue.value.id;
+        if (this.mainTitle == 'Humain') {
+          this.mainTitle = 'Personne';
+        }
+        if (['Q37073', 'Q257052'].includes(this.claims.P2[0].mainsnak.datavalue.value.id)) {
+          this.mainTitle = this.lang.getTranslation('$1', this.lang.selectedLang);
+        }
+        this.urlId = this.factGridUrl + this.id;
 
-      this.id = this.item[0].id;
-      // Try to pre-load cached SPARQL lists for this item (if any).
-      // Doing this before SPARQL observable resolution helps when navigating back
-      // to an item that previously had expensive long lists.
-      this.loadCachedSparqlComponents();
-      this.label = this.item[0].label;
-      this.description = this.item[0].description;
-      this.aliases = this.item[0].aliases;
-      if (this.aliases) {
-        this.isAliases === true;
-      }
+        this.id = this.item[0].id;
+        // Try to pre-load cached SPARQL lists for this item (if any).
+        // Doing this before SPARQL observable resolution helps when navigating back
+        // to an item that previously had expensive long lists.
+        this.loadCachedSparqlComponents();
+        this.label = this.item[0].label;
+        this.description = this.item[0].description;
+        this.aliases = this.item[0].aliases;
+        if (this.aliases) {
+          this.isAliases === true;
+        }
 
-      // Enrich claims (add presence flags on P2 etc.) then compute flags for display
-      this.claimsEnricher.enrich(this.item);
-      const flags = this.itemDisplayDispatcher.dispatch(this.item, this);
-      Object.assign(this, flags);
+        // Enrich claims (add presence flags on P2 etc.) then compute flags for display
+        this.claimsEnricher.enrich(this.item);
+        const flags = this.itemDisplayDispatcher.dispatch(this.item, this);
+        Object.assign(this, flags);
 
-      // Recompute display-level shortcuts from enriched claims now that P2 flags
-      // and translated subtitles are available. We read these AFTER enrichment
-      // so top-level properties like P242 cause P2.event to be marked.
-      this.event = this.claims.P2?.event;
-      this.listTitle = this.claims.P2?.listTitle;
-      this.main = this.claims.P2?.main;
+        // Recompute display-level shortcuts from enriched claims now that P2 flags
+        // and translated subtitles are available. We read these AFTER enrichment
+        // so top-level properties like P242 cause P2.event to be marked.
+        this.event = this.claims.P2?.event;
+        this.listTitle = this.claims.P2?.listTitle;
+        this.main = this.claims.P2?.main;
 
-      // Carte
-      if (this.claims.P48) {
-        this.zoom = 12;
-        let xy = this.claims.P2[0].mainsnak.datavalue.value.id;
-        if (xy == 'Q176131') this.zoom = 3;
-        if (xy == 'Q21925') this.zoom = 4;
-        if (xy == 'Q21876') this.zoom = 6;
-        if (xy == 'Q16200') this.zoom = 18;
-        if (
-          [
-            'Q266101',
-            'Q469609',
-            'Q172249',
-            'Q36239',
-            'Q164328',
-            'Q36251',
-            'Q141472',
-            'Q395380',
-            'Q375357',
-          ].includes(xy)
-        )
-          this.zoom = 16;
-        this.coords = this.claims.P48[0].mainsnak.datavalue.value;
-        // mark presence of map data so template can show map card
-        this.isMap = true;
-        this.latitude = this.coords.latitude;
-        this.longitude = this.coords.longitude;
-        this.router.navigate([this.latitude, this.longitude, this.zoom], {
-          relativeTo: this.route,
-        });
-      }
+        // Carte
+        if (this.claims.P48) {
+          this.zoom = 12;
+          let xy = this.claims.P2[0].mainsnak.datavalue.value.id;
+          if (xy == 'Q176131') this.zoom = 3;
+          if (xy == 'Q21925') this.zoom = 4;
+          if (xy == 'Q21876') this.zoom = 6;
+          if (xy == 'Q16200') this.zoom = 18;
+          if (
+            [
+              'Q266101',
+              'Q469609',
+              'Q172249',
+              'Q36239',
+              'Q164328',
+              'Q36251',
+              'Q141472',
+              'Q395380',
+              'Q375357',
+            ].includes(xy)
+          )
+            this.zoom = 16;
+          this.coords = this.claims.P48[0].mainsnak.datavalue.value;
+          // mark presence of map data so template can show map card
+          this.isMap = true;
+          this.latitude = this.coords.latitude;
+          this.longitude = this.coords.longitude;
+          this.router.navigate([this.latitude, this.longitude, this.zoom], {
+            relativeTo: this.route,
+          });
+        }
 
-      // Selected Items
-      this.selectedItemsList = JSON.parse(localStorage.getItem('selectedItems'));
+        // Selected Items
+        this.selectedItemsList = JSON.parse(localStorage.getItem('selectedItems'));
 
-      // Images
-      this.pictures = this.claims.P189
-        ? this.claims.P189.map((picture, index) => {
-            const imageUrl = picture.picture;
-            const thumbnailUrl = `${imageUrl}?width=300`;
-            this.preloadImage(thumbnailUrl);
-            this.preloadImage(imageUrl);
-            return {
-              thumbnail: thumbnailUrl,
-              full: imageUrl,
-              uniqueKey: imageUrl || `picture-${index}`,
-            };
-          })
-        : [];
-      this.isPicture = this.pictures.length > 0;
-      if (this.isPicture) {
-        this.observer.observe([Breakpoints.HandsetPortrait]).subscribe((result) => {
-          if (result.matches) {
-            this.isMobile = true;
+        // Images
+        this.pictures = this.claims.P189
+          ? this.claims.P189.map((picture, index) => {
+              const imageUrl = picture.picture;
+              const thumbnailUrl = `${imageUrl}?width=300`;
+              this.preloadImage(thumbnailUrl);
+              this.preloadImage(imageUrl);
+              return {
+                thumbnail: thumbnailUrl,
+                full: imageUrl,
+                uniqueKey: imageUrl || `picture-${index}`,
+              };
+            })
+          : [];
+        this.isPicture = this.pictures.length > 0;
+        if (this.isPicture) {
+          // If the global isMobile signals that we're on a handset, elevate the picture
+          if (this.isMobile) {
             this.isTopPicture = true;
-            // Supprimer cette ligne pour garder isPicture à true sur mobile
           }
-        });
-      }
+        }
 
-      // Iframes
-      this.iframes = [];
-      try {
-        this.iframesDisplay.setIframesDisplay(this.item, this.iframes);
-      } catch (e) {
-        // noop
-      }
-      this.isIframes = this.iframes.length > 0;
+        // Iframes
+        this.iframes = [];
+        try {
+          this.iframesDisplay.setIframesDisplay(this.item, this.iframes);
+        } catch (e) {
+          // noop
+        }
+        this.isIframes = this.iframes.length > 0;
 
-      // Extraction des URLs brutes pour les iframes
+        // Extraction des URLs brutes pour les iframes
 
-      this.iframeGroups = [
-        { property: 'P309', label: this.claims.P309?.label, claims: this.claims.P309 || [] },
-        { property: 'P320', label: this.claims.P320?.label, claims: this.claims.P320 || [] },
-        { property: 'P679', label: this.claims.P679?.label, claims: this.claims.P679 || [] },
-        { property: 'P693', label: this.claims.P693?.label, claims: this.claims.P693 || [] },
-        { property: 'P720', label: this.claims.P720?.label, claims: this.claims.P720 || [] },
-      ].filter((g) => g.label && g.claims.length > 0);
+        this.iframeGroups = [
+          { property: 'P309', label: this.claims.P309?.label, claims: this.claims.P309 || [] },
+          { property: 'P320', label: this.claims.P320?.label, claims: this.claims.P320 || [] },
+          { property: 'P679', label: this.claims.P679?.label, claims: this.claims.P679 || [] },
+          { property: 'P693', label: this.claims.P693?.label, claims: this.claims.P693 || [] },
+          { property: 'P720', label: this.claims.P720?.label, claims: this.claims.P720 || [] },
+        ].filter((g) => g.label && g.claims.length > 0);
 
-      // Transcription
-      if (this.claims.P251 && this.claims.P251[0].mainsnak.datavalue.value) {
-        let a = this.transcript.transcript(this.claims.P251[0].mainsnak.datavalue.value);
-        this.subscription3 = a.subscribe((res) => {
-          this.trans = Object.keys(res)[0] == 'error' ? 'no transcription' : res.parse.text;
-          this.trans = this.changeTranscript.cleaning(this.trans);
-        });
-      } else {
-        this.trans = '';
-      }
+        // Transcription: handled by constructor-level effect watching itemSignal
+        // NOTE: Avoid creating `effect()` here — this callback is executed
+        // outside of an injection context (Observable subscription `next` handler);
+        // calling `effect()` from here leads to runtime NG0203 errors.
+        if (!(this.claims.P251 && this.claims.P251[0].mainsnak.datavalue.value)) {
+          this.trans = '';
+        }
 
-      // Info lists (préserver l'objet déjà construit par le dispatcher, et fusionner dès que les listes arrivent)
-      const applyInfoList = () => {
-        const raw = this.item?.[0]?.infoList as any[] | undefined;
-        const rawInst = Array.isArray(raw?.[0]) ? raw![0] : [];
-        const rawSub = Array.isArray(raw?.[1]) ? raw![1] : [];
-        const rawCls = Array.isArray(raw?.[2]) ? raw![2] : [];
-        const rawNat = Array.isArray(raw?.[3]) ? raw![3] : [];
-        const rawHasAny = rawInst.length + rawSub.length + rawCls.length + rawNat.length > 0;
+        // Info lists (préserver l'objet déjà construit par le dispatcher, et fusionner dès que les listes arrivent)
+        const applyInfoList = () => {
+          const raw = this.item?.[0]?.infoList as any[] | undefined;
+          const rawInst = Array.isArray(raw?.[0]) ? raw![0] : [];
+          const rawSub = Array.isArray(raw?.[1]) ? raw![1] : [];
+          const rawCls = Array.isArray(raw?.[2]) ? raw![2] : [];
+          const rawNat = Array.isArray(raw?.[3]) ? raw![3] : [];
+          const rawHasAny = rawInst.length + rawSub.length + rawCls.length + rawNat.length > 0;
 
-        // Si un infoList existe déjà (créé par le dispatcher) mais vide, on n'arrête PAS tant que les données brutes ne sont pas arrivées
-        if (this.infoList && this.infoList.instancesList !== undefined) {
-          const curInst = this.infoList.instancesList || [];
-          const curSub = this.infoList.subclassesList || [];
-          const curCls = this.infoList.classesList || [];
-          const curNat = this.infoList.natureOfList || [];
+          // Si un infoList existe déjà (créé par le dispatcher) mais vide, on n'arrête PAS tant que les données brutes ne sont pas arrivées
+          if (this.infoList && this.infoList.instancesList !== undefined) {
+            const curInst = this.infoList.instancesList || [];
+            const curSub = this.infoList.subclassesList || [];
+            const curCls = this.infoList.classesList || [];
+            const curNat = this.infoList.natureOfList || [];
 
-          // Si les données brutes sont arrivées et apportent du contenu, on met à jour en préservant technicalities/infoProperties
-          if (rawHasAny) {
+            // Si les données brutes sont arrivées et apportent du contenu, on met à jour en préservant technicalities/infoProperties
+            if (rawHasAny) {
+              const existingTech = this.infoList?.technicalities || this.technicalities || [];
+              const existingInfoProps = this.infoList?.infoProperties || this.infoProperties || [];
+              this.instancesList = rawInst;
+              this.subclassesList = rawSub;
+              this.classesList = rawCls;
+              this.natureOfList = rawNat;
+              this.infoList = {
+                instancesList: this.instancesList,
+                subclassesList: this.subclassesList,
+                classesList: this.classesList,
+                natureOfList: this.natureOfList,
+                technicalities: existingTech,
+                infoProperties: existingInfoProps,
+              };
+              // Try to lazy-load ItemInfo component(s) now that infoList is available
+              this.loadItemInfoAt(0);
+              this.loadItemInfoAt(1);
+            } else {
+              // Pas encore de données brutes: conserver l'état actuel (techniques visibles) mais continuer à poller
+              this.instancesList = curInst;
+              this.subclassesList = curSub;
+              this.classesList = curCls;
+              this.natureOfList = curNat;
+              return false; // continuer à vérifier jusqu'à l'arrivée des listes
+            }
+          } else if (rawHasAny) {
+            // Aucun infoList actuel: construire à partir du brut et préserver technicalities/infoProperties si déjà collectés séparément
             const existingTech = this.infoList?.technicalities || this.technicalities || [];
             const existingInfoProps = this.infoList?.infoProperties || this.infoProperties || [];
             this.instancesList = rawInst;
@@ -787,121 +933,68 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
               technicalities: existingTech,
               infoProperties: existingInfoProps,
             };
-            // Try to lazy-load ItemInfo component(s) now that infoList is available
+            // ensure the info component is loaded where present
             this.loadItemInfoAt(0);
             this.loadItemInfoAt(1);
           } else {
-            // Pas encore de données brutes: conserver l'état actuel (techniques visibles) mais continuer à poller
-            this.instancesList = curInst;
-            this.subclassesList = curSub;
-            this.classesList = curCls;
-            this.natureOfList = curNat;
-            return false; // continuer à vérifier jusqu'à l'arrivée des listes
+            // Rien à appliquer pour le moment => poursuivre le polling
+            return false;
           }
-        } else if (rawHasAny) {
-          // Aucun infoList actuel: construire à partir du brut et préserver technicalities/infoProperties si déjà collectés séparément
-          const existingTech = this.infoList?.technicalities || this.technicalities || [];
-          const existingInfoProps = this.infoList?.infoProperties || this.infoProperties || [];
-          this.instancesList = rawInst;
-          this.subclassesList = rawSub;
-          this.classesList = rawCls;
-          this.natureOfList = rawNat;
-          this.infoList = {
-            instancesList: this.instancesList,
-            subclassesList: this.subclassesList,
-            classesList: this.classesList,
-            natureOfList: this.natureOfList,
-            technicalities: existingTech,
-            infoProperties: existingInfoProps,
-          };
-          // ensure the info component is loaded where present
-          this.loadItemInfoAt(0);
-          this.loadItemInfoAt(1);
-        } else {
-          // Rien à appliquer pour le moment => poursuivre le polling
-          return false;
-        }
 
-        // Ne pas ouvrir automatiquement le panneau: laisser le contrôle à l'utilisateur via toggleInfo().
-        return true;
-      };
-
-      if (!applyInfoList()) {
-        // Rafraîchit dès que infoList est disponible (construit de façon asynchrone)
-        const checkInfoList = () => {
-          if (applyInfoList()) return;
-          setTimeout(checkInfoList, 100);
-        };
-        checkInfoList();
-      }
-
-      // sparql lists (async pipe) : attendre explicitement que le champ soit bien initialisé
-      const waitForSparqlObservable = () => {
-        if (this.item[0].sparql && typeof this.item[0].sparql.subscribe === 'function') {
-          this.sparql$ = this.item[0].sparql as Observable<SparqlTuple[]>;
-          // Délègue la construction des titres/listes au service
-          this.sparqlCards$ = this.sparqlDisplayService.buildAllCardsState(this.sparql$, this.lang);
-          // Subscribe and create the SPARQL components dynamically when data arrives
-          this.sparqlCardsSubscription = this.sparqlCards$.subscribe((cards) => {
-            if (!cards) return;
-            // CRITICAL: Force change detection BEFORE attempting to load dynamic
-            // components. The template uses @if conditions that depend on sparqlCards$
-            // via async pipe. Until change detection runs, the ng-template hosts
-            // (#sparqlDisplay0, etc.) do not exist in the DOM.
-            try {
-              this.cdr.detectChanges();
-            } catch {}
-            // Small delay to give Angular time to process @if conditions and create
-            // the ng-template hosts in the DOM
-            setTimeout(() => {
-              if (cards.sparql0?.list?.length) this.loadSparqlAt(0, cards.sparql0);
-              if (cards.sparql1?.list?.length) this.loadSparqlAt(1, cards.sparql1);
-              if (cards.sparql2?.list?.length) this.loadSparqlAt(2, cards.sparql2);
-              if (cards.sparql3?.list?.length) this.loadSparqlAt(3, cards.sparql3);
-              if (cards.sparql4?.list?.length) this.loadSparqlAt(4, cards.sparql4);
-            }, 0);
-          });
-        } else {
-          this.sparql$ = null;
-          setTimeout(waitForSparqlObservable, 100);
-        }
-      };
-      waitForSparqlObservable();
-
-      // Some type hints (sparql batch ASK results) are attached asynchronously
-      // to item[0].sparqlFlags by ItemSparqlService. When these flags arrive
-      // we should re-run the enrichment + dispatch so blocks that depend on
-      // P2 detection (e.g. organisation detection driven by Q12Test) get
-      // surfaced into the mainList and UI without user navigation.
-      const applySparqlFlags = () => {
-        if (this.item && this.item[0] && (this.item[0] as any).sparqlFlags) {
-          // re-enrich and re-dispatch so display state reflects new signals
-          this.claimsEnricher.enrich(this.item);
-          const flagsAfter = this.itemDisplayDispatcher.dispatch(this.item, this);
-          Object.assign(this, flagsAfter);
-          // also recompute some convenience fields used elsewhere
-          this.event = this.claims.P2?.event;
-          this.listTitle = this.claims.P2?.listTitle;
-          this.main = this.claims.P2?.main;
+          // Ne pas ouvrir automatiquement le panneau: laisser le contrôle à l'utilisateur via toggleInfo().
           return true;
-        }
-        return false;
-      };
-
-      if (!applySparqlFlags()) {
-        const checkSparqlFlags = () => {
-          if (applySparqlFlags()) return;
-          setTimeout(checkSparqlFlags, 100);
         };
-        checkSparqlFlags();
-      }
 
-      // Spinner
-      this.isSpinner = false;
+        if (!applyInfoList()) {
+          // Rafraîchit dès que infoList est disponible (construit de façon asynchrone)
+          const checkInfoList = () => {
+            if (applyInfoList()) return;
+            setTimeout(checkInfoList, 100);
+          };
+          checkInfoList();
+        }
 
-      // Trees
-      this.isFamilyTree = !!(this.claims.P150 || this.claims.P141 || this.claims.P142);
-      this.isStemma = !!this.claims.P233;
+        // SPARQL lists: handled by constructor-level effect watching itemSignal
+        // NOTE: Avoid creating `effect()` here — this callback is executed
+        // outside of an injection context (Observable subscription `next` handler);
+        // calling `effect()` from here leads to runtime NG0203 errors.
+
+        // Some type hints (sparql batch ASK results) are attached asynchronously
+        // to item[0].sparqlFlags by ItemSparqlService. When these flags arrive
+        // we should re-run the enrichment + dispatch so blocks that depend on
+        // P2 detection (e.g. organisation detection driven by Q12Test) get
+        // surfaced into the mainList and UI without user navigation.
+        const applySparqlFlags = () => {
+          if (this.item && this.item[0] && (this.item[0] as any).sparqlFlags) {
+            // re-enrich and re-dispatch so display state reflects new signals
+            this.claimsEnricher.enrich(this.item);
+            const flagsAfter = this.itemDisplayDispatcher.dispatch(this.item, this);
+            Object.assign(this, flagsAfter);
+            // also recompute some convenience fields used elsewhere
+            this.event = this.claims.P2?.event;
+            this.listTitle = this.claims.P2?.listTitle;
+            this.main = this.claims.P2?.main;
+            return true;
+          }
+          return false;
+        };
+
+        if (!applySparqlFlags()) {
+          const checkSparqlFlags = () => {
+            if (applySparqlFlags()) return;
+            setTimeout(checkSparqlFlags, 100);
+          };
+          checkSparqlFlags();
+        }
+
+        // Spinner
+        this.isSpinner = false;
+
+        // Trees
+        this.isFamilyTree = !!(this.claims.P150 || this.claims.P141 || this.claims.P142);
+        this.isStemma = !!this.claims.P233;
+      });
+      onCleanup(() => sub.unsubscribe());
     });
   }
 
@@ -958,8 +1051,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {}
 
   private async loadSparqlAt(index: number, card: any, attempt = 0): Promise<void> {
+    console.log(`[SPARQL DEBUG] loadSparqlAt(${index}) called, attempt ${attempt}`, card);
     try {
       const host = this[`sparqlDisplay${index}Host`] as ViewContainerRef | undefined;
+      console.log(`[SPARQL DEBUG] Host for index ${index}:`, host);
       // The host element may not be present yet when called from the subscription
       // (template is rendered after async data). Use exponential backoff for large lists.
       // For lists >1000 items, Angular needs more time to process the @if condition.
@@ -1162,9 +1257,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private clearSparqlComponents(): void {
     // Unsubscribe from cards subscription to avoid duplicate handling
-    try {
-      this.sparqlCardsSubscription?.unsubscribe();
-    } catch {}
+    // No direct sparqlCardsSubscription to unsubscribe here; handled via effect cleanup
 
     // Destroy any dynamically created components and reset refs
     this.sparqlComponentRefs.forEach((ref, idx) => {
@@ -1278,13 +1371,9 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription0?.unsubscribe();
-    this.subscription1?.unsubscribe();
-    this.subscription2?.unsubscribe();
-    this.subscription3?.unsubscribe();
+    // subscription1 handled via effect cleanup; no explicit unsubscribe
+    // subscription3 cleanup is handled by effects
     this.sparqlSubscription?.unsubscribe();
-    this.sparqlCardsSubscription?.unsubscribe();
-    this.selectedResearchFieldSubscription?.unsubscribe();
     this.subscriptions.forEach((sub) => sub.unsubscribe());
 
     // Destroy any dynamically created component refs

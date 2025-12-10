@@ -62,7 +62,13 @@ export class CreateItemToDisplayService {
         const displayItem: DisplayItem = mapEntityToDisplayItem(item);
 
         // Return typed tuple: keep backward-compatible array tuple and provide compact DisplayItem
-        const tuple: ItemDisplayTuple = [item, updatedItemProperties, qualifierProperties, referenceProperties, displayItem];
+        const tuple: ItemDisplayTuple = [
+          item,
+          updatedItemProperties,
+          qualifierProperties,
+          referenceProperties,
+          displayItem,
+        ];
         return tuple;
       })
     );

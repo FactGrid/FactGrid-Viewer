@@ -13,6 +13,12 @@
 
 .FactGridTitle-div {
   //font of the title FactGrid
+.typo-item-id {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin-left: 8px;
+}
   padding-left: 10px;
   color: #ad1457;
   font-weight: 600;
@@ -81,7 +87,7 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   flex-direction: column;
   width: 100%;
   /* mobile layout handled by later global @media blocks — nested mobile rules removed to avoid duplication/conflict */
-  }
+}
 /* Styles pour les inputs compact avec coins ronds (plain inputs) */
 .compact-dual-search {
   /* The old dual-column layout has been retired - keep vertical stacking
@@ -107,12 +113,12 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 }
 
 .compact-search-field {
-    /* flexible layout: by default each input can grow to half the available
+  /* flexible layout: by default each input can grow to half the available
       space but respects sensible min/max values to avoid being too small
       or excessively wide on very large screens */
-    flex: 1 1 calc((100% - 8px) / 2);
-    min-width: var(--compact-input-min-width);
-    max-width: var(--compact-input-max-width);
+  flex: 1 1 calc((100% - 8px) / 2);
+  min-width: var(--compact-input-min-width);
+  max-width: var(--compact-input-max-width);
   min-width: 0; /* allow shrinking on narrow containers */
   height: 40px;
   display: flex;
@@ -130,7 +136,6 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 .compact-search-field {
   position: relative;
 }
-
 
 .compact-search-field .compact-search-input {
   /* Make extra room for the clear button and avoid text overlap */
@@ -174,7 +179,7 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   font-size: 14px;
 }
 
-  .compact-search-field .compact-search-input {
+.compact-search-field .compact-search-input {
   border: none;
   outline: none;
   /* keep right padding large to avoid clear-button overlap */
@@ -257,7 +262,7 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important; /* buttons share a row */
     grid-template-rows: auto auto !important;
-    grid-template-areas: "input input" "btn-left btn-right" !important;
+    grid-template-areas: 'input input' 'btn-left btn-right' !important;
     gap: 8px !important;
     align-items: center !important;
     justify-items: stretch !important;
@@ -350,9 +355,8 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 
 .compact-history-btn mat-icon {
   font-size: 20px;
-  color: rgba(24,36,56,0.8);
+  color: rgba(24, 36, 56, 0.8);
 }
-
 
 /* Les styles globaux d'overlay ont été déplacés vers
    `src/styles/overlay-search.scss`. Voir ce fichier pour les règles
@@ -393,8 +397,6 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   border-bottom: none;
 }
 
-
-
 /* History overlay panel styling */
 .compact-history-panel .history-panel {
   padding: 8px 12px;
@@ -416,14 +418,18 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   color: var(--text-primary);
   text-decoration: none;
 }
-.compact-history-panel .history-empty { color: #666; padding: 8px 0; }
+.compact-history-panel .history-empty {
+  color: #666;
+  padding: 8px 0;
+}
 
 /* Visual rules for the overlay panel root — ensure it's opaque and has a border */
-.search-history_panel, .compact-history-panel {
+.search-history_panel,
+.compact-history-panel {
   background: #ffffff; /* opaque white */
   border-radius: 10px;
-  border: 1px solid rgba(31,45,64,0.08);
-  box-shadow: 0 12px 36px rgba(31,45,64,0.14);
+  border: 1px solid rgba(31, 45, 64, 0.08);
+  box-shadow: 0 12px 36px rgba(31, 45, 64, 0.14);
   color: var(--text-primary);
   min-width: 240px;
   max-height: calc(70vh);
@@ -433,10 +439,8 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
 
 /* tone down translucent/backdrop classes if used; keep overlay readable */
 .cdk-backdrop-translucent {
-  background: rgba(0,0,0,0.22) !important;
+  background: rgba(0, 0, 0, 0.22) !important;
 }
-
-
 
 /* =========================================
    NEW SEARCH IMPLEMENTATION (REBUILT)
@@ -522,10 +526,10 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   width: 44px;
   height: 40px;
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   cursor: pointer;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
   padding: 0;
   flex-shrink: 0; /* Don't shrink */
   margin-right: 16px; /* small gutter from the right edge on desktop */
@@ -544,10 +548,10 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   min-width: 44px;
   height: 40px;
   background: #ffffff;
-  border: 1px solid rgba(0,0,0,0.12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   cursor: pointer;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
   padding: 0 8px;
   flex-shrink: 0;
   margin-right: 0; /* ensure no right gutter on desktop — symmetry with history button */
@@ -571,12 +575,10 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   vertical-align: middle;
 }
 
-
 /* =========================================
    MOBILE LAYOUT (Max-width: 700px)
    ========================================= */
 @media (max-width: 700px) {
-  
   /* Force container to take full width and center content */
   .new-item-search-container {
     width: 100% !important;
@@ -597,13 +599,13 @@ mat-hint mat-checkbox .mat-checkbox-layout .mat-checkbox-label {
   .new-history-btn {
     flex: 0 0 44px !important;
   }
-  
+
   /* Ensure parent containers don't restrict width */
   .search-field-col {
     width: 100% !important;
     padding: 0 !important;
   }
-  
+
   .search-center2 {
     width: 100% !important;
     padding: 0 !important;

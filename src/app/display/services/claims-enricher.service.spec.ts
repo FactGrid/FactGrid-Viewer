@@ -23,10 +23,10 @@ describe('ClaimsEnricherService', () => {
     ];
 
     const out = service.enrich(item);
-    expect(out[0].claims.P2.person).toBeTrue();
-    expect(out[0].claims.P2.career).toBeTrue();
-    expect(out[0].claims.P2.training).toBeTrue();
-    expect(out[0].claims.P2.sociability).toBeTrue();
+    expect(out[0].claims.P2.person).toBe(true);
+    expect(out[0].claims.P2.career).toBe(true);
+    expect(out[0].claims.P2.training).toBe(true);
+    expect(out[0].claims.P2.sociability).toBe(true);
   });
 
   it('enrich should set org/event/document/activity flags', () => {
@@ -39,12 +39,12 @@ describe('ClaimsEnricherService', () => {
     ];
 
     const out = service.enrich(item);
-    expect(out[0].claims.P2.org).toBeTrue();
+    expect(out[0].claims.P2.org).toBe(true);
 
     // event
     out[0].claims.P2 = [{ mainsnak: { datavalue: { value: { id: 'Q9' } } } }];
     const out2 = service.enrich(out);
-    expect(out2[0].claims.P2.event).toBeTrue();
+    expect(out2[0].claims.P2.event).toBe(true);
     // main flag must NOT be created automatically by the enricher; keep
     // P2.main reserved for explicit values coming from the payload.
     expect(out2[0].claims.P2.main).toBeUndefined();
@@ -197,7 +197,7 @@ describe('ClaimsEnricherService', () => {
 
     service.enrich(item);
     // P2:Q12 is an organisation id — place should not be set by top-level props
-    expect(((item[0].claims as any).P2 as any).org).toBeTrue();
+    expect(((item[0].claims as any).P2 as any).org).toBe(true);
     expect(((item[0].claims as any).P2 as any).place).toBeUndefined();
   });
 

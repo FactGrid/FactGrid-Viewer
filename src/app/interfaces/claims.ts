@@ -42,26 +42,27 @@ export interface Claim {
 // properties (externalLink, url, localized labels, boolean flags). Model
 // that by describing a ClaimArray type which is still an array of Claim
 // but can carry extra UI fields.
-export type ClaimArray = Claim[] & Partial<{
-  datatype: string;
-  externalLink: string;
-  url: string;
-  // often used localized labels and presence flags (P2 enrichment)
-  main: string;
-  person: boolean | string;
-  personLabel: string;
-  training: boolean | string;
-  trainingLabel: string;
-  career: boolean | string;
-  careerLabel: string;
-  sociability: boolean | string;
-  sociabilityLabel: string;
-  event: boolean | string;
-  eventLabel: string;
-  sources: any;
-  other: any;
-  infoList: any[];
-}> & { [key: string]: any };
+export type ClaimArray = Claim[] &
+  Partial<{
+    datatype: string;
+    externalLink: string;
+    url: string;
+    // often used localized labels and presence flags (P2 enrichment)
+    main: string;
+    person: boolean | string;
+    personLabel: string;
+    training: boolean | string;
+    trainingLabel: string;
+    career: boolean | string;
+    careerLabel: string;
+    sociability: boolean | string;
+    sociabilityLabel: string;
+    event: boolean | string;
+    eventLabel: string;
+    sources: any;
+    other: any;
+    infoList: any[];
+  }> & { [key: string]: any };
 
 export interface ClaimsObject {
   [property: string]: ClaimArray | undefined;
