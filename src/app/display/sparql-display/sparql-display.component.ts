@@ -12,8 +12,11 @@ import {
   computed,
 } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Output, EventEmitter } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -35,6 +38,8 @@ import { SparqlDisplayService, SparqlDisplayType } from '../services/sparql-disp
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
     FormsModule,
     ScrollingModule,
     NgTemplateOutlet,
@@ -69,6 +74,7 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
   // Optionnel: si le parent fournit déjà un titre, on peut l'utiliser
   @Input() parentTitle?: string;
   @Input() customRowTemplate?: TemplateRef<any>; // pour ultra-flexibilité
+  @Output() fetchAddress: EventEmitter<string> = new EventEmitter<string>();
 
   public listSignal = signal<any[]>([]);
   private listWithoutDuplicateSignal = signal<any[]>([]);
@@ -115,6 +121,29 @@ export class SparqlDisplayComponent implements OnChanges, OnDestroy {
     // Le setter sparqlData gère déjà la mise à jour des signals
     // On s'assure juste que le ChangeDetection est marqué
     this.cdr.markForCheck();
+  }
+
+  // Local status for fetch-in-progress per item id
+  private fetchingState = signal<Record<string, boolean>>({});
+  isFetching(id: string): boolean {
+    const map = this.fetchingState();
+    return !!map[id];
+  }
+  setFetching(id: string, value: boolean): void {
+    const map = Object.assign({}, this.fetchingState());
+    if (value) map[id] = true;
+    else delete map[id];
+    this.fetchingState.set(map);
+    try {
+      this.cdr.markForCheck();
+    } catch {}
+  }
+
+  onFetchAddress(id: string) {
+    if (!id) return;
+    // indicate local fetching state; parent will perform network fetch
+    this.setFetching(id, true);
+    this.fetchAddress.emit(id);
   }
 
   trackByFn(index: number, item: any): any {

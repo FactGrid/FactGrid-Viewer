@@ -382,14 +382,14 @@ import { RequestService } from '../request.service';
 
 describe('BirthplaceStrategy', () => {
   let strategy: BirthplaceStrategy;
-  let mockBuilder: jasmine.SpyObj<SparqlQueryBuilderService>;
-  let mockRequest: jasmine.SpyObj<RequestService>;
+  let mockBuilder: ReturnType<typeof vi.createSpyObj>;
+  let mockRequest: ReturnType<typeof vi.createSpyObj>;
 
   beforeEach(() => {
-    mockBuilder = jasmine.createSpyObj('SparqlQueryBuilderService', [
+    mockBuilder = vi.createSpyObj('SparqlQueryBuilderService', [
       'select', 'where', 'optional', 'orderBy', 'limit', 'build'
     ]);
-    mockRequest = jasmine.createSpyObj('RequestService', ['getList']);
+    mockRequest = vi.createSpyObj('RequestService', ['getList']);
 
     // Mock fluent API
     mockBuilder.select.and.returnValue(mockBuilder as any);

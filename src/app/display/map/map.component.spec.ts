@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import * as Leaflet from 'leaflet';
 
 import { MapComponent } from './map.component';
+// Map config now uses global functions, no injection needed
 
 describe('MapComponent', () => {
   let component: MapComponent;

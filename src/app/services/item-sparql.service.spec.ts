@@ -296,11 +296,120 @@ describe('ItemSparqlService', () => {
     svc.itemSparql(mockItem).subscribe((itemOut) => {
       (itemOut.sparql as any).subscribe((cards: any[]) => {
         const [label3, rows3] = cards[3];
+        // Previously currentAddress performed a network call; now it only returns a placeholder
+        // containing the coordinates so the UI can fetch on demand.
         expect(label3).toBe('Q16200');
         expect(Array.isArray(rows3)).toBe(true);
         expect(rows3.length).toBe(1);
-        expect(rows3[0].itemLabel.value).toContain('Rue Example');
+        expect(rows3[0].itemLabel.value).toContain('48.8566');
+        expect(rows3[0].itemLabel.value).toContain('2.3522');
       });
     });
+  });
+
+  it('sparql3$ should NOT return address tuple when P48 exists but address test is false', async () => {
+    const mockRequest: any = {
+      getList: (url: string) => {
+        // batchAskQuery returns isAddress false
+        if (url?.includes('BIND(EXISTS') || url?.includes('isAddress')) {
+          return of({ results: { bindings: [{ isAddress: { value: 'false' } }] } });
+        }
+        // other SELECT empty
+        return of({ results: { bindings: [] } });
+      },
+      getAsk: (url: string) => of(false),
+      getItem: (u: string) => of({ display_name: 'Rue Example 2, Paris' }),
+    };
+    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
+
+    const svc = TestBed.inject(ItemSparqlService);
+    (svc as any).request = mockRequest;
+    (svc as any).lang = mockLang;
+
+    const mockItem = {
+      id: 'Q38613',
+      claims: {
+        P48: [{ mainsnak: { datavalue: { value: { latitude: 48.8566, longitude: 2.3522 } } } }],
+        P2: [],
+        P165: [],
+      },
+    };
+
+    svc.itemSparql(mockItem).subscribe((itemOut) => {
+      (itemOut.sparql as any).subscribe((cards: any[]) => {
+        const [label3, rows3] = cards[3];
+        expect(label3).not.toBe('Q16200');
+        expect(Array.isArray(rows3)).toBe(true);
+        expect(rows3.length).toBe(0);
+      });
+    });
+  });
+
+  it('fetchCurrentAddress should perform reverse geocode and return a display_name', async () => {
+    const mockRequest: any = {
+      getList: (url: string) => {
+        if (url?.includes('BIND(EXISTS') || url?.includes('isAddress')) {
+          return of({ results: { bindings: [{ isAddress: { value: 'true' } }] } });
+        }
+        return of({ results: { bindings: [] } });
+      },
+      getAsk: (url: string) => of(false),
+      getItem: (u: string) => of({ display_name: 'Rue Example Fetched, Paris' }),
+    };
+    const mockLang: any = { selectedLang: 'en', getTranslation: (k: string) => k };
+
+    const svc = TestBed.inject(ItemSparqlService);
+    (svc as any).request = mockRequest;
+    (svc as any).lang = mockLang;
+
+    const mockItem = {
+      id: 'Q38612',
+      claims: {
+        P48: [{ mainsnak: { datavalue: { value: { latitude: 48.8566, longitude: 2.3522 } } } }],
+      },
+    };
+
+    svc.fetchCurrentAddress(mockItem).subscribe((tuple: any) => {
+      expect(tuple[0]).toBe('Q16200');
+      expect(tuple[1][0].itemLabel.value).toContain('Rue Example Fetched');
+    });
+  });
+
+  it('fetchCurrentAddress should cache responses for the same item', async () => {
+    let calls = 0;
+    const mockRequest: any = {
+      getList: (url: string) => {
+        if (url?.includes('BIND(EXISTS') || url?.includes('isAddress')) {
+          return of({ results: { bindings: [{ isAddress: { value: 'true' } }] } });
+        }
+        return of({ results: { bindings: [] } });
+      },
+      getAsk: (url: string) => of(false),
+      getItem: (u: string) => {
+        calls++;
+        return of({ display_name: 'Rue Example Cached' });
+      },
+    };
+
+    const svc = TestBed.inject(ItemSparqlService);
+    (svc as any).request = mockRequest;
+
+    const mockItem = {
+      id: 'Q1000',
+      claims: {
+        P48: [{ mainsnak: { datavalue: { value: { latitude: 48.0000, longitude: 2.0000 } } } }],
+      },
+    };
+
+    // First call
+    svc.fetchCurrentAddress(mockItem).subscribe((tuple: any) => {
+      expect(tuple[1][0].itemLabel.value).toContain('Rue Example Cached');
+    });
+    // Second call should reuse cache - getItem should only have been called once
+    svc.fetchCurrentAddress(mockItem).subscribe((tuple: any) => {
+      expect(tuple[1][0].itemLabel.value).toContain('Rue Example Cached');
+    });
+
+    expect(calls).toBe(1);
   });
 });

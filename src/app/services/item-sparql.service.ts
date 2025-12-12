@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { of, forkJoin } from 'rxjs';
-import { map, switchMap, startWith, shareReplay } from 'rxjs/operators';
+import { map, switchMap, startWith, shareReplay, catchError } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { RequestService } from './request.service';
 import { SelectedLangService } from '../selected-lang.service';
@@ -69,6 +69,8 @@ export class ItemSparqlService {
 
   // Cache pour les batchAskQuery (key = itemId, value = Observable<BatchAskResult>)
   private batchAskCache = new Map<string, Observable<BatchAskResult>>();
+  // Cache for on-demand address fetches to avoid repeated Nominatim requests
+  private addressCache = new Map<string, Observable<SparqlTuple>>();
 
   // Tests observables (conservés pour compatibilité avec l'ancien code)
   Q12Test: Observable<boolean>; //Organisation
@@ -163,6 +165,7 @@ export class ItemSparqlService {
     
     const query$ = this.request.getList(url).pipe(
       map((res: SparqlResults) => {
+        // Debug logs removed: keep DEBUG_ITEM variable for future use
         const b = res.results?.bindings?.[0];
         return {
           Q8Test: b?.isLocality?.value === 'true',
@@ -193,6 +196,7 @@ export class ItemSparqlService {
 
     return this.batchAskQuery(item.id).pipe(
       switchMap((batch) => {
+        // Debug logs removed: keep DEBUG_ITEM variable for future use
         // Popule les tests observables pour compatibilité avec l'ancien code
         this.Q8Test = of(batch.Q8Test);
         this.Q12Test = of(batch.Q12Test);
@@ -350,14 +354,44 @@ export class ItemSparqlService {
   }
 
   // Return a SparqlTuple describing the current address for an item.
-  // Always returns Observable<SparqlTuple> — when no address exists we return this.noResult().
+  // By default this returns a lightweight placeholder describing that coordinates
+  // exist and invite the user to fetch the resolved address on-demand. A separate
+  // public API `fetchCurrentAddress` performs the actual Nominatim call.
+  // Returning a placeholder avoids hitting Nominatim for every loaded item.
   currentAddress(item): Observable<SparqlTuple> {
     if (item?.claims?.P48 && Array.isArray(item.claims.P48) && item.claims.P48.length > 0) {
       const lat = item.claims.P48[0].mainsnak.datavalue.value.latitude;
       const lon = item.claims.P48[0].mainsnak.datavalue.value.longitude;
-      const u =
-        'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json';
-      return this.request.getItem(u).pipe(
+      const label = 'Q16200';
+      const binding: any = {
+        item: {
+          value: `address:${item?.id ?? 'unknown'}`,
+          id: `address:${item?.id ?? 'unknown'}`,
+        },
+        itemLabel: { value: `${lat}, ${lon}` },
+        itemDescription: { value: '' },
+      } as SparqlBinding;
+      // Return a lightweight placeholder so UI can expose a fetch button which
+      // triggers a real reverse-geocode call via fetchCurrentAddress.
+      return of([label, [binding]] as SparqlTuple);
+    }
+    return this.noResult();
+  }
+
+  // Perform an actual reverse-geocoding request (Nominatim) and return a
+  // SparqlTuple with the resolved display name / details.
+  // This method is intended to be called on-demand from the UI rather than
+  // being used in bulk via forkJoin to avoid unintended Nominatim load.
+  fetchCurrentAddress(item): Observable<SparqlTuple> {
+    if (item?.claims?.P48 && Array.isArray(item.claims.P48) && item.claims.P48.length > 0) {
+      // Avoid duplicate external calls for the same item: use a local cache
+      if (this.addressCache.has(item.id)) {
+        return this.addressCache.get(item.id)!;
+      }
+      const lat = item.claims.P48[0].mainsnak.datavalue.value.latitude;
+      const lon = item.claims.P48[0].mainsnak.datavalue.value.longitude;
+      const u = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json';
+      const result$ = this.request.getItem(u).pipe(
         map((g: any) => {
           const label = 'Q16200';
           const binding: any = {
@@ -369,8 +403,13 @@ export class ItemSparqlService {
             itemDescription: { value: JSON.stringify(g || {}) },
           } as SparqlBinding;
           return [label, [binding]] as SparqlTuple;
-        })
+        }),
+        catchError((err) => this.noResult())
       );
+      // store shared observable to prevent repeated calls
+      const shared = result$.pipe(shareReplay(1));
+      this.addressCache.set(item.id, shared);
+      return shared;
     }
     return this.noResult();
   }

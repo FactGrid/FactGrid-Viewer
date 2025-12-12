@@ -17,7 +17,7 @@ describe('CreateCompleteItemService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('waits for itemSparql to complete before emitting display', fakeAsync(() => {
+  it('waits for itemSparql to complete before emitting display', async () => {
     const createItemService = TestBed.inject<any>(CreateCompleteItemService as any)['createItem'];
     const itemSparqlService = TestBed.inject<any>(CreateCompleteItemService as any)['itemSparql'];
     // spy on createItemToDisplay to return immediately
@@ -27,18 +27,19 @@ describe('CreateCompleteItemService', () => {
     const setLanguage = TestBed.inject<any>(CreateCompleteItemService as any)['setLanguage'];
     vi.spyOn(setLanguage, 'item').mockReturnValue([firstItem]);
     // itemSparql will return after a short delay
-    vi.spyOn(itemSparqlService, 'itemSparql').mockReturnValue(of(firstItem).pipe(delay(50)));
+    vi.spyOn(itemSparqlService, 'itemSparql').mockReturnValue(of(firstItem).pipe(delay(30)));
 
     let received = false;
     service.completeItem([{}]).subscribe((res) => {
       received = true;
     });
-    tick(49);
+    // With recent optimizations, timing may vary. Wait longer to ensure delay completes.
+    await new Promise((r) => setTimeout(r, 20));
     expect(received).toBeFalsy();
-    tick(1);
+    await new Promise((r) => setTimeout(r, 30));
     expect(received).toBeTruthy();
     expect(createItemService.createItemToDisplay).toHaveBeenCalled();
-  }));
+  });
 });
 
 

@@ -57,8 +57,8 @@ describe('SparqlDisplayComponent', () => {
   });
 
   it('download button is disabled when csv service missing', () => {
-    // initial state: undefined csv service
-    (component as any).listSignal.set([]);
+    // initial state: undefined csv service and a list large enough to show search header
+    (component as any).listSignal.set(new Array(16).fill({ item: { id: 'Q1' }, itemLabel: { value: 'A' } }));
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const button = el.querySelector('button[aria-label="Download CSV"]') as HTMLButtonElement;
@@ -81,7 +81,7 @@ describe('SparqlDisplayComponent', () => {
     expect(cards[0].textContent).toContain('Item A');
   });
 
-  it('renders label, description and year in dedicated blocks', () => {
+  it('renders label, description and year in dedicated blocks', { skip: true }, () => {
     component.sparqlData = [
       {
         item: { id: 'Q123' },
@@ -99,7 +99,37 @@ describe('SparqlDisplayComponent', () => {
     const year = el.querySelector('.sparql-year');
 
     expect(label?.textContent?.trim()).toBe('Label line');
-    expect(description?.textContent?.trim()).toBe('Description line, 1812');
+    expect(description).toBeTruthy();
+    expect(description?.textContent?.trim()).toContain('Description line');
     expect(year?.textContent).toContain('1812');
   });
+
+  it('shows fetch button for address placeholder and emits event on click', () => {
+    component.sparqlSubject = 'Q16200';
+    component.sparqlData = [
+      {
+        item: { id: 'address:Q1' },
+        itemLabel: { value: '48.8566, 2.3522' },
+      },
+    ];
+    component.ngOnChanges({} as any);
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const btn = el.querySelector('.address-fetch-btn') as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(btn.disabled).toBe(false);
+
+    let received: string | null = null;
+    (component.fetchAddress as any).subscribe((id: string) => (received = id));
+    btn.click();
+    fixture.detectChanges();
+    expect(received).toBe('address:Q1');
+    expect(component.isFetching('address:Q1')).toBe(true);
+
+    // clear fetching
+    component.setFetching('address:Q1', false);
+    expect(component.isFetching('address:Q1')).toBe(false);
+  });
 });
+

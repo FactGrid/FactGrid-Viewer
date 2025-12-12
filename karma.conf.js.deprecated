@@ -1,0 +1,5 @@
+// DEPRECATED: Karma/Jasmine runner config retained for legacy reference.
+// Project now uses Vitest as default test runner (see `vitest.config.ts`).
+// This file has been intentionally renamed to avoid accidental use.
+
+// Original karma.conf.js content removed to avoid confusion

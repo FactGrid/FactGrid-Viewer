@@ -5,12 +5,13 @@ Outil pour naviguer la base FactGrid (Wikibase).
 AperÃ§u rapide â€” dÃ©veloppement
 - Installer les dÃ©pendances : npm ci
 - Lancer le serveur de dÃ©veloppement : ng serve
-- Tests : npm test
-
-Note sur les tests (mode développeur vs CI):
-- Par défaut `npm test` lance Karma en mode watch et reste actif pour relancer les tests quand les fichiers changent.
-- Pour un exécution ponctuelle (utile avant un commit ou depuis CI) utilisez :
-  - `npm run test:once` — exécute les tests une seule fois en mode headless et quitte.
+ Tests : npm test (Vitest) 
+ Note sur les tests (mode développeur vs CI):
+ Par défaut `npm test` exécute Vitest (défini via `vitest.config.ts`).
+ Commandes utiles :
+   - `npm test` — exécute Vitest en mode CI (run + coverage) par défaut.
+   - `npm run test:watch` — lance Vitest en mode watch pour le développement.
+   - `npm run test:ci` — lance Vitest en mode run + coverage pour les pipelines CI.
   - `npm run test:ci` — même comportement, prévu pour les environnements CI.
 
 Quand je lance les tests pour toi dans cette session, je t'indiquerai explicitement la commande `npm run test:once` (ou `npm run test:ci`) pour que tu puisses la réutiliser localement.

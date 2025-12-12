@@ -26,6 +26,8 @@ import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
 import { SparqlInterceptor } from './app/sparql-interceptor.service';
 import { HTTP_INTERCEPTORS, withInterceptorsFromDi, provideHttpClient } from '@angular/common/http';
+// Map config now uses global functions, no injection needed
+import { environment as env } from './environments/environment';
 
 if (environment.production) {
   enableProdMode();

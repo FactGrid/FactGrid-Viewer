@@ -22,30 +22,6 @@
     </div>
   }
 
-  @if (!isSearch()) {
-    <!-- show a compact header with count + download when no search filter is shown -->
-    <div class="searchFormPadding compact">
-      <mat-form-field appearance="outline" class="filterField compactField">
-        <input matInput (keyup)="applyFilter($event)" placeholder="Search" />
-      </mat-form-field>
-      <span class="list-count">{{ listSignal().length }}</span>
-      <div class="sparql-actions">
-        <button
-          mat-icon-button
-          color="primary"
-          class="download-btn internalLink"
-          (click)="onClickDownload(langService?.csv)"
-          [disabled]="!langService?.csv || !listSignal()?.length"
-          matTooltip="Download CSV"
-          aria-label="Download CSV"
-          title="Download CSV"
-        >
-          <mat-icon class="icon blue-text" [inline]="true">file_download</mat-icon>
-        </button>
-      </div>
-    </div>
-  }
-
   @if (listSignal().length >= 10) {
     <cdk-virtual-scroll-viewport
       [itemSize]="rowHeight"
@@ -54,28 +30,57 @@
     >
       @for (L of listSignal(); track L.item?.id || L.item?.value || $index) {
         @if (customRowTemplate) {
-          <ng-container
-            *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"
-          ></ng-container>
+          <ng-container *ngTemplateOutlet="customRowTemplate; context: { $implicit: L }"></ng-container>
         } @else {
           <div class="sparql-div sparql-card statementStyle">
-            <a
-              class="sparql-link"
-              [routerLink]="['/item', L.item?.id]"
-              (click)="$event.stopPropagation()"
-            >
-              <span class="typo-item-label sparql-label-layout">{{
-                L.itemLabel?.value || L.itemText || ''
-              }}</span>
-              @if (L.itemDescription?.value) {
-                <span class="typo-item-desc sparql-description-layout">
-                  {{ L.itemDescription.value }}
-                  @if (L.year?.value) {
-                    <span class="sparql-year">, {{ L.year.value }}</span>
+            @if (L.item?.id && L.item?.id.indexOf('address:') === 0) {
+              <div class="sparql-link" (click)="$event.stopPropagation()">
+                <span class="typo-item-label sparql-label-layout">{{ L.itemLabel?.value || L.itemText || '' }}</span>
+                @if (L.itemDescription?.value) {
+                  <span class="typo-item-desc sparql-description-layout">
+                    {{ L.itemDescription.value }}
+                    @if (L.year?.value) {
+                      <span class="sparql-year">, {{ L.year.value }}</span>
+                    }
+                  </span>
+                }
+              </div>
+            } @else {
+              <a
+                class="sparql-link"
+                [routerLink]="L.item?.id && L.item?.id.indexOf('address:') === 0 ? null : ['/item', L.item?.id]"
+                (click)="$event.stopPropagation()"
+              >
+                <span class="typo-item-label sparql-label-layout">{{ L.itemLabel?.value || L.itemText || '' }}</span>
+                @if (L.itemDescription?.value) {
+                  <span class="typo-item-desc sparql-description-layout">
+                    {{ L.itemDescription.value }}
+                    @if (L.year?.value) {
+                      <span class="sparql-year">, {{ L.year.value }}</span>
+                    }
+                  </span>
+                }
+              </a>
+            }
+            <div class="sparql-card-actions">
+              @if (sparqlSubject === 'Q16200' && L.item?.id && L.item?.id.indexOf('address:') === 0) {
+                <button
+                  mat-icon-button
+                  color="primary"
+                  class="address-fetch-btn"
+                  (click)="onFetchAddress(L.item.id); $event.stopPropagation()"
+                  [disabled]="isFetching(L.item.id)"
+                  matTooltip="{{ isFetching(L.item.id) ? (langService?.getTranslation('fetchingAddress', langService?.selectedLang) ) : (langService?.getTranslation('fetchAddress', langService?.selectedLang)) }}"
+                  aria-label="Fetch address"
+                >
+                  @if (isFetching(L.item.id)) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon color="primary" [inline]="true">location_on</mat-icon>
                   }
-                </span>
+                </button>
               }
-            </a>
+            </div>
             @if (!L.itemDescription?.value && L.year?.value) {
               <div class="sparql-meta">
                 <span class="sparql-year">{{ L.year.value }}</span>
@@ -94,23 +99,50 @@
           ></ng-container>
         } @else {
           <div class="sparql-div sparql-card statementStyle">
-            <a
-              class="sparql-link"
-              [routerLink]="['/item', L.item?.id]"
-              (click)="$event.stopPropagation()"
-            >
-              <span class="typo-item-label sparql-label-layout">{{
-                L.itemLabel?.value || ''
-              }}</span>
-              @if (L.itemDescription?.value) {
-                <span class="typo-item-desc sparql-description-layout">
-                  {{ L.itemDescription.value }}
-                  @if (L.year?.value) {
-                    <span class="sparql-year">, {{ L.year.value }}</span>
+            @if (L.item?.id && L.item?.id.indexOf('address:') === 0) {
+              <div class="sparql-link" (click)="$event.stopPropagation()">
+                <span class="typo-item-label sparql-label-layout">{{
+                  L.itemLabel?.value || ''
+                }}</span>
+                @if (L.itemDescription?.value) {
+                  <span class="typo-item-desc sparql-description-layout">
+                    {{ L.itemDescription.value }}
+                    @if (L.year?.value) {
+                      <span class="sparql-year">, {{ L.year.value }}</span>
+                    }
+                  </span>
+                }
+              </div>
+            } @else {
+              <a
+                class="sparql-link"
+                [routerLink]="['/item', L.item?.id]"
+                (click)="$event.stopPropagation()"
+              >
+                <span class="typo-item-label sparql-label-layout">{{
+                  L.itemLabel?.value || ''
+                }}</span>
+              </a>
+            }
+            <div class="sparql-card-actions">
+              @if (sparqlSubject === 'Q16200' && L.item?.id && L.item?.id.indexOf('address:') === 0) {
+                <button
+                  mat-icon-button
+                  color="primary"
+                  class="address-fetch-btn"
+                  (click)="onFetchAddress(L.item.id); $event.stopPropagation()"
+                  [disabled]="isFetching(L.item.id)"
+                  matTooltip="{{ isFetching(L.item.id) ? ('Fetching address...' ) : ('Fetch address') }}"
+                  aria-label="Fetch address"
+                >
+                  @if (isFetching(L.item.id)) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon color="primary" [inline]="true">location_on</mat-icon>
                   }
-                </span>
+                </button>
               }
-            </a>
+            </div>
             @if (!L.itemDescription?.value && L.year?.value) {
               <div class="sparql-meta">
                 <span class="sparql-year">{{ L.year.value }}</span>

@@ -26,6 +26,12 @@ export interface WBSearchEntry {
   description?: string;
   // aliases are strings (labels/alt labels) — avoid using any[] here
   aliases?: string[];
+  // match contains the actual matched text with correct language/punctuation
+  match?: {
+    type?: string;  // 'label' | 'alias' | 'description'
+    language?: string;
+    text?: string;
+  };
 }
 
 export interface WBSearchResponse {

@@ -62,9 +62,11 @@ import {
 import { SparqlResults, SparqlBinding } from '../services/sparql-types';
 import { SelectedLangService } from '../selected-lang.service';
 import { SelectedResearchFieldService } from '../services/selected-research-field.service';
+import { ProjectsListService } from '../services/projects-list.service';
 import { WikibaseSearchService } from '../services/wikibase-search.service';
 import { extractQidFromString } from '../utils/id-utils';
 import { SearchFilterService } from '../services/search-filter.service';
+import { EXPANSION_RELEVANCE_THRESHOLD } from '../config/search.config';
 import { SearchCacheService } from '../services/search-cache.service';
 
 import { WikibaseEntity, EnrichedWikibaseEntity } from '../models/wikibase-entity.model';
@@ -76,6 +78,9 @@ function normalizeString(s: string | undefined | null): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+    // Remove punctuation such as dots/hyphens to normalize labels like 'Saint-Jacques'
+    // Keep degree sign (°) intact for French address numbers like 'n° 35'
+    .replace(/[;:!?\'"()\[\]{}\.\-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -90,7 +95,9 @@ function normalizeForSearch(s: string | undefined | null): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[.,;:!?'"()\[\]{}]/g, ' ')
+    // Keep commas for wbsearchentities address queries like "Paris, rue de Grenelle, n° 5"
+    // Only remove other punctuation that doesn't affect search semantics
+      .replace(/[;:!?\'"()\[\]{}\.\-\u00B0]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -136,6 +143,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly setLanguage = inject(SetLanguageService);
   private readonly lang = inject(SelectedLangService);
   private readonly selectedResearchField = inject(SelectedResearchFieldService);
+  private readonly projectsListService = inject(ProjectsListService);
   private readonly wikibaseSearch = inject(WikibaseSearchService);
   private readonly searchFilter = inject(SearchFilterService);
   private readonly searchCache = inject(SearchCacheService);
@@ -156,6 +164,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   projectsInput = '';
   itemsInput = '';
   filterResults = '';
+  projectFilterLabel = '';
+  projectFilterPlaceholder = '';
+  projectOverlayEmpty = '';
   formerVisitsTitle = '';
   filterPeopleActivate = '';
   filterPeopleDeactivate = '';
@@ -173,6 +184,8 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   searchResearchField = new FormControl<ResearchField | string>('');
   searchInput = new FormControl();
   filterInput = new FormControl('');
+  // Text filter used inside the overlay to narrow project labels
+  projectFilterText = new FormControl('');
 
   // ========== LINKS ==========
   clickedItemId: string | null = null;
@@ -209,12 +222,16 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   // monotonic id for current search query — used to guard against stale responses
   // ----- autocomplete limits (tunable) -----
   private readonly SR_LIMIT = 50; // how many ids to request from CirrusSearch by default
-  private readonly DETAIL_K_DESKTOP = 10; // how many detailed entities to fetch for desktop
-  private readonly DETAIL_K_MOBILE = 5; // for mobile
-  private readonly SEE_MORE_LIMIT = 200; // how many ids to request when user clicks Voir plus
+  private readonly DETAIL_K_DESKTOP = 50; // how many detailed entities to fetch for desktop (show at least 50)
+  private readonly DETAIL_K_MOBILE = 50; // for mobile (show at least 50)
+    seeMoreLabelTemplate = '';
+  private readonly SEE_MORE_LIMIT = 50; // no more than 50, keep consistent with detail limit
   private readonly SEE_MORE_DETAILS_DESKTOP = 50; // detailed entities to fetch after See more
   private readonly SEE_MORE_DETAILS_MOBILE = 20;
   private readonly EXPANSION_DETAIL_LIMIT = 20; // limit for expansion fetches
+  // EXPANSION_RELEVANCE_THRESHOLD moved to src/app/config/search.config.ts
+  // Debug property to help investigate expansion decisions in development
+  lastExpansionDebug: any = null;
   private currentQueryId = 0;
   // total count of results from last autocomplete fetch (approx. server total if available)
   currentTotalCount = 0;
@@ -417,8 +434,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.fields = this.lang.getTranslation('fields', lang);
     this.projectsInput = this.lang.getTranslation('projectsInput', lang);
     this.itemsInput = this.lang.getTranslation('itemsInput', lang);
+    this.projectFilterLabel = this.lang.getTranslation('projectOverlayFilterLabel', lang) || 'Filter projects';
+    this.projectFilterPlaceholder = this.lang.getTranslation('projectOverlayFilterPlaceholder', lang) || 'Enter to filter...';
+    this.projectOverlayEmpty = this.lang.getTranslation('projectOverlayEmpty', lang) || 'No projects found';
     this.formerVisitsTitle = this.lang.getTranslation('formerVisitsTitle', lang);
     this.filterResults = this.lang.getTranslation('filterResults', lang);
+      this.seeMoreLabelTemplate = this.lang.getTranslation('seeMore', lang) || 'See __n__ more results';
     this.filterPeopleActivate = this.lang.getTranslation('filterPeopleActivate', lang);
     this.filterPeopleDeactivate = this.lang.getTranslation('filterPeopleDeactivate', lang);
     this.filterPublicationActivate = this.lang.getTranslation('filterPublicationActivate', lang);
@@ -456,41 +477,158 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filteredResearchFields$ = combineLatest([
       this.researchFields$,
       this.searchResearchField.valueChanges.pipe(startWith('')),
+      this.projectFilterText.valueChanges.pipe(startWith('')),
     ]).pipe(
-      map(([fields, value]) => {
+      map(([fields, value, projectFilter]) => {
         const search = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
-        return fields.filter((f) => f.name.toLowerCase().includes(search));
+        let projects = fields.filter((f) => f.name.toLowerCase().includes(search));
+        if (projectFilter && projectFilter.trim().length > 0) {
+          const pf = projectFilter.toLowerCase();
+          projects = projects.filter((f) => f.name.toLowerCase().includes(pf));
+        }
+        return projects;
       })
     );
 
-    this.request
-      .getList(this.getResearchFieldQuery(this.lang.selectedLang))
-      .pipe(
-        map((res) => this.listFromSparql(res)),
-        map((res) => [
-          { name: '-', id: '-', description: '' },
-          ...res.results.bindings.map((b: SparqlBinding) => ({
-            name: b.itemLabel.value,
-            id: b.item.id,
-            description: b.itemDescription?.value ?? '',
-          })),
-        ])
-      )
-      .subscribe((projects) => {
-        projects.sort((a: ResearchField, b: ResearchField) => a.name.localeCompare(b.name));
-        this.researchFields = projects;
-        this.researchFields = projects;
-        this.researchFieldsSignal.set(projects);
-      });
+    // initial load with caching: use localStorage cache per-language where possible
+    this.loadResearchFieldsFromCacheOrFetch(this.lang.selectedLang);
+    // subscribe to language changes: update translations and change displayed project names using cache
+    const langSub = this.lang.language$?.subscribe((lang) => {
+      try {
+        this.initTranslations();
+        this.updateProjectNamesFromCacheOrFetch(lang);
+      } catch (e) {}
+    });
+    if (langSub) this.subscriptions.push(langSub);
   }
 
-  private getResearchFieldQuery(lang: string): string {
-    return `https://database.factgrid.de/sparql?query=SELECT ?item ?itemLabel ?itemDescription  
-    WHERE {
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "${lang},en". }
-      ?item wdt:P2 wd:Q11295.
-    }`;
+  // Caching and queries moved to ProjectsListService
+ 
+
+  private loadResearchFieldsFromCacheOrFetch(lang: string) {
+    // If there is no projects cache at all, delegate to ProjectsListService to prefetch caches
+    try {
+      const allRaw = localStorage.getItem('researchFieldsCacheV1');
+      if (!allRaw) {
+        try {
+          const supportedLangs = this.lang.getSupportedLanguages();
+          const priorityLangs = Array.from(new Set([this.lang.selectedLang, 'en']));
+          const others = supportedLangs.filter((l) => !priorityLangs.includes(l));
+          this.projectsListService
+            .prefetchResearchFieldsWithPriority(priorityLangs, others, 3, 500)
+            .subscribe({
+            next: () => {
+              this.projectsListService.getCachedOrFetchResearchFields(lang).subscribe((cached: any[]) => {
+                if (cached && cached.length > 0) {
+                  this.researchFields = [{ name: '-', id: '-', description: '' }, ...cached];
+                  this.researchFieldsSignal.set(this.researchFields);
+                  try {
+                    this.updateProjectNamesFromCacheOrFetch(lang);
+                  } catch (e) {}
+                } else {
+                  // fallback to fetching current lang if nothing cached
+                  this.projectsListService.fetchResearchFieldsForLang(lang).subscribe((projects: any[]) => {
+                    this.researchFields = [{ name: '-', id: '-', description: '' }, ...projects];
+                    this.researchFieldsSignal.set(this.researchFields);
+                  });
+                }
+              });
+            },
+            error: () => {
+              // fallback to single fetch
+              this.projectsListService.fetchResearchFieldsForLang(lang).subscribe((projects: any[]) => {
+                this.researchFields = [{ name: '-', id: '-', description: '' }, ...projects];
+                this.researchFieldsSignal.set(this.researchFields);
+              });
+            },
+          });
+        } catch (e) {
+          this.projectsListService.fetchResearchFieldsForLang(lang).subscribe((projects: any[]) => {
+            this.researchFields = [{ name: '-', id: '-', description: '' }, ...projects];
+            this.researchFieldsSignal.set(this.researchFields);
+          });
+        }
+        return;
+      }
+    } catch (e) {}
+
+    // Attempt to use local cache for this lang
+    try {
+      const cached = this.projectsListService.loadCacheForLang(lang);
+      if (cached && cached.length > 0) {
+        this.researchFields = [{ name: '-', id: '-', description: '' }, ...cached];
+        this.researchFieldsSignal.set(this.researchFields);
+        // Stale check: compare counts - if mismatch we will refresh
+        this.projectsListService.getResearchFieldCount().pipe(take(1)).subscribe((count) => {
+          try {
+            if (!Number.isNaN(count) && count !== cached.length) {
+              // If the count differs, re-fetch the priority languages (current + en) and then others in background
+              const supported = this.lang.getSupportedLanguages();
+              const priority = Array.from(new Set([lang, 'en']));
+              const others = supported.filter((l) => !priority.includes(l));
+              this.projectsListService
+                .prefetchResearchFieldsWithPriority(priority, others, 3, 500)
+                .subscribe({ next: () => {}, error: () => {} });
+            }
+          } catch (e) {
+            // ignore
+          }
+        });
+        return;
+      }
+    } catch (e) {}
+    // Fallback: fetch and cache
+    this.loadResearchFields(lang);
   }
+
+  private updateProjectNamesFromCacheOrFetch(lang: string) {
+    // Ensure translations reflect this language. Use ProjectsListService's cache or fetch
+    const res = this.projectsListService.getCachedOrFetchResearchFields(lang);
+    if (res.subscribe) {
+      res.subscribe((cached: any[]) => {
+        const projects = [{ name: '-', id: '-', description: '' }, ...cached];
+        this.researchFields = projects;
+        this.researchFieldsSignal.set(projects);
+        try {
+          const sel = this.selectedResearchField.getSelectedResearchField();
+          if (sel && sel.id && sel.id !== 'all' && sel.id !== '-') {
+            const found = cached.find((p) => p.id === sel.id);
+            if (found && found.name && found.name !== sel.name) {
+              this.selectedResearchField.setSelectedResearchField({
+                id: sel.id,
+                name: found.name,
+                description: sel.description ?? '',
+              });
+              this.updateProjectDisplayValue({ id: sel.id, name: found.name, description: sel.description ?? '' });
+            }
+          }
+        } catch (e) {}
+      });
+    }
+  }
+
+  private loadResearchFields(lang: string) {
+    this.projectsListService.fetchResearchFieldsForLang(lang).subscribe((projects: any[]) => {
+      const projectsWithPlace = [{ name: '-', id: '-', description: '' }, ...projects];
+      this.researchFields = projectsWithPlace;
+      this.researchFieldsSignal.set(projectsWithPlace);
+      try {
+        const sel = this.selectedResearchField.getSelectedResearchField();
+        if (sel && sel.id && sel.id !== 'all' && sel.id !== '-') {
+          const found = projects.find((p) => p.id === sel.id);
+          if (found && found.name && found.name !== sel.name) {
+            this.selectedResearchField.setSelectedResearchField({
+              id: sel.id,
+              name: found.name,
+              description: sel.description ?? '',
+            });
+          }
+        }
+      } catch (e) {}
+    });
+  }
+
+  // Prefetch & queries handled by ProjectsListService
 
   /**
    * Récupère jusqu'à 50 items
@@ -514,214 +652,180 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         })
       );
     }
-    // Normalize searchTerm by removing punctuation for consistent cache keys and queries.
-    // This ensures "Paris, rue" and "Paris rue" produce the same cache key and search query.
-    const normalizedSearchTerm = searchTerm.replace(/[.,;:!?'"()\[\]{}]/g, ' ').replace(/\s+/g, ' ').trim();
+    // Keep French address markers like 'n°' intact to match French labels.
+    // Only remove punctuation that doesn't contribute to label semantics.
+    let normalizedSearchTerm = searchTerm;
+    // Remove punctuation except commas (needed for address queries) and degree sign (needed for n°).
+    // Keep commas so "Paris, rue de Grenelle" preserves semantic structure.
+    // Keep degree sign (°) to preserve French address markers like 'n° 35'.
+    // Also remove hyphens and dots which break Cirrus tokenization (e.g. 'Saint-Jacques').
+    normalizedSearchTerm = normalizedSearchTerm.replace(/[;:!?\'"()\[\]{}.\-]/g, ' ').replace(/\s+/g, ' ').trim();
     
     // If a project is selected, use Cirrus search (action=query list=search) with
     // property filters (haswbstatement:P131=...) to restrict results to items in that project.
     // Build cache keys used for accelerated lookup and to avoid duplicate API calls
-    const wbsearchKey = `wbsearch:${this.lang.selectedLang}:${normalizedSearchTerm}:${maxResults}`;
+    // Use original searchTerm for wbsearch cache key since we pass the original term to wbsearchentities
+    const wbsearchKey = `wbsearch:${this.lang.selectedLang}:${searchTerm}:${maxResults}`;
 
-    if (
-      selectedProjectId &&
-      selectedProjectId !== 'all' &&
-      selectedProjectId !== '-' &&
-      selectedProjectId !== 'Q0'
-    ) {
-      const filters = this.buildSearchFilters(selectedProjectId, normalizedSearchTerm);
+    // Hybrid strategy: always try wbsearchentities first, then fallback to
+    // CirrusSearch (optionally project-scoped) if wbsearchentities returned no results.
+    // Use wbsearch cache only when NOT in project-mode (wbsearch is used only
+    // for all-project queries). For project-mode, Cirrus cache path is preferred.
+    const isProjectMode = selectedProjectId && selectedProjectId !== 'all' && selectedProjectId !== '-' && selectedProjectId !== 'Q0';
+    if (!isProjectMode) {
+      const cachedSearch = this.searchCache.getItem(wbsearchKey);
+      if (cachedSearch) return of(cachedSearch);
+    }
+    const looksLikeSpecificAddress = /,\s+.*\d/.test(searchTerm) || /°\s*\d/.test(searchTerm);
+
+    if (isProjectMode) {
+      // Project mode: Cirrus-only path to restrict results to the project (no wbsearch call)
+      const cirrusSearchTerm = normalizedSearchTerm.replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
+      const filters = this.buildSearchFilters(selectedProjectId ?? '', cirrusSearchTerm);
       const srsearch = filters.join(' ');
-      const qidsKey = `qids:${selectedProjectId}:${srsearch}:${maxResults}`;
-
-      // Try cache for the Cirrus titles result first
-      const cachedTitles = this.searchCache.getItem(qidsKey);
+      const cirrusKey = `qids:${selectedProjectId}:${srsearch}:${maxResults}`;
+      const cachedTitles = this.searchCache.getItem(cirrusKey);
       if (Array.isArray(cachedTitles) && cachedTitles.length > 0) {
-        const ids = cachedTitles
-          .map((t: string) => (t ? String(t).split(':').pop() : ''))
-          .filter(Boolean);
-        // only fetch detailed entities for the top K; prefer smaller payload on mobile
+        const ids = cachedTitles.map((t: string) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
         const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
         const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
         const detailsIds = ids.slice(0, detailK);
-        // Use fetchEntities (which has entity-level caching) to return typed results
-        return this.fetchEntities(detailsIds).pipe(
-          map((items) => ({ items, total: cachedTitles.length }))
-        );
+        return this.fetchEntities(detailsIds).pipe(map((items) => ({ items, total: cachedTitles.length })));
       }
-      // getQidsList returns page titles (e.g. Q123). Use it to then fetch entities data.
       return this.request.getQidsList(srsearch, maxResults).pipe(
         switchMap((result: { titles?: string[]; total?: number }) => {
           const titles: string[] = result?.titles ?? [];
           const total: number = Number(result?.total ?? (titles || []).length) || 0;
-          // cache titles list for a short time (2 minutes) to avoid re-requesting repeated searches
-          try {
-            // cache only the titles array (legacy storage format)
-            this.searchCache.setItem(qidsKey, titles, 1000 * 60 * 2);
-          } catch (e) {}
-
-          // If Cirrus returned titles, fetch entities and apply client-side filtering
-          // with phrase-priority. Keep behaviour straightforward: if titles are
-          // empty, return an empty result (no complex fallback queries).
-          // remember last srsearch for See-more behavior
-          this.lastProjectSrsearch = srsearch;
-          this.lastProjectSelectedId = selectedProjectId ?? null;
-
-          if (Array.isArray(titles) && titles.length > 0) {
-            const ids = (titles || [])
-              .map((t) => (t ? String(t).split(':').pop() : ''))
-              .filter(Boolean);
-            // only fetch detailed entities for the top-K to reduce payload; leave total as server total
-            const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
-            const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
-            const detailsIds = ids.slice(0, detailK);
-            return this.fetchEntities(detailsIds).pipe(
-              map((items) => {
-                const normalized = normalizeString(normalizedSearchTerm);
-                // token-based (non-consecutive) filtered results
-                const filtered = items.filter((it) =>
-                  this.matchesAllTokens(it, normalized, this.showInDescription)
-                );
-
-                // phrase priority: find items where the full normalized search term
-                // appears as a substring in the item label/aliases/description
-                const phraseMatches = items.filter((it) => {
-                  const lbl = normalizeString(it.label);
-                  const aliases = (it.aliases || []).map(normalizeString);
-                  const desc = normalizeString(it.description);
-                  return (
-                    (lbl && lbl.includes(normalized)) ||
-                    aliases.some((a) => a.includes(normalized)) ||
-                    (this.showInDescription && desc.includes(normalized))
-                  );
-                });
-
-                // mark items with an exactPhraseMatch flag (used by template for styling)
-                const itemsEnriched = items as EnrichedWikibaseEntity[];
-                itemsEnriched.forEach((it) => {
-                  it.exactPhraseMatch = phraseMatches.includes(it);
-                });
-
-                const resultItems: EnrichedWikibaseEntity[] =
-                  phraseMatches.length > 0
-                    ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))]
-                    : filtered;
-
-                // If our client-side filter removed all entries, do NOT return
-                // the raw items. Returning raw (unfiltered) items caused
-                // transient display of unrelated results — instead return an
-                // empty result and let client-side merging / seenItems decide
-                // whether any previously-seen item should be preserved.
-                return { items: resultItems, total };
-              })
-            );
-          }
-
-          // No titles returned -> return empty result for project-mode
-          return of({ items: [], total: 0 });
-        })
-      );
-    }
-
-    // Default: use CirrusSearch for better multi-word / complex phrase matching.
-    // CirrusSearch handles punctuation and complex queries better than wbsearchentities.
-    // Fast path: cached search response
-    const cachedSearch = this.searchCache.getItem(wbsearchKey);
-    if (cachedSearch) {
-      return of(cachedSearch);
-    }
-
-    // Build CirrusSearch query: tokenize and add wildcards for partial matching
-    const filters = this.buildSearchFilters('', normalizedSearchTerm);
-    const srsearch = filters.join(' ');
-    const cirrusKey = `cirrus:${lang}:${srsearch}:${maxResults}`;
-
-    // Check cache for CirrusSearch titles result
-    const cachedTitles = this.searchCache.getItem(cirrusKey);
-    if (Array.isArray(cachedTitles) && cachedTitles.length > 0) {
-      const ids = cachedTitles
-        .map((t: string) => (t ? String(t).split(':').pop() : ''))
-        .filter(Boolean);
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
-      const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
-      const detailsIds = ids.slice(0, detailK);
-      return this.fetchEntities(detailsIds).pipe(
-        map((items) => {
-          const out = { items, total: cachedTitles.length };
-          try {
-            this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
-          } catch (e) {}
-          return out;
-        })
-      );
-    }
-
-    // Use CirrusSearch via getQidsList
-    return this.request.getQidsList(srsearch, maxResults).pipe(
-      switchMap((result: { titles?: string[]; total?: number }) => {
-        const titles: string[] = result?.titles ?? [];
-        const total: number = Number(result?.total ?? titles.length) || 0;
-
-        // Cache titles for short time
-        try {
-          this.searchCache.setItem(cirrusKey, titles, 1000 * 60 * 2);
-        } catch (e) {}
-
-        if (Array.isArray(titles) && titles.length > 0) {
-          const ids = titles
-            .map((t) => (t ? String(t).split(':').pop() : ''))
-            .filter(Boolean);
+          try { this.searchCache.setItem(cirrusKey, titles, 1000 * 60 * 2); } catch(e) {}
+          if (!titles || titles.length === 0) return of({ items: [], total: 0 });
+          const ids = titles.map((t) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
           const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
           const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
           const detailsIds = ids.slice(0, detailK);
-
+          if (isProjectMode) { this.lastProjectSrsearch = srsearch; this.lastProjectSelectedId = selectedProjectId ?? null; }
           return this.fetchEntities(detailsIds).pipe(
             map((items) => {
-              // Apply client-side filtering to ensure results match the search term
+              // If the user's input looks like a specific address (e.g., contains a comma and digits or degree sign)
+              // skip client-side strict token filtering — address tokens may normalize differently between input
+              // and label data and would unintentionally filter out valid matches.
+              if (looksLikeSpecificAddress) {
+                return { items, total };
+              }
               const normalized = normalizeString(normalizedSearchTerm);
-              const filtered = items.filter((it) =>
-                this.matchesAllTokens(it, normalized, this.showInDescription)
-              );
-
-              // Phrase priority: find items where the full normalized search term
-              // appears as a substring in the item label/aliases/description
+              const filtered = items.filter((it) => this.matchesAllTokens(it, normalized, this.showInDescription));
               const phraseMatches = items.filter((it) => {
                 const lbl = normalizeString(it.label);
                 const aliases = (it.aliases || []).map(normalizeString);
                 const desc = normalizeString(it.description);
-                return (
-                  (lbl && lbl.includes(normalized)) ||
-                  aliases.some((a) => a.includes(normalized)) ||
-                  (this.showInDescription && desc.includes(normalized))
-                );
+                return (lbl && lbl.includes(normalized)) || aliases.some((a) => a.includes(normalized)) || (this.showInDescription && desc.includes(normalized));
               });
-
-              // Mark items with an exactPhraseMatch flag
               const itemsEnriched = items as EnrichedWikibaseEntity[];
-              itemsEnriched.forEach((it) => {
-                it.exactPhraseMatch = phraseMatches.includes(it);
-              });
-
-              const resultItems: EnrichedWikibaseEntity[] =
-                phraseMatches.length > 0
-                  ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))]
-                  : filtered;
-
+              itemsEnriched.forEach((it) => (it.exactPhraseMatch = phraseMatches.includes(it)));
+              const resultItems: EnrichedWikibaseEntity[] = phraseMatches.length > 0 ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))] : filtered;
               const out = { items: resultItems, total };
-              try {
-                // Cache result under wbsearchKey for compatibility
-                this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
-                // Warm up individual entity cache
-                resultItems.forEach((item: EnrichedWikibaseEntity) => {
-                  this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60);
-                });
-              } catch (e) {}
+              try { this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2); resultItems.forEach((item: EnrichedWikibaseEntity) => this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60)); } catch(e) {}
               return out;
             })
           );
+        })
+      );
+    }
+
+    // Not in project mode: call wbsearchentities (and fallback to Cirrus if needed)
+    return this.request.searchItem(searchTerm, lang, 0, maxResults).pipe(
+      switchMap((wbResult: WBSearchResponse | undefined) => {
+        // If wbsearchentities found results, map and return them
+        if (wbResult && wbResult.search && wbResult.search.length > 0) {
+          const entities = wbResult.search;
+          const items: EnrichedWikibaseEntity[] = entities.map((e: any) => {
+            const displayLabel = e.match?.text || (e.aliases && e.aliases[0]) || e.label || '';
+            return { id: e.id || '', label: displayLabel, aliases: e.aliases || [], description: e.description || '' };
+          });
+          const out = { items, total: wbResult.searchinfo?.totalhits ?? items.length };
+          try {
+            this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+            items.forEach((it) => this.searchCache.setItem(`entity:${it.id}:${lang}`, it, 1000 * 60 * 60));
+          } catch (e) {}
+          return of(out);
         }
 
-        // No results from CirrusSearch
-        return of({ items: [], total: 0 });
+        // If wbsearchentities returned nothing, consider Cirrus fallback
+        const looksLikeSpecificAddress = /,\s+.*\d/.test(searchTerm) || /°\s*\d/.test(searchTerm);
+        if (looksLikeSpecificAddress) return of({ items: [], total: 0 });
+
+        const isProjectMode = selectedProjectId && selectedProjectId !== 'all' && selectedProjectId !== '-' && selectedProjectId !== 'Q0';
+        const cirrusSearchTerm = isProjectMode ? normalizedSearchTerm.replace(/,/g, ' ').replace(/\s+/g, ' ').trim() : normalizedSearchTerm;
+        const filters = this.buildSearchFilters(isProjectMode ? selectedProjectId : '', cirrusSearchTerm);
+        const srsearch = filters.join(' ');
+        const cirrusKey = isProjectMode ? `qids:${selectedProjectId}:${srsearch}:${maxResults}` : `cirrus:${lang}:${srsearch}:${maxResults}`;
+
+        const cachedTitles = this.searchCache.getItem(cirrusKey);
+        if (Array.isArray(cachedTitles) && cachedTitles.length > 0) {
+          const ids = cachedTitles.map((t: string) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
+          const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+          const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
+          const detailsIds = ids.slice(0, detailK);
+          return this.fetchEntities(detailsIds).pipe(map((items) => ({ items, total: cachedTitles.length })));
+        }
+
+        return this.request.getQidsList(srsearch, maxResults).pipe(
+          switchMap((result: { titles?: string[]; total?: number }) => {
+            const titles: string[] = result?.titles ?? [];
+            const total: number = Number(result?.total ?? (titles || []).length) || 0;
+            try {
+              this.searchCache.setItem(cirrusKey, titles, 1000 * 60 * 2);
+            } catch (e) {}
+            if (!titles || titles.length === 0) return of({ items: [], total: 0 });
+
+            const ids = titles.map((t) => (t ? String(t).split(':').pop() : '')).filter(Boolean);
+            const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+            const detailK = isMobile ? this.DETAIL_K_MOBILE : this.DETAIL_K_DESKTOP;
+            const detailsIds = ids.slice(0, detailK);
+            if (isProjectMode) {
+              this.lastProjectSrsearch = srsearch;
+              this.lastProjectSelectedId = selectedProjectId ?? null;
+            }
+
+            return this.fetchEntities(detailsIds).pipe(
+              map((items) => {
+                let normalized = normalizeString(normalizedSearchTerm);
+                // In project mode: remove project name tokens from normalized search
+                // before client-side filtering, since project scoping already
+                // restricts results to the selected project.
+                if (isProjectMode) {
+                  try {
+                    const sel = this.selectedResearchField.getSelectedResearchField();
+                    const projNorm = normalizeString(sel?.name ?? '');
+                    if (projNorm) {
+                      const projTokens = new Set(projNorm.split(' ').filter(Boolean));
+                      normalized = normalized
+                        .split(' ')
+                        .filter((t) => !projTokens.has(t))
+                        .join(' ')
+                        .trim();
+                    }
+                  } catch (e) {}
+                }
+                const filtered = items.filter((it) => this.matchesAllTokens(it, normalized, this.showInDescription));
+                const phraseMatches = items.filter((it) => {
+                  const lbl = normalizeString(it.label);
+                  const aliases = (it.aliases || []).map(normalizeString);
+                  const desc = normalizeString(it.description);
+                  return (lbl && lbl.includes(normalized)) || aliases.some((a) => a.includes(normalized)) || (this.showInDescription && desc.includes(normalized));
+                });
+                const itemsEnriched = items as EnrichedWikibaseEntity[];
+                itemsEnriched.forEach((it) => (it.exactPhraseMatch = phraseMatches.includes(it)));
+                const resultItems: EnrichedWikibaseEntity[] = phraseMatches.length > 0 ? [...phraseMatches, ...filtered.filter((f) => !phraseMatches.includes(f))] : filtered;
+                const out = { items: resultItems, total };
+                try {
+                  this.searchCache.setItem(wbsearchKey, out, 1000 * 60 * 2);
+                  resultItems.forEach((item: EnrichedWikibaseEntity) => this.searchCache.setItem(`entity:${item.id}:${lang}`, item, 1000 * 60 * 60));
+                } catch (e) {}
+                return out;
+              })
+            );
+          })
+        );
       })
     );
   }
@@ -823,22 +927,13 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
                   return;
                 }
 
-                const merged = this.mergeResultsPreservingPriorMatches(
-                  searchTerm,
-                  items as EnrichedWikibaseEntity[]
-                );
+                // Strategy: Always use new results directly without merging old ones.
+                // The merging logic was causing stale results to persist.
+                // For CirrusSearch (not shown here), merge is still useful for its fuzzy matching.
+                const merged = items as EnrichedWikibaseEntity[];
 
-                // Skip applying if merged contains no relevant matches — this
-                // avoids showing noisy unrelated items returned by the server
-                // while keeping previously-seen matches that still satisfy the
-                // token criteria.
-                const hasRelevant = merged.some((it) =>
-                  this.matchesAllTokens(it, searchTerm, this.showInDescription)
-                );
-                if (!hasRelevant) {
-                  // merged set contained no relevant items for current tokens — ignore
-                  return;
-                }
+                // Always update the display with new results - no relevance filtering
+                // because wbsearchentities already did the matching
 
                 this.updateItemsList(merged);
 
@@ -928,11 +1023,37 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             searchTerm,
             expItems as EnrichedWikibaseEntity[]
           );
-          const hasRelevantExp = mergedExp.some((it) =>
-            this.matchesAllTokens(it, searchTerm, this.showInDescription)
-          );
-          // removed debug log: expansion merged result
-          if (hasRelevantExp) this.updateItemsList(mergedExp);
+          // For small result sets (common in project expansion) we prefer
+          // to always present the expansion results. For larger result sets
+          // apply the matchesAllTokens relevance filter to avoid noise.
+          // Apply the relevance filter only if the *newly fetched* expansion
+          // items reach the threshold. We intentionally use expItems length
+          // (not mergedExp length) because preserved items may inflate the
+          // merged list and shouldn't trigger the stricter relevance filter.
+          if (Array.isArray(expItems) && expItems.length >= EXPANSION_RELEVANCE_THRESHOLD) {
+            const hasRelevantExp = mergedExp.some((it) =>
+              this.matchesAllTokens(it, searchTerm, this.showInDescription)
+            );
+                // record debug info for later inspection
+                try {
+                  this.lastExpansionDebug = {
+                    expItemsCount: expItems.length,
+                    mergedExpCount: mergedExp.length,
+                    hasRelevantExp,
+                  };
+                } catch {}
+            if (hasRelevantExp) this.updateItemsList(mergedExp);
+          } else {
+                try {
+                  this.lastExpansionDebug = {
+                    expItemsCount: Array.isArray(expItems) ? expItems.length : 0,
+                    mergedExpCount: mergedExp.length,
+                    hasRelevantExp: false,
+                    threshold: EXPANSION_RELEVANCE_THRESHOLD,
+                  };
+                } catch {}
+            this.updateItemsList(mergedExp);
+          }
         }
       }
     } catch (e) {
@@ -984,7 +1105,9 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       // handle permissive matching and adjacency.
       let effectiveTokens = tokens.slice();
       const last = tokens[tokens.length - 1];
-      if (tokens.length > 1 && last.length === 1) {
+      // If the final token is a single alphabetic letter (user typing), drop it.
+      // Do NOT drop it if it's numeric (e.g. house number '5').
+      if (tokens.length > 1 && last.length === 1 && /^[a-zA-Z]$/.test(last)) {
         // drop the final single-character typing token for server query
         effectiveTokens = tokens.slice(0, tokens.length - 1);
       }
@@ -992,7 +1115,10 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       const query = effectiveTokens
         .map((t, i) => {
           const isLastEff = i === effectiveTokens.length - 1;
-          // if this maps to the final effective token, keep it permissive
+          const isNumeric = /^\d+$/.test(t);
+          // For numeric tokens (addresses), mark them as required even if last
+          if (isNumeric) return `+${t}*`;
+          // keep final token permissive (partial typing allowed)
           if (isLastEff) return `${t}*`;
           return t.length >= 3 ? `+${t}*` : `${t}*`;
         })
@@ -1002,6 +1128,17 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       filters.push(searchTerm);
     }
     return filters;
+  }
+
+  // Format the i18n template 'seeMore' which contains placeholder '__n__' to be replaced with count
+  public getSeeMoreLabel(count: number): string {
+    if (!count || count <= 0) return '';
+    try {
+      const tpl = this.seeMoreLabelTemplate || 'See __n__ more results';
+      return tpl.replace(/__n__/g, String(count));
+    } catch (e) {
+      return `See ${count} more results`;
+    }
   }
 
   private buildSearchUrl(searchQuery: string): string {
@@ -1051,6 +1188,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
         `https://database.factgrid.de/w/api.php?action=wbgetentities` +
         `&ids=${idsParam}` +
         `&format=json` +
+        `&props=labels|aliases|descriptions` +
         `&languages=${this.lang.selectedLang}` +
         `&origin=*`;
       return this.request.getItem(getEntitiesUrl).pipe(
@@ -1137,8 +1275,11 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       this.changeDetector.markForCheck();
       return;
     }
-    this.items = items;
-    this.itemsSignal.set(items);
+    // limit visible items to the configured details limit (50)
+    const cap = this.DETAIL_K_DESKTOP || 50;
+    const trimmed = (items || []).slice(0, cap);
+    this.items = trimmed;
+    this.itemsSignal.set(trimmed);
     // update seenItems cache so we can consider them later when merging
     try {
       items.forEach((it) => this.seenItems.set(it.id, it));
@@ -1184,24 +1325,14 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
     } catch {}
 
     const overlayScrollSub = this.overlayOpen$.subscribe((open) => {
-      // debug: explicitly log overlay open state + DOM element info so we
-      // can diagnose visibility / placement issues in dev consoles.
+      // Handle overlay open state (debug logs disabled)
       try {
-        console.info('[SearchComponent] overlayOpen ->', open);
         if (open && typeof document !== 'undefined') {
           const panes = Array.from(document.querySelectorAll('.cdk-overlay-pane')) as HTMLElement[];
           // log all current overlay panes and their classes/rect so we can see if
           // the search panel exists under another pane or with different classes
           try {
-            console.info('[SearchComponent] overlay panes count ->', panes.length);
-            panes.forEach((p, ix) => {
-              const cls = p.className;
-              let rect: DOMRect | null = null;
-              try {
-                rect = p.getBoundingClientRect();
-              } catch {}
-              console.info(`[SearchComponent] pane[${ix}] classes ->`, cls, 'rect ->', rect);
-            });
+            // Overlay panes detected (debug disabled)
           } catch (err) {}
 
           // also check specifically for the expected pane class
@@ -1209,19 +1340,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
             '.cdk-overlay-pane.search-items_panel'
           ) as HTMLElement | null;
           if (pane) {
-            const rect = pane.getBoundingClientRect();
-            const style = window.getComputedStyle(pane);
-            console.info(
-              '[SearchComponent] overlay DOM present (expected class), rect ->',
-              rect,
-              'computedStyle ->',
-              {
-                display: style.display,
-                visibility: style.visibility,
-                opacity: style.opacity,
-                zIndex: style.zIndex,
-              }
-            );
+            // Overlay DOM present (debug disabled)
             // mark that the overlay pane exists so template can hide other UI
             try {
               this.overlayAttached = true;
@@ -1251,9 +1370,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
               }
             } catch (e) {}
           } else {
-            console.info(
-              '[SearchComponent] overlay DOM not found (no pane with .search-items_panel)'
-            );
+            // Overlay DOM not found (debug disabled)
             // Mark not attached
             try {
               this.overlayAttached = false;
@@ -1269,22 +1386,12 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
 
           // Inspect whether the global overlay container exists and how many children it has
           try {
-            const oc = document.querySelector('.cdk-overlay-container') as HTMLElement | null;
-            if (oc) {
-              console.info(
-                '[SearchComponent] overlayContainer present, childCount ->',
-                oc.childElementCount
-              );
-            } else {
-              console.info('[SearchComponent] overlayContainer NOT found');
-            }
+            // Overlay container check (debug disabled)
           } catch {}
 
           // verify the anchor / input exists on the page
           try {
-            const anchor = document.querySelector('.new-search-input') as HTMLElement | null;
-            if (anchor) console.info('[SearchComponent] anchor/input exists (new-search-input)');
-            else console.info('[SearchComponent] anchor/input NOT found (new-search-input)');
+            // Anchor/input check (debug disabled)
           } catch {}
           // ensure change detection updates template usage of overlayAttached
           try {
@@ -1325,7 +1432,7 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   seeMore(): void {
-    // User clicked the "Voir plus" button — load more results up to SEE_MORE_LIMIT and show more details
+    // Programmatic seeMore action (no UI button). Will request up to SEE_MORE_LIMIT (50) and apply results.
     const searchTerm = normalizeString(this.searchInput.value || '');
     if (!searchTerm) return;
     const selected = this.selectedResearchField.getSelectedResearchField();
@@ -1409,7 +1516,6 @@ export class SearchComponent implements OnInit, OnDestroy, AfterViewInit {
       description: e.descriptions?.[lang]?.value || '',
     }));
   }
-
   /**
    * Merge the newly-retrieved items with previously-displayed items that
    * still match the current search term. This prevents brief disappearance of

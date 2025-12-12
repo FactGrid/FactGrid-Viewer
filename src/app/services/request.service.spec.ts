@@ -93,7 +93,7 @@ describe('RequestService (typed)', () => {
       expect(r.search![0].id).toBe('Q123');
       expect((r.search![0].label || '').length).toBeGreaterThan(0);
     });
-    const req = http.expectOne((r) => r.url.includes('wbgetentities') && r.params.get('ids') === 'Q123');
+    const req = http.expectOne((r) => r.urlWithParams.includes('wbgetentities') && r.urlWithParams.includes('ids=Q123'));
     expect(req.request.method).toBe('GET');
     req.flush(sample);
   });

@@ -65,7 +65,7 @@ export class SparqlDisplayService {
           return langService.getTranslation('setTitle', langService.selectedLang);
         } else if (sparqlSubject === 'Q172192') {
           return langService.getTranslation('listTitle', langService.selectedLang);
-        } else if (sparqlSubject === 'current address:') {
+        } else if (sparqlSubject === 'Q16200') {
           return langService.getTranslation('currentAddress', langService.selectedLang);
         }
         return '';
@@ -136,7 +136,8 @@ export class SparqlDisplayService {
   }
 
   /**
-   * Supprime les doublons selon itemText
+   * Supprime les doublons selon itemText.
+   * Appliqué systématiquement à toutes les listes car même les petites listes peuvent contenir des doublons.
    */
   removeDuplicates(data: SparqlBinding[]): SparqlBinding[] {
     if (!data) return [];

@@ -17,7 +17,7 @@ import { computed } from '@angular/core';
 import { trigger, state, style, transition, animate, AnimationEvent } from '@angular/animations';
 import { Observable, Subscription } from 'rxjs';
 import { SparqlTuple } from '../services/sparql-types';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackListDetailsService } from '../services/back-list-details.service';
 import { IframesDisplayService } from './services/iframes-display.service';
@@ -60,7 +60,12 @@ import {
 } from '../services/selected-research-field.service';
 import { SearchCacheService } from '../services/search-cache.service';
 import { RequestService, CommonsImageMetadata } from '../services/request.service';
+import { DisplayMediaService } from '../services/display-media.service';
+import { DisplayComponentLoaderService } from '../services/display-component-loader.service';
+import { ItemSparqlService } from '../services/item-sparql.service';
+import { getZoomForXY } from '../config/map.config';
 import type { DisplayItem, ItemDisplayTuple } from '../services/item-types';
+import { ProjectsListService } from '../services/projects-list.service';
 
 @Component({
   selector: 'app-display',
@@ -128,6 +133,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'FactGrid';
   subtitle: string;
   private sparqlDisplayService = inject(SparqlDisplayService);
+  private itemSparql = inject(ItemSparqlService);
   constructor(private cdr: ChangeDetectorRef) {
     // debug: DisplayComponent constructor called log removed
     // Initialize reactive effects inside a valid injection context (constructor)
@@ -254,6 +260,78 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private async fetchAndReplaceAddress(
+    index: number,
+    addressId: string,
+    ref: NgComponentRef<any>
+  ): Promise<void> {
+    try {
+      if (!addressId || addressId.indexOf(':') === -1) return;
+      const parts = addressId.split(':');
+      const itemId = parts[1];
+      if (!itemId) return;
+
+      // Find the item object loaded in the display
+      const currentItem = this.item && Array.isArray(this.item) ? this.item[0] : null;
+      if (!currentItem || !currentItem.id) return;
+      if (currentItem.id !== itemId) {
+        // In case the address belongs to a different item, we avoid fetching
+        return;
+      }
+
+      // Call ItemSparqlService to fetch the address details
+      const fetch$ = this.itemSparql.fetchCurrentAddress(currentItem);
+      const sub = fetch$.subscribe((tuple: any) => {
+        try {
+          // tuple shape: [subject, [binding]]
+          const binding = tuple && tuple[1] && tuple[1][0] ? tuple[1][0] : null;
+          if (!binding) {
+            // no result — clear fetching indicator
+            if (ref && (ref.instance as any).setFetching) {
+              try { (ref.instance as any).setFetching(addressId, false); } catch {};
+            }
+            return;
+          }
+          // Replace the placeholder row in the component data with the fetched binding
+          const list = (ref.instance as any).sparqlData || (ref.instance as any).listSignal?.() || [];
+          const newList = (list || []).slice();
+          let replaced = false;
+          for (let i = 0; i < newList.length; i++) {
+            const row = newList[i];
+            if (row && row.item && row.item.id && row.item.id === addressId) {
+              newList[i] = binding;
+              replaced = true;
+              break;
+            }
+          }
+          if (!replaced) {
+            // If placeholder disappeared, append
+            newList.push(binding);
+          }
+          // Update component input to refresh display
+          try {
+            if (typeof (ref as any).setInput === 'function') {
+              (ref as any).setInput('sparqlData', newList);
+            } else {
+              ref.instance.sparqlData = newList;
+              try { ref.changeDetectorRef.detectChanges(); } catch {}
+            }
+          } catch (e) {}
+          // clear fetching indicator
+          if (ref && (ref.instance as any).setFetching) {
+            try { (ref.instance as any).setFetching(addressId, false); } catch {};
+          }
+        } catch (e) {}
+      }, () => {
+        // network error
+        if (ref && (ref.instance as any).setFetching) {
+          try { (ref.instance as any).setFetching(addressId, false); } catch {};
+        }
+      });
+      this.subscriptions.push(sub);
+    } catch (e) {}
+  }
+
   public from: string;
 
   // Services
@@ -272,15 +350,58 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private observer = inject(BreakpointObserver);
   private selectedResearchFieldService = inject(SelectedResearchFieldService);
+  private projectsListService = inject(ProjectsListService);
   // Signals used to progressively replace older Observable subscriptions
   private selectedResearchFieldSignal = toSignal(
     this.selectedResearchFieldService.selectedResearchField$,
-    { initialValue: this.selectedResearchFieldService.getSelectedResearchField() }
+    { 
+      initialValue: this.selectedResearchFieldService.getSelectedResearchField(),
+      requireSync: false 
+    }
   );
 
   // Computed signals for template-friendly access to project id & name
-  readonly projectId = computed(() => this.selectedResearchFieldSignal()?.id ?? 'all');
-  readonly projectName = computed(() => this.selectedResearchFieldSignal()?.name ?? '');
+  readonly projectId = computed(() => {
+    const signal = this.selectedResearchFieldSignal();
+    const val = signal?.id ?? 'all';
+    return val;
+  });
+  readonly projectName = computed(() => {
+    const signal = this.selectedResearchFieldSignal();
+    const val = signal?.name ?? '';
+    return val;
+  });
+
+  private updateProjectNameFromCacheOrFetch(lang: string) {
+    try {
+      const sel = this.selectedResearchFieldService.getSelectedResearchField();
+      if (!sel || !sel.id || sel.id === 'all' || sel.id === '-') {
+        return;
+      }
+      // Use service to get cached or fetch
+      const obs = this.projectsListService.getCachedOrFetchResearchFields(lang);
+      if (obs && obs.subscribe) {
+        obs.subscribe((projects: any[]) => {
+          try {
+            const found = (projects || []).find((p: any) => p.id === sel.id);
+            if (found && found.name) {
+              // Always update the name when language changes, even if it appears identical
+              // (the cache might have the translated version we need)
+              this.selectedResearchFieldService.setSelectedResearchField({
+                id: sel.id,
+                name: found.name,
+                description: sel.description ?? '',
+              });
+            }
+          } catch (e) {
+            console.error('[Display] Error in project update:', e);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('[Display] Error in updateProjectNameFromCacheOrFetch:', e);
+    }
+  }
 
   // Données principales
   // raw array or typed tuple returned by CreateItemToDisplayService
@@ -374,6 +495,10 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   isInfo = false;
   isMobile = false;
   isAliases = false;
+
+  // Address on-demand support
+  addressLoading = false;
+  addressFetched: any[] | null = null;
 
   // visual state for the startup header and search transition
   headerAnimState: 'home' | 'closed' = 'home';
@@ -506,6 +631,40 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
     // template conditionals for mobile-only UI (e.g. .mobile-project-title)
     // work consistently at runtime and inside tests when needed.
     // BreakpointObserver handling is performed in constructor
+    // Subscribe to language changes so the displayed project name can be updated
+    const langSub = this.lang.language$?.subscribe((lang) => {
+      try {
+        this.subtitle = this.lang.getTranslation('subtitle', lang);
+        this.linkedPagesTitle = this.lang.getTranslation('linkedPagesTitle', lang);
+        this.mainPage = this.lang.getTranslation('mainPage', lang);
+        this.factGridQuery = this.lang.getTranslation('factGridQuery', lang);
+        this.externalLinksTitle = this.lang.getTranslation('externalLinksTitle', lang);
+        this.formerVisitsTitle = this.lang.getTranslation('formerVisitsTitle', lang);
+        this.careerTitle =
+          this.lang.getTranslation('careerTitle', lang) ||
+          this.lang.getTranslation('careerAndActivities', lang) ||
+          this.lang.getTranslation('career', lang) ||
+          'Career';
+        this.clickToDownload = this.lang.getTranslation('clickToDownLoad', lang);
+        this.clickToDisplay = this.lang.getTranslation('clickToDisplay', lang);
+        this.stemma = this.lang.getTranslation('stemma', lang);
+        this.trainingTitle =
+          this.lang.getTranslation('subtitle_education', lang) ||
+          this.lang.getTranslation('training', lang) ||
+          'Education';
+        this.sociabilityTitle =
+          this.lang.getTranslation('subtitle_sociability_and_culture', lang) ||
+          'Sociability & Culture';
+        this.eventTitle = this.lang.getTranslation('subtitle_event', lang) || 'Event';
+        this.personTitle =
+          this.lang.getTranslation('subtitle_life_and_family', lang) || 'Life and family';
+        // Update the project label if needed
+        try {
+          this.updateProjectNameFromCacheOrFetch(lang);
+        } catch {}
+      } catch {}
+    });
+    if (langSub) this.subscriptions.push(langSub);
   }
 
   /**
@@ -545,70 +704,24 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Keep references to created components to manage lifecycle
   private sparqlComponentRefs: Array<NgComponentRef<any> | null> = [null, null, null, null, null];
-  // cache threshold for storing large SPARQL lists
-  private sparqlCacheThreshold = 300; // only cache lists >= this length
   // use central SearchCacheService for generic cache storage
   private searchCache = inject(SearchCacheService);
   private request = inject(RequestService);
+  private displayMediaService = inject(DisplayMediaService);
+  private componentLoader = inject(DisplayComponentLoaderService);
   // typed metadata shape from RequestService
   // (import kept inline to avoid further circulars — RequestService exports CommonsImageMetadata)
 
   // --- Image caption helpers (Commons) -------------------------------------------------
-  private filenameFromUrl(url?: string) {
-    if (!url) return null;
-    try {
-      if (/^File:/i.test(url)) return url;
-      const u = new URL(url);
-      const last = u.pathname.split('/').pop() || '';
-      if (!last) return null;
-      return `File:${decodeURIComponent(last)}`;
-    } catch (e) {
-      const last = url.split('/').pop() || url;
-      return `File:${decodeURIComponent(last)}`;
-    }
-  }
-
   toggleCaption(picture: any) {
     if (!picture) return;
-    // toggle if already loaded
-    if (picture.captionVisible && !picture.captionLoading) {
-      picture.captionVisible = false;
-      return;
-    }
-    if (picture.captionHtml) {
-      // already loaded, just toggle visible
-      picture.captionVisible = !picture.captionVisible;
-      return;
-    }
-
-    // fetch caption
-    picture.captionLoading = true;
-    const candidate = picture.full || picture.thumbnail || picture.uniqueKey;
-    const fileName = this.filenameFromUrl(candidate);
-    this.request.getCommonsImageMetadata(fileName || candidate).subscribe(
-      (meta: CommonsImageMetadata | null) => {
-        picture.captionLoading = false;
-        if (meta && meta.descriptionHtml) {
-          try {
-            picture.captionHtml = this.sanitizer.bypassSecurityTrustHtml(meta.descriptionHtml);
-          } catch (e) {
-            picture.captionHtml = meta.descriptionHtml;
-          }
-        } else {
-          picture.captionHtml = null;
-        }
-        picture.captionVisible = true;
-        // ensure change detection updates
-        try {
-          this.cdr.detectChanges();
-        } catch {}
-      },
-      () => {
-        picture.captionLoading = false;
-        picture.captionHtml = null;
-        picture.captionVisible = true;
-      }
-    );
+    const sub = this.displayMediaService.toggleCaptionAsync(picture).subscribe(() => {
+      // ensure change detection updates
+      try {
+        this.cdr.detectChanges();
+      } catch {}
+    });
+    this.subscriptions.push(sub);
   }
 
   // ItemInfo lazy host(s)
@@ -790,26 +903,37 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // Carte
         if (this.claims.P48) {
-          this.zoom = 12;
-          let xy = this.claims.P2[0].mainsnak.datavalue.value.id;
-          if (xy == 'Q176131') this.zoom = 3;
-          if (xy == 'Q21925') this.zoom = 4;
-          if (xy == 'Q21876') this.zoom = 6;
-          if (xy == 'Q16200') this.zoom = 18;
-          if (
-            [
-              'Q266101',
-              'Q469609',
-              'Q172249',
-              'Q36239',
-              'Q164328',
-              'Q36251',
-              'Q141472',
-              'Q395380',
-              'Q375357',
-            ].includes(xy)
-          )
-            this.zoom = 16;
+          // Handle multiple P2 values: find the best matching zoom
+          // Strategy: use the most specific (highest) zoom among configured P2s
+          const defaultZoom = getZoomForXY(null);
+          let bestZoom = 0; // Start at 0 to accept any configured zoom
+          let bestP2: string | null = null;
+          
+          if (this.claims.P2 && Array.isArray(this.claims.P2)) {
+            // Find the most specific (highest) zoom among configured P2s
+            for (let i = 0; i < this.claims.P2.length; i++) {
+              const p2Claim = this.claims.P2[i];
+              const p2Id = p2Claim?.mainsnak?.datavalue?.value?.id;
+              if (p2Id) {
+                const zoom = getZoomForXY(p2Id);
+                // Use highest non-default zoom (most specific = address > quarter > neighborhood > town)
+                if (zoom !== defaultZoom && zoom > bestZoom) {
+                  bestZoom = zoom;
+                  bestP2 = p2Id;
+                }
+              }
+            }
+          } else if (this.claims.P2?.main) {
+            bestP2 = this.claims.P2.main;
+            bestZoom = getZoomForXY(bestP2);
+          }
+          
+          // If no configured zoom was found, use default
+          if (bestZoom === 0) {
+            bestZoom = defaultZoom;
+          }
+          
+          this.zoom = bestZoom;
           this.coords = this.claims.P48[0].mainsnak.datavalue.value;
           // mark presence of map data so template can show map card
           this.isMap = true;
@@ -824,19 +948,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
         this.selectedItemsList = JSON.parse(localStorage.getItem('selectedItems'));
 
         // Images
-        this.pictures = this.claims.P189
-          ? this.claims.P189.map((picture, index) => {
-              const imageUrl = picture.picture;
-              const thumbnailUrl = `${imageUrl}?width=300`;
-              this.preloadImage(thumbnailUrl);
-              this.preloadImage(imageUrl);
-              return {
-                thumbnail: thumbnailUrl,
-                full: imageUrl,
-                uniqueKey: imageUrl || `picture-${index}`,
-              };
-            })
-          : [];
+        this.pictures = this.displayMediaService.buildPicturesFromClaims(this.claims.P189);
         this.isPicture = this.pictures.length > 0;
         if (this.isPicture) {
           // If the global isMobile signals that we're on a handset, elevate the picture
@@ -997,19 +1109,13 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private preloadImage(url: string): void {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = url;
-    document.head.appendChild(link);
+    this.displayMediaService.preloadImage(url);
   }
 
   onThumbnailLoad(picture: any): void {}
 
   openImage(url: string): void {
-    if (url) {
-      window.open(url, '_blank');
-    }
+    this.displayMediaService.openImage(url);
   }
 
   /**
@@ -1049,202 +1155,36 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {}
 
   private async loadSparqlAt(index: number, card: any, attempt = 0): Promise<void> {
-    // debug: loadSparqlAt logging removed
     try {
       const host = this[`sparqlDisplay${index}Host`] as ViewContainerRef | undefined;
-      // debug: Host for index logging removed
-      // The host element may not be present yet when called from the subscription
-      // (template is rendered after async data). Use exponential backoff for large lists.
-      // For lists >1000 items, Angular needs more time to process the @if condition.
-      if (!host) {
-        // Maximum 30 attempts with exponential backoff (50ms, 75ms, 112ms, ...)
-        // Total max wait: ~8 seconds which should handle even very large lists
-        const maxAttempts = 30;
-        if (attempt < maxAttempts) {
-          // Force change detection to ensure Angular has processed the @if block
-          try {
-            this.cdr.detectChanges();
-          } catch {}
-          // Exponential backoff: 50ms * 1.5^attempt (capped at 500ms)
-          const delay = Math.min(500, 50 * Math.pow(1.5, Math.min(attempt, 10)));
-          setTimeout(() => this.loadSparqlAt(index, card, attempt + 1), delay);
-        }
-        return;
-      }
-      // If a component already exists for this index, update its inputs
-      // so it can react to new data instead of being destroyed/recreated.
       const existingRef = this.sparqlComponentRefs[index];
-      if (existingRef) {
+
+      const ref = await this.componentLoader.loadSparqlComponent(
+        index,
+        card,
+        host,
+        existingRef,
+        this.lang,
+        this.id,
+        this.cdr,
+        attempt
+      );
+
+      if (ref && !existingRef) {
+        // Nouveau composant créé, stocker la référence et écouter fetchAddress
+        this.sparqlComponentRefs[index] = ref as NgComponentRef<any>;
         try {
-          if (card) {
-            // prefer setInput when available (Ivy)
-            // setInput triggers ngOnChanges automatically
-            // @ts-ignore
-            if (typeof (existingRef as any).setInput === 'function') {
-              (existingRef as any).setInput('sparqlType', `sparql${index}`);
-              (existingRef as any).setInput('sparqlData', card.list);
-              (existingRef as any).setInput('sparqlSubject', card.subject);
-              (existingRef as any).setInput('langService', this.lang);
-              (existingRef as any).setInput('parentTitle', card.title);
-            } else {
-              // fallback: assign to instance and call ngOnChanges manually
-              try {
-                // capture previous values before overwrite so ngOnChanges receives
-                // a meaningful previous/new payload
-                const prevData = existingRef.instance.sparqlData;
-                const prevSubject = existingRef.instance.sparqlSubject;
-
-                existingRef.instance.sparqlType = `sparql${index}`;
-                existingRef.instance.sparqlData = card.list;
-                existingRef.instance.sparqlSubject = card.subject;
-                existingRef.instance.langService = this.lang;
-                existingRef.instance.parentTitle = card.title;
-
-                // build SimpleChanges so ngOnChanges runs properly
-                const changes: any = {};
-                changes['sparqlData'] = new SimpleChange(prevData, card.list, false);
-                changes['sparqlSubject'] = new SimpleChange(prevSubject, card.subject, false);
-                try {
-                  if (typeof existingRef.instance.ngOnChanges === 'function') {
-                    existingRef.instance.ngOnChanges(changes);
-                  }
-                } catch (e) {
-                  // ignore
-                }
-
-                try {
-                  existingRef.changeDetectorRef.detectChanges();
-                } catch {}
-              } catch (err) {
-                // ignore shape mismatch
-              }
-            }
-          } else {
-            // No card data -> clear the existing component
-            try {
-              if (typeof (existingRef as any).setInput === 'function') {
-                (existingRef as any).setInput('sparqlData', []);
-                (existingRef as any).setInput('sparqlSubject', undefined);
-              } else {
-                existingRef.instance.sparqlData = [];
-                existingRef.instance.sparqlSubject = '';
-                try {
-                  if (typeof existingRef.instance.ngOnChanges === 'function') {
-                    existingRef.instance.ngOnChanges({
-                      sparqlData: new SimpleChange(undefined, [], false),
-                    });
-                  }
-                } catch {}
-                try {
-                  existingRef.changeDetectorRef.detectChanges();
-                } catch {}
-              }
-            } catch {}
-          }
-        } catch (e) {
-          // ignore update failures and fallback to re-creation below
-        }
-        // component updated, no need to (re)create
-        // Store large lists in cache so we can show them quickly if the user
-        // returns to this item soon.
-        try {
-          if (
-            card &&
-            card.list &&
-            Array.isArray(card.list) &&
-            card.list.length >= this.sparqlCacheThreshold &&
-            this.id
-          ) {
-            try {
-              const key = `${this.id}::${index}::${card.subject || ''}`;
-              this.searchCache.setItem(
-                key,
-                { list: card.list, subject: card.subject, title: card.title },
-                undefined,
-                undefined
-              );
-            } catch {}
+          const instanceAny: any = ref.instance as any;
+          if (instanceAny.fetchAddress && typeof instanceAny.fetchAddress.subscribe === 'function') {
+            const sub = instanceAny.fetchAddress.subscribe((addressId: string) => {
+              void this.fetchAndReplaceAddress(index, addressId, ref as NgComponentRef<any>);
+            });
+            this.subscriptions.push(sub);
           }
         } catch {}
-        return;
       }
-      // Create the dynamic component
-      host.clear();
-      const module = await import('./sparql-display/sparql-display.component');
-      const Comp = module.SparqlDisplayComponent;
-      const ref = host.createComponent(Comp);
-      // set inputs using setInput() when available (safer) or by assigning instance and forcing CD
-      try {
-        if (card) {
-          // prefer setInput if runtime provides it (Ivy)
-          // setInput ensures ngOnChanges is executed as expected
-          // @ts-ignore - setInput is present on ComponentRef in newer Angular versions
-          if (typeof (ref as any).setInput === 'function') {
-            (ref as any).setInput('sparqlType', `sparql${index}`);
-            (ref as any).setInput('sparqlData', card.list);
-            (ref as any).setInput('sparqlSubject', card.subject);
-            (ref as any).setInput('langService', this.lang);
-            (ref as any).setInput('parentTitle', card.title);
-          } else {
-            // fallback: assign to instance and manually call ngOnChanges to trigger update
-            try {
-              ref.instance.sparqlType = `sparql${index}`;
-              ref.instance.sparqlData = card.list;
-              ref.instance.sparqlSubject = card.subject;
-              ref.instance.langService = this.lang;
-              ref.instance.parentTitle = card.title;
-
-              // create minimal SimpleChanges payload so ngOnChanges runs
-              const changes: any = {};
-              changes['sparqlData'] = new SimpleChange(undefined, card.list, true);
-              changes['sparqlSubject'] = new SimpleChange(undefined, card.subject, true);
-              try {
-                if (typeof ref.instance.ngOnChanges === 'function') {
-                  ref.instance.ngOnChanges(changes);
-                }
-              } catch (e) {
-                // ignore
-              }
-
-              try {
-                ref.changeDetectorRef.detectChanges();
-              } catch {}
-            } catch (err) {
-              // ignore if instance shape doesn't match
-            }
-          }
-        }
-      } catch (err) {
-        // ignore if instance shape doesn't match
-      }
-
-      this.sparqlComponentRefs[index] = ref as NgComponentRef<any>;
-      // Cache very large lists so we can restore them quickly on reload/back
-      try {
-        if (
-          card &&
-          card.list &&
-          Array.isArray(card.list) &&
-          card.list.length >= this.sparqlCacheThreshold &&
-          this.id
-        ) {
-          try {
-            const key = `${this.id}::${index}::${card.subject || ''}`;
-            this.searchCache.setItem(
-              key,
-              { list: card.list, subject: card.subject, title: card.title },
-              undefined,
-              undefined
-            );
-          } catch {}
-        }
-      } catch {}
-      // trigger change detection in case host was created after view init
-      try {
-        this.cdr.detectChanges();
-      } catch {}
     } catch (e) {
-      // swallow import error to avoid breaking display
+      // swallow errors
     }
   }
 
@@ -1254,43 +1194,25 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
    * newly selected item.
    */
   private clearSparqlComponents(): void {
-    // Unsubscribe from cards subscription to avoid duplicate handling
-    // No direct sparqlCardsSubscription to unsubscribe here; handled via effect cleanup
-
     // Destroy any dynamically created components and reset refs
-    this.sparqlComponentRefs.forEach((ref, idx) => {
-      try {
-        ref?.destroy();
-      } catch {}
-      this.sparqlComponentRefs[idx] = null;
-    });
+    this.componentLoader.destroyComponentRefs(this.sparqlComponentRefs);
+    this.sparqlComponentRefs = [null, null, null, null, null];
 
     // Clear the hosts if available (removes DOM content)
-    for (let i = 0; i < this.sparqlComponentRefs.length; i++) {
-      try {
-        const host = this[`sparqlDisplay${i}Host`] as ViewContainerRef | undefined;
-        host?.clear();
-      } catch {}
+    const hosts: Array<ViewContainerRef | undefined> = [];
+    for (let i = 0; i < 5; i++) {
+      hosts.push(this[`sparqlDisplay${i}Host`] as ViewContainerRef | undefined);
     }
+    this.componentLoader.clearHosts(hosts);
   }
 
   private loadCachedSparqlComponents(): void {
     // Try to create/update components using cached data for the current item
     if (!this.id) return;
-    for (let idx = 0; idx < this.sparqlComponentRefs.length; idx++) {
-      try {
-        const prefix = `${this.id}::${idx}::`;
-        const cached: any = this.searchCache.getItemByPrefix(prefix);
-        if (cached && cached.list && cached.list.length) {
-          const card = {
-            subject: cached.subject || '',
-            list: cached.list,
-            title: cached.title || '',
-          };
-          void this.loadSparqlAt(idx, card);
-        }
-      } catch {}
-    }
+    const cachedCards = this.componentLoader.getCachedSparqlCards(this.id, 5);
+    cachedCards.forEach(({ index, card }) => {
+      void this.loadSparqlAt(index, card);
+    });
   }
 
   private async loadItemInfoAt(index: number, attempt = 0): Promise<void> {
@@ -1298,45 +1220,28 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       // index 0 -> itemInfoHost, index 1 -> itemInfoHostHidden
       const hostKey = index === 0 ? 'itemInfoHost' : 'itemInfoHostHidden';
       const host = this[hostKey] as ViewContainerRef | undefined;
-      if (!host) {
-        if (attempt < 10) {
-          setTimeout(() => this.loadItemInfoAt(index, attempt + 1), 60);
-        }
-        return;
-      }
-
-      // no info to show
-      if (!this.infoList || (Array.isArray(this.infoList) && this.infoList.length === 0)) return;
-
-      // already loaded
-      if (this.itemInfoRefs[index]) return;
+      const existingRef = this.itemInfoRefs[index];
 
       this.itemInfoLoading = true;
-      host.clear();
-      const module = await import('./item-info/item-info.component');
-      const Comp = module.ItemInfoComponent;
-      const ref = host.createComponent(Comp);
+      const ref = await this.componentLoader.loadItemInfoComponent(
+        index,
+        host,
+        existingRef,
+        this.infoList,
+        this.cdr,
+        attempt
+      );
 
-      try {
-        if (typeof (ref as any).setInput === 'function') {
-          // use setInput so OnChanges is invoked
-          (ref as any).setInput('infoList', this.infoList);
-        } else {
-          ref.instance.infoList = this.infoList;
-          try {
-            ref.changeDetectorRef.detectChanges();
-          } catch {}
-        }
-      } catch (err) {}
-
-      this.itemInfoRefs[index] = ref as NgComponentRef<any>;
+      if (ref && !existingRef) {
+        this.itemInfoRefs[index] = ref as NgComponentRef<any>;
+        this.itemInfoLoaded = true;
+      }
       this.itemInfoLoading = false;
-      this.itemInfoLoaded = true;
       try {
         this.cdr.detectChanges();
       } catch {}
     } catch (e) {
-      // setInput fallback failed silently
+      // swallow errors
 
       // swallow lazy-load errors silently; avoid noisy console in production
       this.itemInfoLoading = false;
@@ -1349,12 +1254,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     // If we're on the homepage (no current item), animate header first
-    console.log(
-      '[Display] onSearchItemSelected received',
-      itemId,
-      'current item:',
-      this.item ? this.item[0]?.id || 'present' : 'none'
-    );
+
     if (!this.item) {
       // play header closing animation and pin the search
       this.pendingNavigationItemId = itemId;
@@ -1386,12 +1286,6 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Animation callback: when header closing animation completes, navigate to pending item
   onHeaderAnimationDone(e: AnimationEvent) {
-    console.log(
-      '[Display] header animation done event',
-      e.toState,
-      'pending id',
-      this.pendingNavigationItemId
-    );
     // animation finished — clear the visual flag so overlays and UI feedback hide
     this.headerAnimating = false;
     // ensure the animation finished going to 'closed'

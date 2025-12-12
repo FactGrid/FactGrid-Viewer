@@ -7,6 +7,7 @@ if (typeof globalThis.AbortController === 'undefined') {
 
 import 'zone.js';
 import 'zone.js/testing';
+import { withProxyZone } from 'zone.js/testing';
 // Log to help debugging whether this setup file runs in each worker
 console.log('[vitest setup] src/test-setup executed');
 import { getTestBed } from '@angular/core/testing';
@@ -25,6 +26,11 @@ if (!testBed.platform) {
     teardown: { destroyAfterEach: false },
   });
 }
+
+// Ensure persistent state like selectedResearchField from previous runs doesn't leak.
+try {
+  localStorage.removeItem('selectedResearchField');
+} catch {}
 
 // Ensure global helpers used in tests exist in this environment. Some tests
 // use `window.open` which is not defined in happy-dom, so provide a stub
@@ -64,6 +70,31 @@ if (
     }
   }
   (globalThis as any).MutationObserver = PolyfillMutationObserver;
+}
+
+// Provide a <base href="http://localhost/"> element for tests that rely on getAssetPath() or
+// `new URL(path, base)` style resolution which depends on a document base.
+if (!document.querySelector('base')) {
+  const baseEl = document.createElement('base');
+  baseEl.setAttribute('href', 'http://localhost/');
+  document.head.appendChild(baseEl);
+}
+
+// Wrap common test functions (Vitest / Mocha / Jasmine compatible) so that
+// zone.js ProxyZoneSpec is active when tests use `fakeAsync`/`tick` helpers
+// if `withProxyZone` is available. If unavailable, do not wrap to avoid
+// runtime errors (some zone.js builds don't expose the helper).
+const VITEST_FN_NAMES = ['it', 'test', 'beforeEach', 'afterEach', 'beforeAll', 'afterAll'];
+const _withProxyZone = typeof withProxyZone === 'function' ? withProxyZone : undefined;
+for (const name of VITEST_FN_NAMES) {
+  const orig = (globalThis as any)[name];
+  if (typeof orig === 'function') {
+    (globalThis as any)[name] = (desc: any, fn: any, ...args: any[]) => {
+      // When fn is not a function (e.g., skipped tests), don't wrap
+      const wrappedFn = _withProxyZone && typeof fn === 'function' ? _withProxyZone(fn) : fn;
+      return orig(desc, wrappedFn, ...args);
+    };
+  }
 }
 
 

@@ -12,7 +12,7 @@ describe('SparqlQueryBuilderService', () => {
     TestBed.configureTestingModule({
       providers: [
         SparqlQueryBuilderService,
-        { provide: SelectedLangService, use: mockLangService },
+        { provide: SelectedLangService, useValue: mockLangService },
       ],
     });
     service = TestBed.inject(SparqlQueryBuilderService);
@@ -153,11 +153,12 @@ describe('SparqlQueryBuilderService', () => {
   describe('buildAsk()', () => {
     it('should build ASK query', () => {
       const url = service.buildAsk('wd:{{id}} wdt:P2/wdt:P3* wd:Q12', { id: 'Q999' });
+      const decoded = decodeURIComponent(url);
 
       expect(url).toContain('ASK');
       expect(url).toContain('Q999');
-      expect(url).toContain('wdt:P2/wdt:P3*');
-      expect(url).toContain('wdt:P12');
+      expect(decoded).toContain('wdt:P2/wdt:P3*');
+      expect(decoded).toContain('wd:Q12');
     });
   });
 

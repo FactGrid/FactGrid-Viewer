@@ -90,14 +90,7 @@
                 </li>
               }
             </ul>
-            @if (currentTotalCount > ((filteredItems$ | async)?.length || 0)) {
-              <div class="see-more">
-                <button type="button" (click)="seeMore()">
-                  Voir {{ currentTotalCount - ((filteredItems$ | async)?.length || 0) }} autres
-                  résultats
-                </button>
-              </div>
-            }
+            <!-- 'Voir plus' button removed: always show up to 50 items, see updateItemsList for capping -->
           </div>
         </div>
       </ng-template>
@@ -109,7 +102,7 @@
       <ng-template
         cdkConnectedOverlay
         [cdkConnectedOverlayOrigin]="projectBtnOrigin"
-        [cdkConnectedOverlayOpen]="showProjectDropdown && projects?.length > 0"
+        [cdkConnectedOverlayOpen]="showProjectDropdown"
         [cdkConnectedOverlayHasBackdrop]="false"
         [cdkConnectedOverlayPositions]="[
           { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
@@ -123,10 +116,20 @@
       >
         <div class="search-items_inner">
           <div class="compact-project-dropdown">
-            @for (project of projects; track trackById(project)) {
-              <div class="compact-project-option" (mousedown)="selectProjectCompact(project)">
-                {{ project.name }}
-              </div>
+            <div class="compact-project-filter">
+              <mat-form-field appearance="outline" class="compact-project-filter-field">
+                <mat-label>{{ projectFilterLabel }}</mat-label>
+                <input matInput type="text" [formControl]="projectFilterText" [placeholder]="projectFilterPlaceholder" />
+              </mat-form-field>
+            </div>
+            @if (!projects || projects.length === 0) {
+              <div class="compact-project-empty">{{ projectOverlayEmpty }}</div>
+            } @else {
+              @for (project of projects; track trackById(project)) {
+                <div class="compact-project-option" (mousedown)="selectProjectCompact(project)">
+                  {{ project.name }}
+                </div>
+              }
             }
           </div>
         </div>

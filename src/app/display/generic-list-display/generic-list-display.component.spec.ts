@@ -83,8 +83,9 @@ describe('GenericListDisplayComponent', () => {
     // The separator must be glued to the label (no extra space between label and comma)
     const anchor = compiled.querySelector('a.factgrid-link') as HTMLElement | null;
     expect(anchor).toBeTruthy();
-    // The label is glued to the separator using a U+2060 (word-joiner) — anchor's innerHTML should contain the word-joiner sequence
-    expect(anchor!.innerHTML).toContain('Label\u2060');
+      // The label is glued to the separator using a U+2060 (word-joiner) — account for possible extra whitespace in HTML
+      const inner = anchor!.innerHTML.replace(/\s+/g, '');
+      expect(inner).toContain('Label\u2060');
   });
 
   it('includes description inside the link for wikibase-item mainsnak', () => {

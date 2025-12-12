@@ -136,7 +136,7 @@ export class AdvancedSearchComponent implements OnInit, OnDestroy {
 
     this.fields = this.lang.getTranslation('$1', this.lang.selectedLang);
 
-    this.projectList.projectsListBuilding('Q11295').subscribe((res) => (this.projectsList = res)); // list of projects
+    this.projectList.projectsListBuilding(['Q11295', 'Q395090']).subscribe((res) => (this.projectsList = res)); // list of projects
 
     //  this.propertyList.propertiesListBuilding("Q12"); //list of properties;
 

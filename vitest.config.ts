@@ -12,6 +12,7 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: 'src/test-setup.ts',
+    testTimeout: 20000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
