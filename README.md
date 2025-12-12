@@ -20,7 +20,9 @@ Quand je lance les tests pour toi dans cette session, je t'indiquerai explicitem
 
 Documentation
 -------------
+- **Architecture du projet** : [`PROJECT-ARCHITECTURE.md`](PROJECT-ARCHITECTURE.md) — présentation complète de l'architecture, des flux de données, et des fonctionnalités principales (en anglais).
 - Dispatcher / affichage des items : `docs/dispatcher.md` — guide expliquant le fonctionnement du dispatcher, la détection P2, et comment ajouter un bloc conditionnel (p.ex. activité).
+- Documentation technique : `documentation/` — générée via Compodoc (`npm run compodoc:serve`).
 
 DÃ©pannage automatisÃ© (exÃ©cution du script de suppression)
 - ExÃ©cuter depuis la racine du dÃ©pÃ´t (PowerShell Ã©levÃ© recommandÃ©) :
