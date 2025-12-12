@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   OnInit,
   OnDestroy,
@@ -132,6 +132,7 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
   [key: string]: any;
   title = 'FactGrid';
   subtitle: string;
+  totalItems: string = '';
   private sparqlDisplayService = inject(SparqlDisplayService);
   private itemSparql = inject(ItemSparqlService);
   constructor(private cdr: ChangeDetectorRef) {
@@ -571,6 +572,14 @@ export class DisplayComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.subtitle = this.lang.getTranslation('subtitle', this.lang.selectedLang);
+    // Fetch database statistics
+    this.request.getStat().subscribe((res: any) => {
+      if (res?.query?.statistics?.pages) {
+        const count = res.query.statistics.pages.toLocaleString();
+        const label = this.lang.getTranslation('itemsInDatabase', this.lang.selectedLang);
+        this.totalItems = `${count} ${label}`;
+      }
+    });
 
     // Gestion de l’ancien format (simple string) et du nouveau (JSON)
     const rawSelectedResearchField = localStorage.getItem('selectedResearchField');

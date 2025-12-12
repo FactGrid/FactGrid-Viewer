@@ -481,6 +481,15 @@ export const TRANSLATIONS = {
     en: 'a database for historians',
     zh: '历史学家的数据库',
   },
+  itemsInDatabase: {
+    de: 'Einträge in der Datenbank',
+    fr: 'éléments dans la base de données',
+    es: 'elementos en la base de datos',
+    it: 'elementi nel database',
+    hu: 'elemek az adatbázisban',
+    en: 'items in the database',
+    zh: '数据库中的项目',
+  },
   suffix1: {
     de: 'Klassen:',
     fr: 'classes:',

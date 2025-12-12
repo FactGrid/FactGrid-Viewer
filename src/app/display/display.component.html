@@ -24,6 +24,9 @@
           @if (!item) {
             <div class="home-title">{{ title }}</div>
             <div class="home-subtitle">{{ subtitle }}</div>
+            @if (totalItems) {
+              <div class="home-stats">{{ totalItems }}</div>
+            }
           }
         </div>
 
