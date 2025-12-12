@@ -1,44 +1,116 @@
 ﻿# FactGrid Viewer
 
-Outil pour naviguer la base FactGrid (Wikibase).
+A tool for browsing the FactGrid database (Wikibase).
 
-AperÃ§u rapide â€” dÃ©veloppement
-- Installer les dÃ©pendances : npm ci
-- Lancer le serveur de dÃ©veloppement : ng serve
- Tests : npm test (Vitest) 
- Note sur les tests (mode développeur vs CI):
- Par défaut `npm test` exécute Vitest (défini via `vitest.config.ts`).
- Commandes utiles :
-   - `npm test` — exécute Vitest en mode CI (run + coverage) par défaut.
-   - `npm run test:watch` — lance Vitest en mode watch pour le développement.
-   - `npm run test:ci` — lance Vitest en mode run + coverage pour les pipelines CI.
-  - `npm run test:ci` — même comportement, prévu pour les environnements CI.
+## Quick Start — Development
 
-Quand je lance les tests pour toi dans cette session, je t'indiquerai explicitement la commande `npm run test:once` (ou `npm run test:ci`) pour que tu puisses la réutiliser localement.
+- **Install dependencies**: `npm ci`
+- **Start development server**: `ng serve`
+- **Run tests**: `npm test` (Vitest)
 
-(La configuration MCP / PM2 a Ã©tÃ© retirÃ©e du projet.)
+### Testing (Developer vs CI mode)
 
-Documentation
--------------
-- **Architecture du projet** : [`PROJECT-ARCHITECTURE.md`](PROJECT-ARCHITECTURE.md) — présentation complète de l'architecture, des flux de données, et des fonctionnalités principales (en anglais).
-- Dispatcher / affichage des items : `docs/dispatcher.md` — guide expliquant le fonctionnement du dispatcher, la détection P2, et comment ajouter un bloc conditionnel (p.ex. activité).
-- Documentation technique : `documentation/` — générée via Compodoc (`npm run compodoc:serve`).
+By default, `npm test` runs Vitest (configured via `vitest.config.ts`).
 
-DÃ©pannage automatisÃ© (exÃ©cution du script de suppression)
-- ExÃ©cuter depuis la racine du dÃ©pÃ´t (PowerShell Ã©levÃ© recommandÃ©) :
-  powershell -NoProfile -ExecutionPolicy Bypass -File .\remove-mcp-artifacts.ps1
-- Alternative (depuis CMD) :
-  .\remove-mcp-artifacts.cmd
-- Si vous prÃ©fÃ©rez PowerShell Core (pwsh) :
-  pwsh -NoProfile -ExecutionPolicy Bypass -File .\remove-mcp-artifacts.ps1
+**Useful commands:**
+- `npm test` — Runs Vitest in CI mode (run + coverage) by default
+- `npm run test:watch` — Launches Vitest in watch mode for development
+- `npm run test:ci` — Runs Vitest in run + coverage mode for CI pipelines
+- `npm run test:once` — Runs tests once without coverage
 
-Utiliser GitHub Copilot avec llms.txt
-- Installer l'extension GitHub Copilot (et Copilot Chat si besoin) dans VS Code.
-- Ouvrir ce workspace dans VS Code et accepter la recommandation d'extensions (Voir .vscode/extensions.json).
-- Donner à Copilot l'accès au dépôt (Settings → Extensions → GitHub Copilot → Repository access).
-- Ouvrir le fichier llms.txt dans l'éditeur : Copilot / Copilot Chat utilisera ce contenu comme contexte local pour les suggestions si l'extension a l'autorisation.
-- Pour Copilot Chat : commencer une session (Copilot Chat) et demander explicitement "Consulte le fichier llms.txt et résume le contexte" — l'agent local lira le fichier ouvert dans le workspace.
-- Remarque : l'agent ou service distant ne lira ce fichier que si vous lui fournissez explicitement le contenu ou si l'outil d'indexation du dépôt est configuré pour inclure les fichiers workspace.
+When running tests in this session, I will explicitly indicate the `npm run test:once` (or `npm run test:ci`) command so you can reuse it locally.
+
+_(MCP / PM2 configuration has been removed from the project.)_
+
+---
+
+## Documentation
+
+- **Project Architecture**: [`PROJECT-ARCHITECTURE.md`](PROJECT-ARCHITECTURE.md) — Comprehensive presentation of the architecture, data flows, and main features.
+- **Dispatcher / Item Display**: `docs/dispatcher.md` — Guide explaining how the dispatcher works, P2 detection, and how to add a conditional block (e.g., activity).
+- **Technical Documentation**: `documentation/` — Generated via Compodoc (`npm run compodoc:serve`).
+
+---
+
+## Automated Troubleshooting (Artifact Cleanup Script)
+
+Run from the repository root (elevated PowerShell recommended):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\remove-mcp-artifacts.ps1
+```
+
+**Alternative (from CMD)**:
+```cmd
+.\remove-mcp-artifacts.cmd
+```
+
+**PowerShell Core (pwsh)**:
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\remove-mcp-artifacts.ps1
+```
+
+---
+
+## Using GitHub Copilot with llms.txt
+
+1. Install the GitHub Copilot extension (and Copilot Chat if needed) in VS Code
+2. Open this workspace in VS Code and accept the extension recommendations (see `.vscode/extensions.json`)
+3. Grant Copilot access to the repository (Settings → Extensions → GitHub Copilot → Repository access)
+4. Open the `llms.txt` file in the editor: Copilot / Copilot Chat will use this content as local context for suggestions if the extension has authorization
+5. For Copilot Chat: start a session and explicitly ask "Consult the llms.txt file and summarize the context" — the local agent will read the file open in the workspace
+
+**Note**: The remote agent or service will only read this file if you explicitly provide the content or if the repository indexing tool is configured to include workspace files.
+
+---
+
+## Additional Development Commands
+
+```bash
+# Production
+npm run build          # Production build
+npm start             # Start server.js (Node Express)
+
+# Code Quality
+npm run lint          # ESLint check
+npm run lint:fix      # Auto-fix linting issues
+npm run format        # Prettier formatting
+
+# End-to-End Testing
+npm run e2e           # Run E2E tests
+
+# Documentation
+npm run compodoc      # Generate documentation
+npm run compodoc:serve # Generate and serve documentation
+
+# Theming
+npm run theme         # Interactive theme picker
+npm run theme:default # Apply default theme
+npm run theme:blue-orange # Apply blue-orange palette
+npm run theme:preview # Preview all themes
+```
+
+---
+
+## Project Requirements
+
+- **Node.js**: >= 18.0.0 LTS
+- **npm**: >= 9.0.0
+- **Angular CLI**: 21.0.2
+
+See `package.json` for complete dependency list.
+
+---
+
+## Contributing
+
+Please read the architecture documentation in [`PROJECT-ARCHITECTURE.md`](PROJECT-ARCHITECTURE.md) before contributing. For specific guidance on adding features, see `docs/dispatcher.md`.
+
+---
+
+## License
+
+See LICENSE file for details.
 
 
 
