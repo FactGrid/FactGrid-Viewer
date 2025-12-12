@@ -2,6 +2,8 @@
 
 A tool for browsing the FactGrid database (Wikibase).
 
+**Live Demo**: [https://factgrid.github.io/FactGrid-Viewer](https://factgrid.github.io/FactGrid-Viewer)
+
 ## Quick Start — Development
 
 - **Install dependencies**: `npm ci`
